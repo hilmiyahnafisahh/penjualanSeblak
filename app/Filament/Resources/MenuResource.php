@@ -40,16 +40,26 @@ class MenuResource extends Resource
         return $form
             ->schema([
                  TextInput::make('id_menu')
-                    ->default(fn () => Menu::getIDMakanan()) // Ambil default dari method getIDMenu
                     ->label('ID Menu')
-                    ->required()
-                    ->readonly(),
+                    ->readonly()
+                    ->required(),
 
-                    TextInput::make('id_menu')
-                    ->default(fn () => Menu::getIDMinuman()) // Ambil default dari method getIDMenu
-                    ->label('ID Menu')
-                    ->required()
-                    ->readonly(),
+                Select::make('kategori_menu')
+                    ->options([
+                        'Makanan' => 'Makanan',
+                        'Minuman' => 'Minuman',
+                    ])
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state === 'Makanan') {
+                            $set('id_menu', Menu::getIDMakanan());
+                        }
+                    if ($state === 'Minuman') {
+                        $set('id_menu', Menu::getIDMinuman());
+                    }
+                })
+                ->required()
+                ->label('Kategori'),
 
             TextInput::make('nama_menu')
                 ->required()
@@ -60,14 +70,6 @@ class MenuResource extends Resource
                 ->numeric()
                 ->prefix('Rp')
                 ->label('Harga'),
-
-            Select::make('kategori_menu')
-                ->options([
-                    'Makanan' => 'Makanan',
-                    'Minuman' => 'Minuman',
-                ])
-                ->required()
-                ->label('Kategori'),
 
             FileUpload::make('gambar_menu')
                 ->image()

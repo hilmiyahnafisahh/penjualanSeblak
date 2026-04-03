@@ -16,7 +16,11 @@ return new class extends Migration
             $table->string('id_barang') ->unique();
             $table->string('nama_barang');
             $table->integer('stok');
+<<<<<<< HEAD
             $table->string('satuan');
+=======
+            $table->string('satuan') ->default('pcs');
+>>>>>>> main
             $table->integer('harga_beli');
             $table->integer('harga_jual');
             $table->timestamps();
