@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('layanan', function (Blueprint $table) {
             $table->id();
-            $table->string('id_layanan');
+            $table->string('id_layanan') ->unique();
             $table->string('nama_layanan');
             $table->string('deskripsi');
             $table->enum('status_layanan', ['Tersedia', 'Tidak Tersedia']);
