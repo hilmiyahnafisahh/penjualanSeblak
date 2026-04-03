@@ -13,7 +13,8 @@ return new class extends Migration
     {
         
         Schema::create('pelanggan', function (Blueprint $table) {
-            $table->id('id_pelanggan');
+            $table->id();
+            $table->string('id_pelanggan') ->unique();
             $table->string('nama_pelanggan');
             $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan']);
             $table->string('alamat');
