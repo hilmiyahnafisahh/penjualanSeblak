@@ -56,6 +56,6 @@ class Menu extends Model
     public function setHargaAttribute($value)
     {
         // Hapus koma (,) dari nilai sebelum menyimpannya ke database
-        $this->attributes['harga'] = str_replace('.', '', $value);
+        $this->attributes['harga_menu'] = str_replace('.', '', $value);
     }
 }
