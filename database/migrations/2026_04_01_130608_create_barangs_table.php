@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-
 return new class extends Migration
 {
     /**
@@ -12,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('layanan', function (Blueprint $table) {
-            $table->id(); // primary key
-            $table->string('id_layanan')->unique(); // kode layanan
-            $table->string('nama_layanan');
-            $table->string('deskripsi');
-            $table->enum('status_layanan', ['Tersedia', 'Tidak Tersedia']);
+        Schema::create('barang', function (Blueprint $table) {
+            $table->id();
+            $table->string('id_barang') ->unique();
+            $table->string('nama_barang');
+            $table->integer('stok');
+            $table->string('satuan');
+            $table->integer('harga_beli');
+            $table->integer('harga_jual');
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('layanan');
+        Schema::dropIfExists('barang');
     }
 };
