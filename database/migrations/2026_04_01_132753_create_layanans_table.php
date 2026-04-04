@@ -12,9 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('layanan', function (Blueprint $table) {
-            $table->id(); // primary key
-            $table->string('id_layanan')->unique(); // kode layanan
+        Schema::create('layanan', function (Blueprint $table) {
+            $table->id();
+            $table->string('id_layanan') ->unique();
             $table->string('nama_layanan');
             $table->string('deskripsi');
             $table->enum('status_layanan', ['Tersedia', 'Tidak Tersedia']);
