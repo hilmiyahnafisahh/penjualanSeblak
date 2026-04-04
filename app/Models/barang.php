@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 // tambahan
 use Illuminate\Support\Facades\DB;
 
-
-
 class barang extends Model
 {
     protected $table = 'barang';

@@ -4,33 +4,41 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB; 
 
-// tambahan
-use Illuminate\Support\Facades\DB;
-
-class Barang extends Model
+class Layanan extends Model
 {
-     use HasFactory;
-    protected $table = 'layanan'; // Nama tabel eksplisit
+    use HasFactory;
+
+    protected $table = 'layanan';
 
     protected $guarded = [];
 
-    public static function getKodeLayanan()
+    protected static function boot()
     {
-        // query kode perusahaan
-        $sql = "SELECT IFNULL(MAX(kode_layanan), 'LYN000') as kode_layanan 
-                FROM layanan ";
-        $kodelayanan = DB::select($sql);
+        parent::boot();
 
-        // cacah hasilnya
-        foreach ($kodelayanan as $kdlyn) {
-            $kd = $kdlyn->kode_layanan;
+        static::creating(function ($model) {
+            $model->id_layanan = self::generateKodeLayanan();
+        });
+    }
+
+    public static function generateKodeLayanan()
+    {
+        $last = DB::table('layanan')
+            ->select('id_layanan')
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$last) {
+            return 'LY001';
         }
-        // Mengambil substring tiga digit akhir dari string PR-000
-        $noawal = substr($kd,-3);
-        $noakhir = $noawal+1; //menambahkan 1, hasilnya adalah integer cth 1
-        $noakhir = 'LYN'.str_pad($noakhir,3,"0",STR_PAD_LEFT); //menyambung dengan string PR-001
-        return $noakhir;
 
+        $lastKode = $last->id_layanan;
+
+        $number = (int) substr($lastKode, -3);
+        $number++;
+
+        return 'LY' . str_pad($number, 3, '0', STR_PAD_LEFT);
     }
 }
