@@ -30,12 +30,15 @@ class LayananResource extends Resource
         return $form->schema([
             TextInput::make('id_layanan')
                 ->label('Kode Layanan')
-                ->disabled() // auto generate
-                ->dehydrated(false),
+                ->default(fn () => Layanan::getIDLayanan())
+                ->readonly(), // SESUAI MODEL KAMU
 
-            TextInput::make('nama_layanan')
+            Select::make('nama_layanan')
                 ->required()
-                ->maxLength(255),
+                ->options([
+                    'Dine In' => 'Dine In',
+                    'Take Away' => 'Take Away',
+                ]),
 
             Textarea::make('deskripsi')
                 ->required(),
@@ -61,7 +64,11 @@ class LayananResource extends Resource
                     ->searchable(),
 
                 TextColumn::make('nama_layanan')
-                    ->searchable(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state){
+                        'Dine In' => 'primary',
+                        'Take Away' => 'secondary',
+                    }),
 
                 TextColumn::make('deskripsi')
                     ->limit(30),
