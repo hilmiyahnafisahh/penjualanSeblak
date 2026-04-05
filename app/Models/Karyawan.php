@@ -13,15 +13,17 @@ class Karyawan extends Model
     protected $table = 'karyawan';
     protected $guarded = [];
 
-    public static function getkaryawankode($id_karyawan)
+    public static function getIDKaryawan()
     {
+        // ambil kode terakhir
         $sql = "SELECT IFNULL(MAX(id_karyawan), 'KRY000') as id_karyawan FROM karyawan";
-        $idkaryawan = DB::select($sql);
+        $idKaryawan = DB::select($sql);
 
-        foreach ($idkaryawan as $idkry) {
+        foreach ($idKaryawan as $idkry) {
             $id = $idkry->id_karyawan;
         }
 
+        // generate kode baru
         $nomawal = substr($id, -3);
         $nomawal++;
 
