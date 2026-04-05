@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('id_barang')->unique();
             $table->string('nama_barang');
             $table->integer('stok');
-            $table->string('satuan')->default('pcs'); // default satuan
+            $table->string('satuan')->default('pcs');
             $table->integer('harga_beli');
             $table->integer('harga_jual');
             $table->timestamps();

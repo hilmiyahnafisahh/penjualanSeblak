@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 
-class akun extends Model
+class Akun extends Model
 {
     use HasFactory;
 
@@ -20,7 +20,6 @@ class akun extends Model
         $sql = "SELECT IFNULL(MAX(kode_akun), 'REF000') AS kode_akun FROM akun";
         $kd_akun = DB::select($sql);
 
-        // ambil hasil
         foreach ($kd_akun as $kdkn) {
             $kd = $kdkn->kode_akun;
         }
@@ -29,8 +28,6 @@ class akun extends Model
         $kdawal = substr($kd, -3);
         $kdawal++;
 
-        $kdakhir = 'REF' . str_pad($kdawal, 3, "0", STR_PAD_LEFT);
-
-        return $kdakhir;
+        return 'REF' . str_pad($kdawal, 3, "0", STR_PAD_LEFT);
     }
 }

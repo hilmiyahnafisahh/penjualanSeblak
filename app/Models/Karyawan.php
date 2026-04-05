@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+// tambahan
+use Illuminate\Support\Facades\DB;
+
 
 class Karyawan extends Model
 {
@@ -12,15 +16,15 @@ class Karyawan extends Model
 
     protected $guarded = [];
     
-    public static function getKaryawanById($id_karyawan)
+    public static function getIDKaryawan()
     {  
         // query kode perusahaan
         $sql = "SELECT IFNULL(MAX(id_karyawan), 'KRY000') as id_karyawan 
                 FROM karyawan ";
-        $id_karyawan = DB::select($sql);
+        $idKaryawan = DB::select($sql);
 
         // cacah hasilnya
-        foreach ($id_karyawan as $idkry) {
+        foreach ($idKaryawan as $idkry) {
             $id = $idkry->id_karyawan;
         }
         // Mengambil substring tiga digit akhir dari string PR-000
