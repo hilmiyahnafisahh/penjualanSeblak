@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 
-class akun extends Model
+class Akun extends Model
 {
     protected $table = 'akun';
     protected $primaryKey = 'id';

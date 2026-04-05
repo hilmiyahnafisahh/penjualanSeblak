@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+
 return new class extends Migration
 {
     /**
@@ -11,18 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('barang', function (Blueprint $table) {
+        Schema::create('layanan', function (Blueprint $table) {
             $table->id();
-            $table->string('id_barang') ->unique();
-            $table->string('nama_barang');
-            $table->integer('stok');
 <<<<<<< HEAD
-            $table->string('satuan');
+            $table->string('id_layanan');
 =======
-            $table->string('satuan') ->default('pcs');
+            $table->string('id_layanan') ->unique();
 >>>>>>> main
-            $table->integer('harga_beli');
-            $table->integer('harga_jual');
+            $table->string('nama_layanan');
+            $table->string('deskripsi');
+            $table->enum('status_layanan', ['Tersedia', 'Tidak Tersedia']);
             $table->timestamps();
         });
     }
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('barang');
+        Schema::dropIfExists('layanan');
     }
 };
