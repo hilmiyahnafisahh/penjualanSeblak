@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('id_menu', 10)->unique();
             $table->string('nama_menu', 50);
             $table->enum('kategori_menu', ['Makanan', 'Minuman']);
-            $table->decimal('harga_menu', 10, 2);
+            $table->decimal('harga', 10, 2);
             $table->string('deskripsi', 255);
             $table->string('gambar_menu', 255);
             $table->timestamps();
