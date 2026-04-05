@@ -14,31 +14,20 @@ class Layanan extends Model
 
     protected $guarded = [];
 
-    protected static function boot()
+    public static function getIDLayanan()
     {
-        parent::boot();
+        // ambil kode terakhir
+        $sql = "SELECT IFNULL(MAX(id_layanan), 'LYN000') as id_layanan FROM layanan";
+        $idLayanan = DB::select($sql);
 
-        static::creating(function ($model) {
-            $model->id_layanan = self::generateKodeLayanan();
-        });
-    }
-
-    public static function generateKodeLayanan()
-    {
-        $last = DB::table('layanan')
-            ->select('id_layanan')
-            ->orderByDesc('id')
-            ->first();
-
-        if (!$last) {
-            return 'LY001';
+        foreach ($idLayanan as $idly) {
+            $id = $idly->id_layanan;
         }
 
-        $lastKode = $last->id_layanan;
+        // generate kode baru
+        $nomawal = substr($id, -3);
+        $nomawal++;
 
-        $number = (int) substr($lastKode, -3);
-        $number++;
-
-        return 'LY' . str_pad($number, 3, '0', STR_PAD_LEFT);
+        return 'LYN' . str_pad($nomawal, 3, "0", STR_PAD_LEFT);
     }
 }
