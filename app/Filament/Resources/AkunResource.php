@@ -13,6 +13,15 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
+
+// tambahan
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload; //untuk tipe file
+
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
+
 class AkunResource extends Resource
 {
     protected static ?string $model = Akun::class;
@@ -23,7 +32,25 @@ class AkunResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('kode_akun')
+                    ->default(fn () => Akun::getKodeAkun()) // Ambil default dari method getKodeAkun
+                    ->label('Kode Akun')
+                    ->required()
+                    ->readonly(),
+                TextInput::make('nama_akun')
+                    ->label('Nama Akun')
+                    ->placeholder('Masukkan nama akun')
+                    ->required(),
+                Select::make('jenis_akun')
+                    ->label('Jenis Akun')
+                    ->options([
+                        'Asset' => 'Asset',
+                        'Hutang' => 'Hutang',
+                        'Modal' => 'Modal',
+                        'Pendapatan' => 'Pendapatan',
+                        'Biaya' => 'Biaya',
+                    ])
+                    ->required(),
             ]);
     }
 
@@ -31,13 +58,16 @@ class AkunResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('kode_akun')->label('Kode Akun')->sortable()->searchable(),
+                TextColumn::make('nama_akun')->label('Nama Akun')->sortable()->searchable(),
+                TextColumn::make('jenis_akun')->label('Jenis Akun')->sortable()->searchable(),  
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
