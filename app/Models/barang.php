@@ -43,4 +43,9 @@ class Barang extends Model
         // hapus titik dari format angka
         $this->attributes['harga_barang'] = str_replace('.', '', $value);
     }
+
+    public function pembelianBarang()
+    {
+        return $this->hasMany(PembelianBarang::class, 'id_barang');
+    }
 }

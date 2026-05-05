@@ -95,12 +95,14 @@ class MenuResource extends Resource
                 ->sortable()
                 ->label('Nama Menu'),
 
-            BadgeColumn::make('kategori_menu')
-                    ->label('Kategori')
-                    ->colors([
-                        'Makanan' => 'green',
-                        'Minuman' => 'blue',
-                    ]),
+            TextColumn::make('kategori_menu')
+                ->label('Kategori')
+                ->badge()
+                ->color(fn ($state) => match ($state) {
+                    'Makanan' => 'success',
+                    'Minuman' => 'info',
+                    default => 'gray',
+                }),
 
             TextColumn::make('harga_menu')
                 ->money('IDR')
