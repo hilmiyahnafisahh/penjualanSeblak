@@ -11,7 +11,7 @@ class Pelanggan extends Model
 
     protected $table = 'pelanggan';
 
-    protected $guarded = [];
+    protected $guarded = [];//semua kolom boleh diisi
 
     // AUTO GENERATE ID PELANGGAN
     public static function getIDPelanggan()
@@ -27,6 +27,7 @@ class Pelanggan extends Model
         $noawal = substr($last->id_pelanggan, -3);
         $noakhir = (int) $noawal + 1;
 
-        return 'PLG' . str_pad($noakhir, 3, '0', STR_PAD_LEFT);
+        return 'PLG' . str_pad($noakhir, 3, '0', STR_PAD_LEFT);//menambahkan 0 di depan angka
+
     }
 }
