@@ -34,12 +34,12 @@ class PelangganResource extends Resource
                     ->default(fn () => Pelanggan::getIDPelanggan())
                     ->label('ID Pelanggan')
                     ->required()
-                    ->readonly()
-                    ->dehydrated(), // PENTING biar ke-save
+                    ->readonly()//tidak bisa diubah karena sudah auto generate
+                    ->dehydrated(), 
 
                 TextInput::make('nama_pelanggan')
                     ->label('Nama Pelanggan')
-                    ->required(),
+                    ->required(),//data wajib di isi
 
                 Select::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
@@ -76,7 +76,7 @@ class PelangganResource extends Resource
                 TextColumn::make('nama_pelanggan')
                     ->label('Nama')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable(), 
 
                 BadgeColumn::make('jenis_kelamin')
                     ->label('Jenis Kelamin')

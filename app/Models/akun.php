@@ -30,4 +30,9 @@ class Akun extends Model
 
         return 'REF' . str_pad($kdawal, 3, "0", STR_PAD_LEFT);
     }
+
+    public function beban()
+    {
+        return $this->hasMany(CatatBeban::class, 'kode_akun', 'kode_akun');
+    }
 }
