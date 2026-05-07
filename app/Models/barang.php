@@ -18,7 +18,8 @@ class Barang extends Model
         'stok',
         'satuan',
         'harga_beli',
-        'harga_jual'
+        'harga_jual',
+        'gambar'
     ];
 
     public static function getKodeBarang()

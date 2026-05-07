@@ -56,6 +56,10 @@ class BarangResource extends Resource
                     ->label('Harga Jual')
                     ->placeholder('Masukkan harga jual')
                     ->required(),
+                FileUpload::make('gambar')
+                    ->label('Gambar Barang')
+                    ->placeholder('Unggah gambar barang')
+                    ->required(),
             ]);
     }
 
@@ -77,8 +81,8 @@ class BarangResource extends Resource
                     ->searchable(),
                 Textcolumn::make('satuan')
                     ->label('Satuan'),
-                Textcolumn::make('harga_beli')
-                    ->label('Harga Barang')
+                textcolumn::make('harga_beli')
+                    ->label('Harga Beli')
                     ->formatStateUsing(fn (string|int|null $state): string => rupiah($state))
                     ->extraAttributes(['class' => 'text-right']) // Tambahkan kelas CSS untuk rata kanan
                     ->sortable(),
@@ -87,6 +91,12 @@ class BarangResource extends Resource
                     ->formatStateUsing(fn (string|int|null $state): string => rupiah($state))
                     ->extraAttributes(['class' => 'text-right']) // Tambahkan kelas CSS untuk rata kanan
                     ->sortable(),
+                ImageColumn::make('gambar')
+                    ->label('Gambar')
+                    ->circular()
+                    ->square() // Tambahkan ini untuk memastikan gambar tetap berbentuk persegi
+                    ->sortable()
+                    ->searchable(),
             ])
             ->filters([
                 //
