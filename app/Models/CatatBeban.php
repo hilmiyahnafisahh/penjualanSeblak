@@ -15,7 +15,10 @@ class CatatBeban extends Model
         'total',
         'keterangan',
         'jenis_beban',
-        'status'
+        'status',
+        'gambar'
+
+
     ];
 
     public function akun()
