@@ -3,88 +3,140 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CatatBebanResource\Pages;
-use App\Filament\Resources\CatatBebanResource\RelationManagers;
 use App\Models\CatatBeban;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
 
 class CatatBebanResource extends Resource
 {
     protected static ?string $model = CatatBeban::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+
+    // biar full lebar seperti pembelian
+    protected static ?string $maxContentWidth = 'full';
 
     public static function form(Form $form): Form
-{
-    return $form
-        ->schema([
-            Forms\Components\Select::make('kode_akun')
-                ->label('Akun')
-                ->relationship('akun', 'nama_akun')
-                ->searchable()
-                ->required(),
+    {
+        return $form
+            ->schema([
+                Wizard::make([
 
-            Forms\Components\DatePicker::make('tanggal')
-                ->required(),
+                    // ✅ STEP 1
+                    Wizard\Step::make('Data Beban')
+                        ->schema([
+                            Section::make('Informasi Beban')
+                                ->schema([
+                                    Select::make('kode_akun')
+                                        ->label('Kategori Beban')
+                                        ->relationship('akun', 'nama_akun')
+                                        ->searchable()
+                                        ->required(),
 
-            Forms\Components\TextInput::make('jenis_beban')
-                ->required(),
+                                    DatePicker::make('tanggal')
+                                        ->label('Tanggal')
+                                        ->required(),
 
-            Forms\Components\TextInput::make('total')
-                ->numeric()
-                ->required(),
+                                    TextInput::make('jenis_beban')
+                                        ->label('Jenis Beban')
+                                        ->required(),
+                                ])
+                                ->columns(3),
+                        ]),
 
-            Forms\Components\Textarea::make('keterangan')
-                ->nullable(),
+                    // ✅ STEP 2
+                    Wizard\Step::make('Detail')
+                        ->schema([
+                            Section::make('Detail Beban')
+                                ->schema([
+                                    Textarea::make('keterangan')
+                                        ->label('Keterangan')
+                                        ->nullable(),
 
-            Forms\Components\Select::make('status')
-                ->options([
-                    'lunas' => 'Lunas',
-                    'belum' => 'Belum',
-                ])
-                ->default('lunas')
-                ->required(),
-        ]);
-}
+                                    FileUpload::make('gambar')
+                                        ->label('Bukti Tagihan')
+                                        ->image()
+                                        ->directory('beban')
+                                        ->nullable(),
 
-public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('akun.nama_akun')
-                ->label('Akun')
-                ->searchable(),
+                                    TextInput::make('total')
+                                        ->label('Total')
+                                        ->numeric()
+                                        ->required(),
+                                ])
+                                ->columns(3),
+                        ]),
 
-            Tables\Columns\TextColumn::make('tanggal')
-                ->date(),
+                    // ✅ STEP 3
+                    Wizard\Step::make('Status')
+                        ->schema([
+                            Section::make('Status Pembayaran')
+                                ->schema([
+                                    Select::make('status')
+                                        ->label('Status')
+                                        ->options([
+                                            'lunas' => 'Lunas',
+                                            'belum lunas' => 'Belum Lunas',
+                                        ])
+                                        ->default('lunas')
+                                        ->required(),
+                                ])
+                                ->columns(1),
+                        ]),
+                ])->columnSpan(3),
+            ]);
+    }
 
-            Tables\Columns\TextColumn::make('jenis_beban')
-                ->searchable(),
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('akun.nama_akun')
+                    ->label('Kategori Beban')
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('total')
-                ->money('IDR', true),
+                Tables\Columns\ImageColumn::make('gambar')
+                    ->label('Bukti Tagihan'),
 
-            Tables\Columns\TextColumn::make('status')
-                ->badge(),
+                Tables\Columns\TextColumn::make('tanggal')
+                    ->date(),
 
-            Tables\Columns\TextColumn::make('created_at')
-                ->dateTime(),
-        ])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-            Tables\Actions\DeleteAction::make(),
-        ]);
-}
+                Tables\Columns\TextColumn::make('jenis_beban')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('total')
+                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->colors([
+                        'success' => 'lunas',
+                        'danger' => 'belum lunas',
+                    ]),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime(),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ]);
+    }
+
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
