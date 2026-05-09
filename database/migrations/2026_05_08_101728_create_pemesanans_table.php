@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pemesanan', function (Blueprint $table) {
-            $table->id();
+            $table->id();ondelete('cascade');
             $table->foreignId('id_pelanggan')->constrained('pelanggan')->onDelete('cascade');
             $table->foreignId('id_layanan')->constrained('layanan')->onDelete('cascade');
             $table->string('id_pesanan')->unique();
             $table->date('tanggal_pemesanan');
-            $table->enum('status_pemesanan', ['pending', 'diproses', 'selesai'])->default('pending');
+            $table->enum('status_pemesanan', ['belumdibayar', 'diproses', 'selesai'])->default('belumdibayar');
             $table->string('subtotal', 20);
             $table->timestamps();
         });
