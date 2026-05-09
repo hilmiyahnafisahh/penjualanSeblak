@@ -6,6 +6,7 @@ use App\Filament\Resources\PemesananResource\Pages;
 use App\Models\Pemesanan;
 use App\Models\DetailPesanan;
 use App\Models\Menu;
+use App\Models\Barang;
 use App\Models\Pelanggan;
 use App\Models\Layanan;
 use Filament\Forms;
@@ -115,9 +116,28 @@ class PemesananResource extends Resource
                                         })
                                         ->schema([
 
+                                            Select::make('kategori_menu')
+                                                ->label('Kategori Menu')
+                                                ->options([
+                                                    'Makanan' => 'Makanan',
+                                                    'Minuman' => 'Minuman',
+                                                ])
+                                                ->reactive()
+                                                ->dehydrated(false)
+                                                ->afterStateUpdated(function ($state, Set $set) {
+                                                    $set('id_menu', null);
+                                                })
+                                                ->columnSpan(1),
+
                                             Select::make('id_menu')
                                                 ->label('Menu')
-                                                ->options(Menu::pluck('nama_menu', 'id'))
+                                                ->options(function (Get $get) {
+                                                    $kategori = $get('kategori_menu');
+
+                                                    return Menu::when($kategori, function ($query) use ($kategori) {
+                                                        return $query->where('kategori_menu', $kategori);
+                                                    })->pluck('nama_menu', 'id');
+                                                })
                                                 ->required()
                                                 ->searchable()
                                                 ->disableOptionsWhenSelectedInSiblingRepeaterItems()
@@ -125,27 +145,108 @@ class PemesananResource extends Resource
                                                 ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                                     $menu = Menu::find($state);
                                                     if ($menu) {
-                                                        // ✅ FIX: cast qty ke int
-                                                        $qty   = (int) ($get('jumlah') ?? 1);
-                                                        $harga = (float) $menu->harga_menu;
-                                                        $set('subtotal', $harga * $qty);
+                                                        $qty       = (int) ($get('jumlah') ?? 1);
+                                                        $hargaMenu = (float) $menu->harga_menu;
+                                                        $toppingItems = $get('topping_items') ?? [];
+                                                        $toppingTotal = 0;
+                                                        foreach ($toppingItems as $item) {
+                                                            $toppingTotal += (float) ($item['subtotal'] ?? 0);
+                                                        }
+                                                        $set('harga_menu', $hargaMenu);
+                                                        $set('subtotal', $hargaMenu * $qty + $toppingTotal);
                                                     }
                                                 })
                                                 ->columnSpan(2),
 
+                                            TextInput::make('harga_menu')
+                                                ->label('Harga Menu')
+                                                ->numeric()
+                                                ->prefix('Rp')
+                                                ->readonly()
+                                                ->dehydrated(false)
+                                                ->columnSpan(1),
+
+                                            Repeater::make('topping_items')
+                                                ->label('Topping')
+                                                ->dehydrated(false)
+                                                ->visible(fn (Get $get): bool => $get('kategori_menu') === 'Makanan')
+                                                ->schema([
+                                                    Select::make('id_barang')
+                                                        ->label('Topping')
+                                                        ->options(Barang::pluck('nama_barang', 'id'))
+                                                        ->required()
+                                                        ->searchable()
+                                                        ->reactive()
+                                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                                            $barang = Barang::find($state);
+                                                            $set('harga', (float) ($barang?->harga_jual ?? 0));
+                                                            $qty = (int) ($get('qty') ?? 1);
+                                                            $set('subtotal', (float) ($barang?->harga_jual ?? 0) * $qty);
+                                                        })
+                                                        ->columnSpan(3),
+
+                                                    TextInput::make('qty')
+                                                        ->label('Qty')
+                                                        ->numeric()
+                                                        ->default(1)
+                                                        ->required()
+                                                        ->reactive()
+                                                        ->live()
+                                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                                            $harga = (float) ($get('harga') ?? 0);
+                                                            $set('subtotal', $harga * (int) $state);
+                                                        })
+                                                        ->columnSpan(1),
+
+                                                    TextInput::make('harga')
+                                                        ->label('Harga Topping')
+                                                        ->numeric()
+                                                        ->prefix('Rp')
+                                                        ->readonly()
+                                                        ->dehydrated(false)
+                                                        ->columnSpan(1),
+
+                                                    TextInput::make('subtotal')
+                                                        ->label('Subtotal Topping')
+                                                        ->numeric()
+                                                        ->prefix('Rp')
+                                                        ->readonly()
+                                                        ->dehydrated(false)
+                                                        ->columnSpan(1),
+                                                ])
+                                                ->columns(6)
+                                                ->defaultItems(0)
+                                                ->minItems(0)
+                                                ->createItemButtonLabel('Tambah Topping')
+                                                ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                                    $menu = Menu::find($get('id_menu'));
+                                                    $qty = (int) ($get('jumlah') ?? 1);
+                                                    $hargaMenu = (float) ($menu?->harga_menu ?? 0);
+                                                    $toppingTotal = 0;
+                                                    foreach ($state as $item) {
+                                                        $toppingTotal += (float) ($item['subtotal'] ?? 0);
+                                                    }
+                                                    $set('subtotal', $hargaMenu * $qty + $toppingTotal);
+                                                })
+                                                ->columnSpan(6),
+
                                             TextInput::make('jumlah')
-                                                ->label('Qty')
+                                                ->label('Qty Menu')
                                                 ->numeric()
                                                 ->default(1)
                                                 ->required()
                                                 ->live()
                                                 ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                                                    $menuId = $get('id_menu');
-                                                    $menu   = Menu::find($menuId);
-                                                    // ✅ FIX: cast ke float & int
-                                                    $harga  = (float) ($menu?->harga_menu ?? 0);
-                                                    $qty    = (int) $state;
-                                                    $set('subtotal', $harga * $qty);
+                                                    $menuId    = $get('id_menu');
+                                                    $menu      = Menu::find($menuId);
+                                                    $hargaMenu = (float) ($menu?->harga_menu ?? 0);
+                                                    $toppingItems = $get('topping_items') ?? [];
+                                                    $toppingTotal = 0;
+                                                    foreach ($toppingItems as $item) {
+                                                        $toppingTotal += (float) ($item['subtotal'] ?? 0);
+                                                    }
+                                                    $set('harga_menu', $hargaMenu);
+                                                    $set('subtotal', $hargaMenu * (int) $state + $toppingTotal);
                                                 })
                                                 ->columnSpan(1),
 
@@ -165,7 +266,7 @@ class PemesananResource extends Resource
                                                 ->columnSpan(2),
 
                                         ])
-                                        ->columns(4)
+                                        ->columns(6)
                                         ->defaultItems(1)
                                         ->minItems(1)
                                         ->createItemButtonLabel('Tambah Menu')
@@ -202,18 +303,72 @@ class PemesananResource extends Resource
 
                                             $total = 0;
                                             foreach ($items as $item) {
-                                                $menu = Menu::find($item['id_menu'] ?? null);
-                                                $nama = $menu?->nama_menu ?? 'Menu Tidak Ditemukan';
-                                                // ✅ FIX: cast semua nilai numerik agar tidak string*string
-                                                $qty      = (int)   ($item['jumlah'] ?? 0);
-                                                $harga    = (float) ($menu?->harga_menu ?? 0);
-                                                $subtotal = $harga * $qty;
+                                                $menu         = Menu::find($item['id_menu'] ?? null);
+                                                $nama         = $menu?->nama_menu ?? 'Menu Tidak Ditemukan';
+                                                $qty          = (int) ($item['jumlah'] ?? 0);
+                                                $hargaMenu    = (float) ($menu?->harga_menu ?? 0);
+                                                $menuTotal    = $hargaMenu * $qty;
+
+                                                $toppingItems = $item['topping_items'] ?? [];
+                                                $toppingNames = [];
+                                                $toppingTotal = 0;
+                                                if (!empty($toppingItems)) {
+                                                    foreach ($toppingItems as $toppingItem) {
+                                                        $toppingTotal += (float) ($toppingItem['subtotal'] ?? 0);
+                                                        $barang = Barang::find($toppingItem['id_barang'] ?? null);
+                                                        if ($barang) {
+                                                            $toppingNames[] = $barang->nama_barang;
+                                                        }
+                                                    }
+                                                }
+                                                $subtotal = $menuTotal + $toppingTotal;
                                                 $total   += $subtotal;
 
+                                                $namaCell = $nama;
+                                                $namaCell .= "<div class='text-xs text-gray-600 mt-1'>";
+                                                if ($qty > 1) {
+                                                    $namaCell .= "Harga menu: Rp " . number_format($hargaMenu, 0, ',', '.') . " x {$qty} = Rp " . number_format($menuTotal, 0, ',', '.') . "<br>";
+                                                } else {
+                                                    $namaCell .= "Harga menu: Rp " . number_format($hargaMenu, 0, ',', '.') . "<br>";
+                                                }
+                                                $namaCell .= "Qty menu: {$qty}";
+                                                if (!empty($toppingNames)) {
+                                                    $namaCell .= "<br>Topping: " . implode(', ', $toppingNames);
+                                                }
+                                                $namaCell .= "</div>";
+
+                                                $hargaCell = "<div>Rp " . number_format($hargaMenu, 0, ',', '.') . "";
+                                                if ($qty > 1) {
+                                                    $hargaCell .= " x {$qty}";
+                                                }
+                                                $hargaCell .= "</div>";
+                                                if (!empty($toppingItems)) {
+                                                    foreach ($toppingItems as $toppingItem) {
+                                                        $qtyToppingItem = (int) ($toppingItem['qty'] ?? 0);
+                                                        $hargaToppingItem = (float) ($toppingItem['harga'] ?? 0);
+                                                        $subtotalToppingItem = (float) ($toppingItem['subtotal'] ?? 0);
+                                                        $barang = Barang::find($toppingItem['id_barang'] ?? null);
+                                                        $toppingName = $barang?->nama_barang ?? 'Topping';
+                                                        $hargaCell .= "<div class='text-xs text-gray-600 mt-1'>";
+                                                        $hargaCell .= $toppingName . ": Rp " . number_format($hargaToppingItem, 0, ',', '.') . " x {$qtyToppingItem} = Rp " . number_format($subtotalToppingItem, 0, ',', '.') . "";
+                                                        $hargaCell .= "</div>";
+                                                    }
+                                                }
+
+                                                $qtyCell = "<div>{$qty}</div>";
+                                                if (!empty($toppingItems)) {
+                                                    foreach ($toppingItems as $toppingItem) {
+                                                        $qtyToppingItem = (int) ($toppingItem['qty'] ?? 0);
+                                                        $barang = Barang::find($toppingItem['id_barang'] ?? null);
+                                                        $toppingName = $barang?->nama_barang ?? 'Topping';
+                                                        $qtyCell .= "<div class='text-xs text-gray-600 mt-1'>{$toppingName} qty: {$qtyToppingItem}</div>";
+                                                    }
+                                                }
+
                                                 $html .= "<tr>";
-                                                $html .= "<td class='border border-gray-300 px-4 py-2'>{$nama}</td>";
-                                                $html .= "<td class='border border-gray-300 px-4 py-2 text-center'>{$qty}</td>";
-                                                $html .= "<td class='border border-gray-300 px-4 py-2 text-right'>Rp " . number_format($harga, 0, ',', '.') . "</td>";
+                                                $html .= "<td class='border border-gray-300 px-4 py-2'>{$namaCell}</td>";
+                                                $html .= "<td class='border border-gray-300 px-4 py-2 text-center'>{$qtyCell}</td>";
+                                                $html .= "<td class='border border-gray-300 px-4 py-2 text-right'>{$hargaCell}</td>";
                                                 $html .= "<td class='border border-gray-300 px-4 py-2 text-right'>Rp " . number_format($subtotal, 0, ',', '.') . "</td>";
                                                 $html .= "</tr>";
                                             }
@@ -334,4 +489,4 @@ class PemesananResource extends Resource
             'edit'   => Pages\EditPemesanan::route('/{record}/edit'),
         ];
     }
-}
+}   
