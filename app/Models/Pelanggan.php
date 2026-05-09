@@ -30,4 +30,8 @@ class Pelanggan extends Model
         return 'PLG' . str_pad($noakhir, 3, '0', STR_PAD_LEFT);//menambahkan 0 di depan angka
 
     }
+    public function Pemesanan()
+    {
+        return $this->hasMany(Pemesanan::class, 'id_pelanggan');
+    }
 }
