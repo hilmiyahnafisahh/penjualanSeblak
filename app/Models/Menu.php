@@ -47,4 +47,8 @@ public static function getIDMinuman()
     {
         return $this->hasMany(DetailPemesanan::class, 'id_menu');
     }
+    public function menubarang()
+    {
+        return $this->hasMany(menubarang::class, 'id_menu');
+    }
 }

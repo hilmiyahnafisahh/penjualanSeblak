@@ -49,4 +49,8 @@ class Barang extends Model
     {
         return $this->hasMany(PembelianBarang::class, 'id_barang');
     }
+    public function menubarang2()
+    {
+        return $this->hasMany(menubarang::class, 'id_barang');
+    }
 }
