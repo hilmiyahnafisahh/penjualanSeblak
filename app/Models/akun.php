@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class Akun extends Model
@@ -11,28 +11,33 @@ class Akun extends Model
     use HasFactory;
 
     protected $table = 'akun';
-    protected $primaryKey = 'id';
-    protected $fillable = ['kode_akun', 'nama_akun', 'jenis_akun'];
 
-    public static function getkodeakun()
+    protected $guarded = [];
+
+    // Generate kode akun otomatis
+    public static function getKodeAkun($prefix)
     {
-        // query untuk mendapatkan kode akun terakhir
-        $sql = "SELECT IFNULL(MAX(kode_akun), 'REF000') AS kode_akun FROM akun";
-        $kd_akun = DB::select($sql);
+        // Ambil kode terbesar berdasarkan prefix
+        $last = self::where('kode_akun', 'like', $prefix . '%')
+            ->max('kode_akun');
 
-        foreach ($kd_akun as $kdkn) {
-            $kd = $kdkn->kode_akun;
+        if ($last) {
+
+            // contoh: 1001 -> ambil angka lalu tambah 1
+            $newKode = (int) $last + 1;
+
+        } else {
+
+            // jika belum ada
+            $newKode = $prefix . '001';
         }
 
-        // generate kode baru
-        $kdawal = substr($kd, -3);
-        $kdawal++;
-
-        return 'REF' . str_pad($kdawal, 3, "0", STR_PAD_LEFT);
+        return $newKode;
     }
 
-    public function beban()
+    // Hilangkan titik saat disimpan
+    public function setKodeAkunAttribute($value)
     {
-        return $this->hasMany(CatatBeban::class, 'kode_akun', 'kode_akun');
+        $this->attributes['kode_akun'] = str_replace('.', '', $value);
     }
 }
