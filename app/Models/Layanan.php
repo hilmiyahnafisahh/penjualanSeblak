@@ -30,4 +30,8 @@ class Layanan extends Model
 
         return 'LYN' . str_pad($nomawal, 3, "0", STR_PAD_LEFT);
     }
+    public function Pemesanan()
+    {
+        return $this->hasMany(Pemesanan::class, 'id_layanan');
+    }
 }

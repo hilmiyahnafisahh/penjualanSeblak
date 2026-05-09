@@ -43,5 +43,8 @@ public static function getIDMinuman()
 
     return 'MNM'.str_pad($noakhir,3,"0",STR_PAD_LEFT);  
     }
-
+    public function DetailPemesanan()
+    {
+        return $this->hasMany(DetailPemesanan::class, 'id_menu');
+    }
 }
