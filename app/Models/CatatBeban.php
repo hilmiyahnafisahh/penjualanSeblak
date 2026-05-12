@@ -17,8 +17,6 @@ class CatatBeban extends Model
         'jenis_beban',
         'status',
         'gambar'
-
-
     ];
 
     public function akun()

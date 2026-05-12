@@ -24,7 +24,8 @@ class CatatBebanResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
-    // biar full lebar seperti pembelian
+    protected static ?string $navigationGroup = 'Transaksi';
+
     protected static ?string $maxContentWidth = 'full';
 
     public static function form(Form $form): Form
@@ -33,7 +34,7 @@ class CatatBebanResource extends Resource
             ->schema([
                 Wizard::make([
 
-                    // ✅ STEP 1
+                    // STEP 1
                     Wizard\Step::make('Data Beban')
                         ->schema([
                             Section::make('Informasi Beban')
@@ -45,52 +46,55 @@ class CatatBebanResource extends Resource
                                         ->required(),
 
                                     DatePicker::make('tanggal')
-                                        ->label('Tanggal')
                                         ->required(),
 
                                     TextInput::make('jenis_beban')
-                                        ->label('Jenis Beban')
                                         ->required(),
                                 ])
                                 ->columns(3),
                         ]),
 
-                    // ✅ STEP 2
+                    // STEP 2
                     Wizard\Step::make('Detail')
                         ->schema([
                             Section::make('Detail Beban')
                                 ->schema([
-                                    Textarea::make('keterangan')
-                                        ->label('Keterangan')
-                                        ->nullable(),
+                                    Textarea::make('keterangan'),
 
                                     FileUpload::make('gambar')
-                                        ->label('Bukti Tagihan')
                                         ->image()
-                                        ->directory('beban')
-                                        ->nullable(),
+                                        ->directory('beban'),
 
                                     TextInput::make('total')
-                                        ->label('Total')
                                         ->numeric()
                                         ->required(),
                                 ])
                                 ->columns(3),
                         ]),
 
-                    // ✅ STEP 3
+                    // STEP 3
                     Wizard\Step::make('Status')
                         ->schema([
                             Section::make('Status Pembayaran')
                                 ->schema([
                                     Select::make('status')
-                                        ->label('Status')
                                         ->options([
                                             'lunas' => 'Lunas',
                                             'belum lunas' => 'Belum Lunas',
                                         ])
                                         ->default('lunas')
                                         ->required(),
+
+                                    // ✅ TOMBOL BAYAR DI FORM (HANYA SAAT EDIT)
+                                    Forms\Components\Actions::make([
+                                        Forms\Components\Actions\Action::make('bayar')
+                                            ->label('Bayar Sekarang')
+                                            ->color('success')
+                                            ->icon('heroicon-o-credit-card')
+                                            ->url(fn () => url('/bayar-beban/' . request()->route('record')))
+                                            ->openUrlInNewTab()
+                                            ->visible(fn () => request()->route('record') !== null),
+                                    ]),
                                 ])
                                 ->columns(1),
                         ]),
@@ -124,13 +128,19 @@ class CatatBebanResource extends Resource
                         'success' => 'lunas',
                         'danger' => 'belum lunas',
                     ]),
-
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+
+                // ✅ TOMBOL BAYAR DI TABLE (PALING PENTING)
+                Tables\Actions\Action::make('bayar')
+                    ->label('Bayar')
+                    ->icon('heroicon-o-credit-card')
+                    ->color('success')
+                    ->url(fn ($record) => url('/bayar-beban/' . $record->id_beban))
+                    ->openUrlInNewTab()
+                    ->visible(fn ($record) => $record->status !== 'lunas'),
             ]);
     }
 
