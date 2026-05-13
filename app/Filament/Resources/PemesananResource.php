@@ -127,7 +127,7 @@ class PemesananResource extends Resource
                                                 ->afterStateUpdated(function ($state, Set $set) {
                                                     $set('id_menu', null);
                                                 })
-                                                ->columnSpan(1),
+                                                ->columnSpan(2),
 
                                             Select::make('id_menu')
                                                 ->label('Menu')
@@ -156,7 +156,7 @@ class PemesananResource extends Resource
                                                         $set('subtotal', $hargaMenu * $qty + $toppingTotal);
                                                     }
                                                 })
-                                                ->columnSpan(2),
+                                                ->columnSpan(4),
 
                                             TextInput::make('harga_menu')
                                                 ->label('Harga Menu')
@@ -164,7 +164,7 @@ class PemesananResource extends Resource
                                                 ->prefix('Rp')
                                                 ->readonly()
                                                 ->dehydrated(false)
-                                                ->columnSpan(1),
+                                                ->columnSpan(2),
 
                                             Repeater::make('topping_items')
                                                 ->label('Topping')
@@ -258,12 +258,12 @@ class PemesananResource extends Resource
                                                 ->dehydrated()
                                                 ->default(0)
                                                 ->required()
-                                                ->columnSpan(1),
+                                                ->columnSpan(2),
 
                                             TextInput::make('catatan')
                                                 ->label('Catatan')
                                                 ->placeholder('Opsional')
-                                                ->columnSpan(2),
+                                                ->columnSpan(6),
 
                                         ])
                                         ->columns(6)
@@ -282,6 +282,10 @@ class PemesananResource extends Resource
                         ->schema([
                             Forms\Components\Section::make('Ringkasan Pesanan')
                                 ->schema([
+                                    Placeholder::make('bayar_info')
+                                        ->label('')
+                                        ->content('Periksa kembali pesanan Anda, lalu tekan tombol Bayar untuk menyelesaikan transaksi.'),
+
                                     Placeholder::make('summary')
                                         ->label('')
                                         ->reactive()
@@ -385,7 +389,7 @@ class PemesananResource extends Resource
                         ]),
 
                 ])
-                ->submitAction(new HtmlString('<button type="submit" class="fi-btn fi-btn-size-md fi-btn-color-primary fi-ac-btn-action">Simpan Pesanan</button>'))
+                ->submitAction(new HtmlString('<button type="submit" class="fi-btn fi-btn-size-md fi-btn-color-success fi-ac-btn-action">Bayar</button>'))
                 ->columnSpanFull(),
             ]);
     }
