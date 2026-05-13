@@ -18,14 +18,14 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class CatatBebanResource extends Resource
 {
     protected static ?string $model = CatatBeban::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-
     protected static ?string $navigationGroup = 'Transaksi';
-
     protected static ?string $maxContentWidth = 'full';
 
     public static function form(Form $form): Form
@@ -85,7 +85,7 @@ class CatatBebanResource extends Resource
                                         ->default('lunas')
                                         ->required(),
 
-                                    // ✅ TOMBOL BAYAR DI FORM (HANYA SAAT EDIT)
+                                    // tombol bayar
                                     Forms\Components\Actions::make([
                                         Forms\Components\Actions\Action::make('bayar')
                                             ->label('Bayar Sekarang')
@@ -129,11 +129,12 @@ class CatatBebanResource extends Resource
                         'danger' => 'belum lunas',
                     ]),
             ])
+
+            // ✅ ACTION PER BARIS (TANPA PDF)
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
 
-                // ✅ TOMBOL BAYAR DI TABLE (PALING PENTING)
                 Tables\Actions\Action::make('bayar')
                     ->label('Bayar')
                     ->icon('heroicon-o-credit-card')
@@ -141,6 +142,26 @@ class CatatBebanResource extends Resource
                     ->url(fn ($record) => url('/bayar-beban/' . $record->id_beban))
                     ->openUrlInNewTab()
                     ->visible(fn ($record) => $record->status !== 'lunas'),
+            ])
+
+            // ✅ TOMBOL PDF DI ATAS (CHECKBOX)
+            ->bulkActions([
+                Tables\Actions\BulkAction::make('download_pdf')
+                    ->label('Download PDF')
+                    ->icon('heroicon-o-document')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->action(function ($records) {
+
+                        $pdf = Pdf::loadView('pdf.beban', [
+                            'data' => $records
+                        ]);
+
+                        return response()->streamDownload(
+                            fn () => print($pdf->output()),
+                            'beban.pdf'
+                        );
+                    }),
             ]);
     }
 
