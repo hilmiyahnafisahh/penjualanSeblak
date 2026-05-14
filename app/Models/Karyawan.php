@@ -11,6 +11,9 @@ class Karyawan extends Model
     use HasFactory;
 
     protected $table = 'karyawan';
+    protected $primaryKey = 'id_karyawan';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $guarded = [];
 
     public static function getIDKaryawan()
@@ -28,5 +31,9 @@ class Karyawan extends Model
         $nomawal++;
 
         return 'KRY' . str_pad($nomawal, 3, "0", STR_PAD_LEFT);
+    }
+    public function penggajian()
+    {
+        return $this->hasMany(penggajian::class, 'id_karyawan');
     }
 }
