@@ -105,11 +105,19 @@ class PembayaranResource extends Resource
                                     Select::make('metode_pembayaran')
                                         ->label('Metode Pembayaran')
                                         ->options([
-                                            'cash'    => 'Cash',
-                                            'qris'    => 'QRIS',
-                                            'transfer'=> 'Transfer',
+                                            'cash'     => 'Cash',
+                                            'qris'     => 'QRIS',
+                                            'transfer' => 'Transfer',
                                         ])
-                                        ->required(),
+                                        ->required()
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, Set $set) {
+                                            if (in_array($state, ['qris', 'transfer'])) {
+                                                $set('status_pembayaran', 'pending');
+                                            } else {
+                                                $set('status_pembayaran', 'lunas');
+                                            }
+                                        }),
 
                                     TextInput::make('status_pembayaran')
                                         ->default('lunas')

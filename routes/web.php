@@ -10,9 +10,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// untuk membuka halaman pembayaran
+// untuk membuka halaman pembayaran beban
 Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
     ->name('beban.bayar');
+
+// untuk membuka halaman pembayaran pemesanan lewat Midtrans
+Route::get('/bayar-pemesanan/{id}', [MidtransController::class, 'bayarPemesanan'])
+    ->name('pembayaran.midtrans');
 
 // contoh sampel sederhana untuk mengetes midtrans
 Route::get('/cekmidtrans', [CobaMidtransController::class, 'cekmidtrans']);

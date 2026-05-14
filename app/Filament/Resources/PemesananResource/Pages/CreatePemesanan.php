@@ -12,6 +12,7 @@ class CreatePemesanan extends CreateRecord
     protected static string $resource = PemesananResource::class;
 
     protected ?string $redirectUrl = null;
+    protected bool $redirectToPayment = false;
 
     // Hitung ulang subtotal dari detail sebelum disimpan
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -29,8 +30,7 @@ class CreatePemesanan extends CreateRecord
 
     protected function afterCreate(): void
     {
-        // Cek flag dari form data
-        if ($this->data['redirect_to_payment'] ?? false) {
+        if ($this->redirectToPayment) {
             $this->redirectUrl = '/admin/pembayaran/create?id_pemesanan=' . $this->record->id;
         }
     }
@@ -49,11 +49,14 @@ class CreatePemesanan extends CreateRecord
             Action::make('bayarSekarang')
                 ->label('Bayar Sekarang')
                 ->color('success')
-                ->submit('create')
-                ->before(function () {
-                    $this->data['redirect_to_payment'] = true;
-                }),
+                ->action('bayarSekarang'),
             $this->getCancelFormAction(),
         ];
+    }
+
+    public function bayarSekarang(): void
+    {
+        $this->redirectToPayment = true;
+        $this->create();
     }
 }
