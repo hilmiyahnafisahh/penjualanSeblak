@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 // untuk tambahan db
 use Illuminate\Support\Facades\DB;
 use App\Models\DetailPesanan;
+use App\Models\Pembayaran;
 
 class Pemesanan extends Model
 {
@@ -61,6 +62,12 @@ class Pemesanan extends Model
     {
         return $this->hasMany(DetailPesanan::class, 'id_pemesanan');
     }
+
+    public function pembayaran()
+    {
+        return $this->hasOne(Pembayaran::class, 'id_pemesanan');
+    }
+
     public function menu()
     {
         return $this->hasMany(Pemesanan::class, 'id_pemesanan');

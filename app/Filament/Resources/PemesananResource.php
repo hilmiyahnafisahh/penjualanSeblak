@@ -92,6 +92,10 @@ class PemesananResource extends Resource
                                         ->default(0)
                                         ->hidden()
                                         ->dehydrated(),
+
+                                    Forms\Components\Hidden::make('redirect_to_payment')
+                                        ->default(false)
+                                        ->dehydrated(),
                                 ]),
                         ]),
 
@@ -385,7 +389,6 @@ class PemesananResource extends Resource
                         ]),
 
                 ])
-                ->submitAction(new HtmlString('<button type="submit" class="fi-btn fi-btn-size-md fi-btn-color-primary fi-ac-btn-action">Simpan Pesanan</button>'))
                 ->columnSpanFull(),
             ]);
     }
