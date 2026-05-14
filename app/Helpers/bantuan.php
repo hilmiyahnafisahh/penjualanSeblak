@@ -9,3 +9,15 @@ function rupiah($nominal) {
 function dolar($nominal) {
     return "USD ".number_format($nominal);
 }
+// HITUNG GAJI PER HARI
+function hitungGajiPerHari($jamKerja, $upahPerJam)
+{
+    return $jamKerja * $upahPerJam;
+}
+
+// HITUNG TOTAL GAJI
+function hitungTotalGaji($jamKerja, $upahPerJam, $hariKerja)
+{
+    return ($jamKerja * $upahPerJam) * $hariKerja;
+}
+
