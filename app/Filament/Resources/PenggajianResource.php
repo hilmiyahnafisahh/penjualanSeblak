@@ -20,11 +20,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use App\Models\Karyawan;
+
+// tambahan untuk tombol unduh pdf
+use Filament\Tables\Actions\Action; //untuk dapat menggunakan action
+use Barryvdh\DomPDF\Facade\Pdf; // Kalau kamu pakai DomPDF
+use Illuminate\Support\Facades\Storage; //untuk menyimpan file PDF ke storage
  
 class PenggajianResource extends Resource
 {
     protected static ?string $model = Penggajian::class;
- 
+    protected static ?string $navigationGroup = 'Transaksi';
+
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Penggajian';
     protected static ?string $modelLabel = 'Penggajian';
@@ -211,11 +217,16 @@ class PenggajianResource extends Resource
                     ->label('Tanggal')
                     ->date('d M Y')
                     ->sortable(),
+                TextColumn::make('periode')
+                    ->label('Periode'),
                 TextColumn::make('jam_kerja')
                     ->label('Jam Kerja')
                     ->suffix(' jam'),
                 TextColumn::make('upah_per_jam')
                     ->label('Upah/Jam')
+                    ->money('IDR'),
+                TextColumn::make('gaji_per_hari')
+                    ->label('Gaji/Hari')
                     ->money('IDR'),
                 TextColumn::make('kehadiran')
                     ->label('Kehadiran')
@@ -229,11 +240,7 @@ class PenggajianResource extends Resource
                         'success' => 'Dibayarkan',
                         'warning' => 'Ditangguhkan',
                     ]),
-                TextColumn::make('periode')
-                    ->label('Periode'),
-                TextColumn::make('gaji_per_hari')
-                    ->label('Gaji/Hari')
-                    ->money('IDR'),
+                
             ])
             ->filters([
                 //
@@ -241,6 +248,27 @@ class PenggajianResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+
+            // tombol tambahan
+            ->headerActions([
+                // tombol tambahan export pdf
+                // ✅ Tombol Unduh PDF
+                Action::make('downloadPdf')
+                ->label('Unduh PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->action(function () {
+                    $penggajian = Penggajian::all();
+
+                    $pdf = Pdf::loadView('pdf.penggajian', ['penggajian' => $penggajian]);
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        'penggajian-list.pdf'
+                    );
+                })
+            ])
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
