@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\BebanPdfController;
-    
+use App\Http\Controllers\CobaMidtransController;
 
 // halaman awal
 Route::get('/', function () {
@@ -14,9 +14,8 @@ Route::get('/', function () {
 Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
     ->name('beban.bayar');
 
-// untuk mendownload invoice pdf
-Route::get('/download-invoice/{id}', [BebanPdfController::class, 'download'])
-    ->name('beban.download');   
+// contoh sampel sederhana untuk mengetes midtrans
+Route::get('/cekmidtrans', [CobaMidtransController::class, 'cekmidtrans']);
 
-
-
+// Route untuk menampilkan halaman tombol bayar & simulasi
+Route::get('/cek-midtrans', [CobaMidtransController::class, 'cekmidtranscallback']);
