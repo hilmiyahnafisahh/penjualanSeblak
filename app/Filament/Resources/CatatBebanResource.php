@@ -130,9 +130,14 @@ class CatatBebanResource extends Resource
                     ]),
             ])
 
-            // ✅ ACTION PER BARIS (TANPA PDF)
+            // ✅ ACTION PER BARIS
             ->actions([
+
+                // ✅ VIEW (INI YANG KAMU MAU)
+                Tables\Actions\ViewAction::make(),
+
                 Tables\Actions\EditAction::make(),
+
                 Tables\Actions\DeleteAction::make(),
 
                 Tables\Actions\Action::make('bayar')
@@ -144,7 +149,7 @@ class CatatBebanResource extends Resource
                     ->visible(fn ($record) => $record->status !== 'lunas'),
             ])
 
-            // ✅ TOMBOL PDF DI ATAS (CHECKBOX)
+            // ✅ BULK PDF (CHECKLIST)
             ->bulkActions([
                 Tables\Actions\BulkAction::make('download_pdf')
                     ->label('Download PDF')
@@ -176,6 +181,7 @@ class CatatBebanResource extends Resource
             'index' => Pages\ListCatatBebans::route('/'),
             'create' => Pages\CreateCatatBeban::route('/create'),
             'edit' => Pages\EditCatatBeban::route('/{record}/edit'),
+            'view' => Pages\ViewCatatBeban::route('/{record}'),
         ];
     }
 }
