@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran Midtrans</title>
-    <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+    <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
     <style>
         body { font-family: Arial, sans-serif; margin: 2rem; background: #f7fafc; color: #1a202c; }
         .card { max-width: 560px; margin: auto; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,.08); }
@@ -31,6 +31,9 @@
         </div>
 
         <button id="pay-button" class="button">Lanjutkan ke Midtrans</button>
+        @unless(config('services.midtrans.client_key'))
+            <div style="margin-top:1rem;color:#b91c1c;font-weight:600;">MIDTRANS_CLIENT_KEY belum dikonfigurasi. Silakan tambahkan ke .env atau config/services.php.</div>
+        @endunless
     </div>
 
     <script>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice Pembayaran</title>
+    <style>
+        body { font-family: sans-serif; font-size: 12px; }
+        .invoice-box {
+            width: 100%;
+            padding: 20px;
+            border: 1px solid #eee;
+            margin-bottom: 30px;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        table th {
+            background: #f2f2f2;
+            text-align: left;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .info {
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    @foreach($pembayarans as $pembayaran)
+        @php
+            $pemesanan = $pembayaran->pemesanan;
+            $items = $pemesanan?->DetailPesanan ?? collect();
+            $customerName = $pemesanan?->pelanggan?->nama_pelanggan ?? '-';
+        @endphp
+
+        <div class="invoice-box">
+            <div class="title">INVOICE PEMBAYARAN</div>
+
+            <div class="info">
+                <strong>No Pembayaran:</strong> {{ $pembayaran->id_pembayaran }}<br>
+                <strong>No Pesanan:</strong> {{ $pemesanan?->id_pesanan ?? '-' }}<br>
+                <strong>Nama Pelanggan:</strong> {{ $customerName }}<br>
+                <strong>Tanggal Pembayaran:</strong> {{ optional($pembayaran->tanggal_pembayaran)->format('d M Y H:i') ?? '-' }}<br>
+                <strong>Metode Pembayaran:</strong> {{ ucfirst($pembayaran->metode_pembayaran) ?? '-' }}<br>
+                <strong>Status Pembayaran:</strong> {{ ucfirst($pembayaran->status_pembayaran) ?? '-' }}
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Menu</th>
+                        <th>Qty</th>
+                        <th>Harga</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($items as $item)
+                    @php
+                        $menuPrice = $item->menu?->harga_menu ?? 0;
+                        $quantity = $item->jumlah ?? $item->total_barang ?? 0;
+                        $subtotal = $item->subtotal ?? ($menuPrice * $quantity);
+                    @endphp
+                        <tr>
+                            <td>{{ $item->menu?->nama_menu ?? ($item->nama_barang ?? '-') }}</td>
+                            <td>{{ $quantity }}</td>
+                            <td class="text-right">{{ rupiah($menuPrice, 0, ',', '.') }}</td>
+                            <td class="text-right">{{ rupiah($subtotal, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Total</strong></td>
+                        <td class="text-right"><strong>{{ rupiah($pembayaran->total_pembayaran, 0, ',', '.') }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 30px;">Terima kasih atas kepercayaan Anda!</p>
+        </div>
+
+        @if (! $loop->last)
+            <div class="page-break"></div>
+        @endif
+    @endforeach
+</body>
+</html>

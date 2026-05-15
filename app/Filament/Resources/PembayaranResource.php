@@ -26,6 +26,8 @@ use Filament\Forms\Set;
 
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Actions\Action;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use Illuminate\Support\HtmlString;
 
@@ -63,15 +65,30 @@ class PembayaranResource extends Resource
 
                                     TextInput::make('id_pembayaran')
                                         ->label('No Pembayaran')
-                                        ->default(fn () => Pembayaran::getKodePembayaran())
                                         ->required()
-                                        ->readonly(),
+                                        ->readOnly()
+                                        ->dehydrated()
+                                        ->afterStateHydrated(function ($state, callable $set) {
+
+                                    if (!$state) {
+
+                                            $set(
+                                                    'id_pembayaran',
+                                                    Pembayaran::getKodePembayaran()
+                                        );
+                                        }
+                                    }),
 
                                     DateTimePicker::make('tanggal_pembayaran')
                                         ->label('Tanggal Pembayaran')
-                                        ->default(now('Asia/Jakarta'))
+                                        ->default(fn () => now('Asia/Jakarta')->format('Y-m-d H:i:s'))
                                         ->timezone('Asia/Jakarta')
-                                        ->required(),
+                                        ->required()
+                                        ->afterStateHydrated(function ($state, callable $set) {
+                                            if (!$state) {
+                                                $set('tanggal_pembayaran', now('Asia/Jakarta')->format('Y-m-d H:i:s'));
+                                            }
+                                        }),
 
                                     Select::make('id_pemesanan')
                                         ->label('Pilih Pesanan')
@@ -81,6 +98,7 @@ class PembayaranResource extends Resource
                                                 ->where('status_pemesanan', 'diproses')
                                                 ->pluck('id_pesanan', 'id')
                                         )
+                                        ->getOptionLabelUsing(fn ($value) => Pemesanan::find($value)?->id_pesanan)
                                         ->searchable()
                                         ->required()
                                         ->reactive()
@@ -247,6 +265,11 @@ class PembayaranResource extends Resource
                                             </div>
 
                                             <div>
+                                                <strong>No Pesanan:</strong>
+                                                ' . optional(Pemesanan::find($get('id_pemesanan')))->id_pesanan . '
+                                            </div>
+
+                                            <div>
                                                 <strong>Total:</strong>
                                                 Rp ' . number_format((float) $get('total_pembayaran'), 0, ',', '.') . '
                                             </div>
@@ -343,20 +366,31 @@ class PembayaranResource extends Resource
             ])
 
             ->actions([
-
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-
             ])
+            ->headerActions([
+                Action::make('download_all_invoices')
+                    ->label('Unduh PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function () {
+                        $pembayaran = Pembayaran::with('pemesanan.DetailPesanan.menu', 'pemesanan.pelanggan')->get();
 
+                        $pdf = Pdf::loadView('pdf.invoice_pembayaran_semua', [
+                            'pembayarans' => $pembayaran,
+                        ])->setPaper('A4', 'portrait');
+
+                        return response()->streamDownload(
+                            fn () => print($pdf->output()),
+                            'unduh-pdf-pembayaran.pdf'
+                        );
+                    }),
+            ])
             ->bulkActions([
-
                 Tables\Actions\BulkActionGroup::make([
-
                     Tables\Actions\DeleteBulkAction::make(),
-
                 ]),
-
             ]);
     }
 
