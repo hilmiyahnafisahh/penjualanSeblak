@@ -12,6 +12,20 @@ use Midtrans\Snap;
 
 class MidtransController extends Controller
 {
+    private function configureMidtrans()
+    {
+        $serverKey = config('services.midtrans.server_key');
+
+        if (!$serverKey) {
+            abort(500, 'Midtrans server key is not configured. Please set MIDTRANS_SERVER_KEY in your .env file.');
+        }
+
+        Config::$serverKey = $serverKey;
+        Config::$isProduction = filter_var(config('services.midtrans.is_production', false), FILTER_VALIDATE_BOOLEAN);
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+    }
+
     // ======================================================
     // HALAMAN PEMBAYARAN
     // ======================================================
@@ -20,11 +34,7 @@ class MidtransController extends Controller
     {
         $beban = CatatBeban::findOrFail($id);
 
-        // konfigurasi midtrans
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = false;
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        $this->configureMidtrans();
 
         // format order id
         $order_id = 'BEBAN-' . $beban->id_beban . '-' . time();
@@ -71,11 +81,7 @@ class MidtransController extends Controller
             abort(404, 'Pemesanan tidak ditemukan');
         }
 
-        // konfigurasi midtrans
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = false;
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        $this->configureMidtrans();
 
         // format order id
         $order_id = 'PAY-' . $pembayaran->id . '-' . time();
@@ -112,7 +118,7 @@ class MidtransController extends Controller
 
     public function callback(Request $request)
     {
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        $this->configureMidtrans();
 
         $payload = $request->all();
 

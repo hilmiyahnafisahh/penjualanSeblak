@@ -25,27 +25,64 @@ class Pembayaran extends Model
         'total_pembayaran'   => 'decimal:2',
     ];
 
-    // RELASI KE PEMESANAN
+    /*
+    |--------------------------------------------------------------------------
+    | RELASI
+    |--------------------------------------------------------------------------
+    */
+
     public function pemesanan()
     {
         return $this->belongsTo(Pemesanan::class, 'id_pemesanan');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | GENERATE KODE PEMBAYARAN
+    |--------------------------------------------------------------------------
+    */
+
     public static function getKodePembayaran()
     {
-        $last = self::latest('id')->first();
+        // ambil data pembayaran terakhir
+        $lastPembayaran = self::orderBy('id', 'desc')->first();
 
-        if (!$last) {
-            return 'BYR-0001';
+        // kalau belum ada data
+        if (!$lastPembayaran) {
+            return 'BYR-0000001';
         }
 
-        // Ambil angka dari kode terakhir
-        $lastNumber = (int) substr($last->id_pembayaran, 4);
+        // ambil angka dari kode terakhir
+        // contoh: BYR-0000001 -> 0000001
+        $lastNumber = (int) str_replace(
+            'BYR-',
+            '',
+            $lastPembayaran->id_pembayaran
+        );
 
-        // Tambah 1
+        // tambah 1
         $newNumber = $lastNumber + 1;
 
-        // Format jadi BYR-0001
-        return 'BYR-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        // format ulang
+        return 'BYR-' . str_pad($newNumber, 7, '0', STR_PAD_LEFT);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | AUTO GENERATE SAAT CREATE
+    |--------------------------------------------------------------------------
+    */
+
+    protected static function booted()
+    {
+        static::creating(function ($pembayaran) {
+
+            // otomatis isi id_pembayaran jika kosong
+            if (empty($pembayaran->id_pembayaran)) {
+
+                $pembayaran->id_pembayaran =
+                    self::getKodePembayaran();
+            }
+        });
     }
 }
