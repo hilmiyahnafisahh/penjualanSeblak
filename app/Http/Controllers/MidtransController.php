@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\CatatBeban;
 use App\Models\Pembayaran;
 use App\Models\Pemesanan;
+use App\Models\Penggajian;
 
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -111,6 +112,37 @@ class MidtransController extends Controller
         return view('midtrans.pembayaran', compact('snapToken', 'pembayaran', 'pemesanan'));
     }
 
+    public function bayarPenggajian($id)
+    {
+        $penggajian = Penggajian::findOrFail($id);
+
+        $this->configureMidtrans();
+
+        $order_id = 'PGJ-' . $penggajian->id . '-' . time();
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $order_id,
+                'gross_amount' => (int) $penggajian->nominal,
+            ],
+            'item_details' => [
+                [
+                    'id' => $penggajian->id,
+                    'price' => (int) $penggajian->nominal,
+                    'quantity' => 1,
+                    'name' => 'Gaji ' . ($penggajian->karyawan->nama ?? 'Karyawan'),
+                ],
+            ],
+            'customer_details' => [
+                'first_name' => $penggajian->karyawan->nama ?? 'Karyawan',
+            ],
+        ];
+
+        $snapToken = Snap::getSnapToken($params);
+
+        return view('midtrans.penggajian', compact('snapToken', 'penggajian'));
+    }
+
 
     // ======================================================
     // WEBHOOK / CALLBACK MIDTRANS
@@ -205,6 +237,39 @@ class MidtransController extends Controller
             }
 
             $pembayaran->save();
+
+            return response()->json([
+                'message' => 'Callback berhasil'
+            ]);
+        }
+
+        if ($type === 'PGJ') {
+            $id_penggajian = $explode[1] ?? null;
+            $penggajian = Penggajian::find($id_penggajian);
+
+            if (!$penggajian) {
+                return response()->json([
+                    'message' => 'Data tidak ditemukan'
+                ], 404);
+            }
+
+            if ($transaction_status == 'capture') {
+                if ($fraud_status == 'accept') {
+                    $penggajian->status = 'Dibayarkan';
+                }
+            } elseif ($transaction_status == 'settlement') {
+                $penggajian->status = 'Dibayarkan';
+            } elseif ($transaction_status == 'pending') {
+                $penggajian->status = 'Pending';
+            } elseif (
+                $transaction_status == 'deny' ||
+                $transaction_status == 'expire' ||
+                $transaction_status == 'cancel'
+            ) {
+                $penggajian->status = 'Ditangguhkan';
+            }
+
+            $penggajian->save();
 
             return response()->json([
                 'message' => 'Callback berhasil'
