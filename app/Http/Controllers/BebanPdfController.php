@@ -23,9 +23,9 @@ class BebanPdfController extends Controller
         ];
 
         // load view pdf
-        $pdf = Pdf::loadView('pdf.beban', $data)
+        $pdf = Pdf::loadView('pdf.invoice', $data)
                   ->setPaper('A4', 'portrait');
 
         return $pdf->download('invoice-beban-' . $beban->id_beban . '.pdf');
     }
-}
+} 

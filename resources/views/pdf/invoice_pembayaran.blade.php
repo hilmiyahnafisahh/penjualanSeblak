@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Invoice {{ $no_faktur }}</title>
+    <title>Invoice Pembayaran {{ $no_pembayaran }}</title>
     <style>
         body { font-family: sans-serif; font-size: 12px; }
         .invoice-box {
@@ -41,9 +41,9 @@
         <div class="title">INVOICE PEMBAYARAN</div>
 
         <div class="info">
-            <strong>No Pembayaran:</strong> {{ $no_pembayaran ?? $no_faktur }}<br>
+            <strong>No Pembayaran:</strong> {{ $no_pembayaran }}<br>
             <strong>No Pesanan:</strong> {{ $no_pemesanan ?? '-' }}<br>
-            <strong>Nama Pembeli:</strong> {{ $nama_pembeli }}<br>
+            <strong>Nama Pelanggan:</strong> {{ $nama_pembeli ?? '-' }}<br>
             <strong>Tanggal Pembayaran:</strong> {{ $tanggal ?? '-' }}<br>
             <strong>Metode Pembayaran:</strong> {{ $metode_pembayaran ?? '-' }}<br>
             <strong>Status Pembayaran:</strong> {{ $status_pembayaran ?? '-' }}
@@ -52,7 +52,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Barang</th>
+                    <th>Menu</th>
                     <th>Qty</th>
                     <th>Harga</th>
                     <th>Subtotal</th>
@@ -60,11 +60,16 @@
             </thead>
             <tbody>
                 @foreach($items as $item)
+                @php
+                    $menuPrice = $item->menu?->harga_menu ?? 0;
+                    $quantity = $item->jumlah ?? $item->total_barang ?? 0;
+                    $subtotal = $item->subtotal ?? ($menuPrice * $quantity);
+                @endphp
                 <tr>
                     <td>{{ $item->menu?->nama_menu ?? ($item->nama_barang ?? '-') }}</td>
-                    <td>{{ $item->jumlah ?? $item->total_barang }}</td>
-                    <td class="text-right">{{ rupiah($item->harga_jual, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ rupiah($item->subtotal ?? ($item->harga_jual * ($item->jumlah ?? $item->total_barang)), 0, ',', '.') }}</td>
+                    <td>{{ $quantity }}</td>
+                    <td class="text-right">{{ rupiah($menuPrice, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ rupiah($subtotal, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
                 <tr>

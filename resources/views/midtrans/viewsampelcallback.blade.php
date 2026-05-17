@@ -3,7 +3,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript"
       src="https://app.sandbox.midtrans.com/snap/snap.js"
-      data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+      data-client-key="{{ config('services.midtrans.client_key') }}"></script>
     
     <style>
         .container { margin: 20px; font-family: sans-serif; text-align: center; }
