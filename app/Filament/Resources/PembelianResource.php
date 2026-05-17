@@ -222,4 +222,4 @@ class PembelianResource extends Resource
     }
 }
 
-//punya reksa
+//punya reksa nih
