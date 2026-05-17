@@ -9,18 +9,19 @@ class DetailPesanan extends Model
     protected $table = 'detail_pemesanan';
 
     protected $fillable = [
-        'id_pemesanan',
-        'id_menu',
-        'jumlah',
-        'harga_jual',
-        'subtotal',
-        'catatan',
-    ];
+    'id_pemesanan',
+    'id_menu',
+    'jumlah',
+    'harga_menu',
+    'subtotal',
+    'catatan',
+];
 
     protected $casts = [
         'harga_jual' => 'integer',
         'subtotal' => 'integer',
         'jumlah' => 'integer',
+        'topping' => 'array',
     ];
 
     public function pemesanan()

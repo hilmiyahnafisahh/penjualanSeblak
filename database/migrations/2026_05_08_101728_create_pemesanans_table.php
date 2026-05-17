@@ -6,20 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('pemesanan', function (Blueprint $table) {
-            $table->id();ondelete('cascade');
+            $table->id();
             $table->foreignId('id_pelanggan')->constrained('pelanggan')->onDelete('cascade');
             $table->foreignId('id_layanan')->constrained('layanan')->onDelete('cascade');
             $table->string('id_pesanan')->unique();
-            $table->date('tanggal_pemesanan');
+            $table->dateTime('tanggal_pemesanan');
             $table->enum('status_pemesanan', ['belumdibayar', 'diproses', 'selesai'])->default('belumdibayar');
-            $table->string('subtotal', 20);
+            $table->decimal('subtotal', 15, 2)->default(0);
             $table->timestamps();
         });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('pemesanan');
     }
 };

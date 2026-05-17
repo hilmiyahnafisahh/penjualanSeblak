@@ -4,6 +4,7 @@ namespace App\Filament\Resources\PembayaranResource\Pages;
 
 use App\Filament\Resources\PembayaranResource;
 use App\Models\Pembayaran;
+use App\Models\Pemesanan;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -11,22 +12,21 @@ class CreatePembayaran extends CreateRecord
 {
     protected static string $resource = PembayaranResource::class;
 
-    protected ?string $redirectUrl = null;
+    // Gunakan nama properti berbeda agar tidak conflict
+    protected ?string $customRedirectUrl = null;
 
     public function mount(): void
     {
         parent::mount();
 
-        // Cek jika ada parameter id_pemesanan di URL
         $idPemesanan = request()->query('id_pemesanan');
         if ($idPemesanan) {
-            // Ambil data pemesanan
-            $pemesanan = \App\Models\Pemesanan::find($idPemesanan);
+            $pemesanan = Pemesanan::find($idPemesanan);
             
             if ($pemesanan) {
-                // Isi form dengan data pemesanan
                 $this->form->fill([
                     'id_pemesanan' => $idPemesanan,
+                    // Pastikan key ini 'total_pembayaran' sesuai kolom database Anda
                     'total_pembayaran' => $pemesanan->subtotal,
                 ]);
             }
@@ -35,15 +35,15 @@ class CreatePembayaran extends CreateRecord
 
     protected function afterCreate(): void
     {
-        parent::afterCreate();
+        // JANGAN gunakan parent::afterCreate(); karena memicu BadMethodCallException
 
         $pembayaran = $this->record;
 
         if (in_array($pembayaran->metode_pembayaran, ['qris', 'transfer'])) {
             $pembayaran->status_pembayaran = 'pending';
             $pembayaran->save();
-            $this->redirectUrl = route('pembayaran.midtrans', ['id' => $pembayaran->id]);
-
+            
+            $this->customRedirectUrl = route('pembayaran.midtrans', ['id' => $pembayaran->id]);
             return;
         }
 
@@ -57,6 +57,7 @@ class CreatePembayaran extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return $this->redirectUrl ?? $this->getResource()::getUrl('index');
+        // Mengarahkan ke Midtrans jika ada, jika tidak ke index
+        return $this->customRedirectUrl ?? $this->getResource()::getUrl('index');
     }
 }
