@@ -28,4 +28,4 @@ class BebanPdfController extends Controller
 
         return $pdf->download('invoice-beban-' . $beban->id_beban . '.pdf');
     }
-}
+} 

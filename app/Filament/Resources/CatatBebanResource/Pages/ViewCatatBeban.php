@@ -18,7 +18,6 @@ class ViewCatatBeban extends ViewRecord
         return $infolist
             ->schema([
 
-                // ✅ SATU SECTION SAJA
                 Section::make('Detail Beban')
                     ->schema([
 
@@ -54,14 +53,13 @@ class ViewCatatBeban extends ViewRecord
                                 'style' => 'white-space: normal; word-break: break-word;',
                             ]),
 
-                        // ✅ GAMBAR LANGSUNG DI BAWAH KETERANGAN
                         ImageEntry::make('gambar')
                             ->label('Bukti Tagihan')
                             ->height(250)
                             ->columnSpanFull(),
 
                     ])
-                    ->columns(1), // tetap 1 kolom biar rapi
+                    ->columns(1), 
             ]);
     }
 }

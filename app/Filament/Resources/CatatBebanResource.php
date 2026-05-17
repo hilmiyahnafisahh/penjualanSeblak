@@ -130,16 +130,11 @@ class CatatBebanResource extends Resource
                     ]),
             ])
 
-            // ✅ ACTION PER BARIS
             ->actions([
 
-                // ✅ VIEW (INI YANG KAMU MAU)
                 Tables\Actions\ViewAction::make(),
-
                 Tables\Actions\EditAction::make(),
-
                 Tables\Actions\DeleteAction::make(),
-
                 Tables\Actions\Action::make('bayar')
                     ->label('Bayar')
                     ->icon('heroicon-o-credit-card')
@@ -164,7 +159,7 @@ class CatatBebanResource extends Resource
 
                         return response()->streamDownload(
                             fn () => print($pdf->output()),
-                            'beban.pdf'
+                            'laporan-beban.pdf'
                         );
                     }),
             ]);
