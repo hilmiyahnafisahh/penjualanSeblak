@@ -221,3 +221,5 @@ class PembelianResource extends Resource
         ];
     }
 }
+
+//punya reksa nih
