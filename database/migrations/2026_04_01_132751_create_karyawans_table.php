@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('karyawan', function (Blueprint $table) {
             $table->id();
-            $table->string('id_karyawan') ->unique();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('id_karyawan')->unique();
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('nama');
             $table->string('alamat');
             $table->string('no_telepon');   
