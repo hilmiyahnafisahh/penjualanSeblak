@@ -4,12 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CatatBeban;
+use App\Models\Pembayaran;
+use App\Models\Pemesanan;
 
 use Midtrans\Config;
 use Midtrans\Snap;
 
 class MidtransController extends Controller
 {
+    private function configureMidtrans()
+    {
+        $serverKey = config('services.midtrans.server_key');
+
+        if (!$serverKey) {
+            abort(500, 'Midtrans server key is not configured. Please set MIDTRANS_SERVER_KEY in your .env file.');
+        }
+
+        Config::$serverKey = $serverKey;
+        Config::$isProduction = filter_var(config('services.midtrans.is_production', false), FILTER_VALIDATE_BOOLEAN);
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+    }
+
     // ======================================================
     // HALAMAN PEMBAYARAN
     // ======================================================
@@ -18,11 +34,7 @@ class MidtransController extends Controller
     {
         $beban = CatatBeban::findOrFail($id);
 
-        // konfigurasi midtrans
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = false;
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        $this->configureMidtrans();
 
         // format order id
         $order_id = 'BEBAN-' . $beban->id_beban . '-' . time();
@@ -60,6 +72,45 @@ class MidtransController extends Controller
         return view('midtrans.bayar', compact('snapToken', 'beban'));
     }
 
+    public function bayarPemesanan($id)
+    {
+        $pembayaran = Pembayaran::with('pemesanan.pelanggan')->findOrFail($id);
+        $pemesanan = $pembayaran->pemesanan;
+
+        if (!$pemesanan) {
+            abort(404, 'Pemesanan tidak ditemukan');
+        }
+
+        $this->configureMidtrans();
+
+        // format order id
+        $order_id = 'PAY-' . $pembayaran->id . '-' . time();
+
+        // data transaksi
+        $params = [
+            'transaction_details' => [
+                'order_id' => $order_id,
+                'gross_amount' => (int) $pembayaran->total_pembayaran,
+            ],
+            'item_details' => [
+                [
+                    'id' => $pemesanan->id,
+                    'price' => (int) $pembayaran->total_pembayaran,
+                    'quantity' => 1,
+                    'name' => 'Pesanan ' . $pemesanan->id_pesanan,
+                ],
+            ],
+            'customer_details' => [
+                'first_name' => $pemesanan->pelanggan->nama_pelanggan ?? 'Pelanggan',
+            ],
+        ];
+
+        // snap token
+        $snapToken = Snap::getSnapToken($params);
+
+        return view('midtrans.pembayaran', compact('snapToken', 'pembayaran', 'pemesanan'));
+    }
+
 
     // ======================================================
     // WEBHOOK / CALLBACK MIDTRANS
@@ -67,7 +118,7 @@ class MidtransController extends Controller
 
     public function callback(Request $request)
     {
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        $this->configureMidtrans();
 
         $payload = $request->all();
 
@@ -77,48 +128,91 @@ class MidtransController extends Controller
 
         // format:
         // BEBAN-1-123456
+        // PAY-123-123456
         $explode = explode('-', $order_id);
+        $type = $explode[0] ?? null;
 
-        $id_beban = $explode[1] ?? null;
+        if ($type === 'BEBAN') {
+            $id_beban = $explode[1] ?? null;
+            $beban = CatatBeban::find($id_beban);
 
-        $beban = CatatBeban::find($id_beban);
-
-        if (!$beban) {
-
-            return response()->json([
-                'message' => 'Data tidak ditemukan'
-            ], 404);
-        }
-
-        // ======================================================
-        // HANDLE STATUS PEMBAYARAN
-        // ======================================================
-
-        if ($transaction_status == 'capture') {
-
-            if ($fraud_status == 'accept') {
-
-                $beban->status = 'lunas';
+            if (!$beban) {
+                return response()->json([
+                    'message' => 'Data tidak ditemukan'
+                ], 404);
             }
 
-        } elseif ($transaction_status == 'settlement') {
+            // ======================================================
+            // HANDLE STATUS PEMBAYARAN BEBAN
+            // ======================================================
 
-            $beban->status = 'lunas';
+            if ($transaction_status == 'capture') {
 
-        } elseif (
-            $transaction_status == 'pending' ||
-            $transaction_status == 'deny' ||
-            $transaction_status == 'expire' ||
-            $transaction_status == 'cancel'
-        ) {
+                if ($fraud_status == 'accept') {
 
-            $beban->status = 'belum lunas';
+                    $beban->status = 'lunas';
+                }
+
+            } elseif ($transaction_status == 'settlement') {
+
+                $beban->status = 'lunas';
+
+            } elseif (
+                $transaction_status == 'pending' ||
+                $transaction_status == 'deny' ||
+                $transaction_status == 'expire' ||
+                $transaction_status == 'cancel'
+            ) {
+
+                $beban->status = 'belum lunas';
+            }
+
+            $beban->save();
+
+            return response()->json([
+                'message' => 'Callback berhasil'
+            ]);
         }
 
-        $beban->save();
+        if ($type === 'PAY') {
+            $id_pembayaran = $explode[1] ?? null;
+            $pembayaran = Pembayaran::find($id_pembayaran);
+
+            if (!$pembayaran) {
+                return response()->json([
+                    'message' => 'Data tidak ditemukan'
+                ], 404);
+            }
+
+            if ($transaction_status == 'capture') {
+                if ($fraud_status == 'accept') {
+                    $pembayaran->status_pembayaran = 'lunas';
+                }
+            } elseif ($transaction_status == 'settlement') {
+                $pembayaran->status_pembayaran = 'lunas';
+            } elseif ($transaction_status == 'pending') {
+                $pembayaran->status_pembayaran = 'pending';
+            } elseif (
+                $transaction_status == 'deny' ||
+                $transaction_status == 'expire' ||
+                $transaction_status == 'cancel'
+            ) {
+                $pembayaran->status_pembayaran = 'batal';
+            }
+
+            if ($pembayaran->status_pembayaran === 'lunas' && $pembayaran->pemesanan) {
+                $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
+            }
+
+            $pembayaran->save();
+
+            return response()->json([
+                'message' => 'Callback berhasil'
+            ]);
+        }
 
         return response()->json([
-            'message' => 'Callback berhasil'
-        ]);
+            'message' => 'Order ID format tidak dikenali'
+        ], 400);
     }
 }

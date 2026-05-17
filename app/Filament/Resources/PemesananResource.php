@@ -92,6 +92,10 @@ class PemesananResource extends Resource
                                         ->default(0)
                                         ->hidden()
                                         ->dehydrated(),
+
+                                    Forms\Components\Hidden::make('redirect_to_payment')
+                                        ->default(false)
+                                        ->dehydrated(),
                                 ]),
                         ]),
 

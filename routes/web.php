@@ -4,18 +4,32 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\BebanPdfController;
 use App\Http\Controllers\CobaMidtransController;
+use App\Http\Controllers\PembayaranPdfController;
+use App\Http\Controllers\PembelianPdfController; // Pastikan controller ini ada jika digunakan
 
-// halaman awal
+// Halaman awal
 Route::get('/', function () {
     return view('welcome');
 });
 
-// untuk membuka halaman pembayaran
+// Untuk membuka halaman pembayaran beban
 Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
     ->name('beban.bayar');
 
-// contoh sampel sederhana untuk mengetes midtrans
+// Untuk membuka halaman pembayaran pemesanan lewat Midtrans
+Route::get('/bayar-pemesanan/{id}', [MidtransController::class, 'bayarPemesanan'])
+    ->name('pembayaran.midtrans');
+
+// Contoh sampel sederhana untuk mengetes midtrans
 Route::get('/cekmidtrans', [CobaMidtransController::class, 'cekmidtrans']);
 
 // Route untuk menampilkan halaman tombol bayar & simulasi
 Route::get('/cek-midtrans', [CobaMidtransController::class, 'cekmidtranscallback']);
+
+// Unduh invoice PDF pembayaran
+Route::get('/admin/pembayaran/{id}/invoice', [PembayaranPdfController::class, 'download'])
+    ->name('pembayaran.invoice');
+
+// Untuk mendownload PDF pembelian
+Route::get('/pembelian/pdf', [PembelianPdfController::class, 'pembelian'])
+    ->name('pembelian.pdf');

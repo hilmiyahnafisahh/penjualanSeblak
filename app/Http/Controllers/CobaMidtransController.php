@@ -10,18 +10,24 @@ use Illuminate\Support\Facades\Log; // Tambahkan ini untuk debugging
 
 class CobaMidtransController extends Controller
 {
+    private function configureMidtrans()
+    {
+        $serverKey = config('services.midtrans.server_key');
+
+        if (!$serverKey) {
+            abort(500, 'Midtrans server key is not configured. Please set MIDTRANS_SERVER_KEY in your .env file.');
+        }
+
+        \Midtrans\Config::$serverKey = $serverKey;
+        \Midtrans\Config::$isProduction = filter_var(config('services.midtrans.is_production', false), FILTER_VALIDATE_BOOLEAN);
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+    }
+
     //contoh sampel sederhana method untuk tester fungsionalitas midtrans
     public function cekmidtrans(Request $request)
     {
-        // definisikan parameter midtrans
-        // Set your Merchant Server Key
-        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        // Set to Development/Sandbox Environment (default). Set to true for Production Environment (accept real transaction).
-        \Midtrans\Config::$isProduction = false;
-        // Set sanitization on (default)
-        \Midtrans\Config::$isSanitized = true;
-        // Set 3DS transaction for credit card to true
-        \Midtrans\Config::$is3ds = true;
+        $this->configureMidtrans();
 
         // Optional
         $item1_details = array(
@@ -72,15 +78,7 @@ class CobaMidtransController extends Controller
     //contoh sampel sederhana method untuk tester fungsionalitas midtrans
     public function cekmidtranscallback(Request $request)
     {
-        // definisikan parameter midtrans
-        // Set your Merchant Server Key
-        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        // Set to Development/Sandbox Environment (default). Set to true for Production Environment (accept real transaction).
-        \Midtrans\Config::$isProduction = false;
-        // Set sanitization on (default)
-        \Midtrans\Config::$isSanitized = true;
-        // Set 3DS transaction for credit card to true
-        \Midtrans\Config::$is3ds = true;
+        $this->configureMidtrans();
 
         // Optional
         $item1_details = array(
@@ -142,8 +140,12 @@ class CobaMidtransController extends Controller
      */
     public function handleCallback(Request $request)
     {
-        // 1. Ambil server key dari env
-        $serverKey = env('MIDTRANS_SERVER_KEY');
+        // 1. Ambil server key dari config/services.php
+        $serverKey = config('services.midtrans.server_key');
+
+        if (!$serverKey) {
+            return response()->json(['message' => 'Midtrans server key is not configured. Please set MIDTRANS_SERVER_KEY in your .env file.'], 500);
+        }
 
         // 2. Buat signature key untuk verifikasi keamanan (Wajib)
         $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
