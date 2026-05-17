@@ -70,29 +70,39 @@ class PembayaranResource extends Resource
                                     DateTimePicker::make('tanggal_pembayaran')
                                         ->label('Tanggal Pembayaran')
                                         ->default(now('Asia/Jakarta'))
-                                        ->timezone('Asia/Jakarta')
                                         ->required(),
 
-                                    Select::make('id_pemesanan')
-                                        ->label('Pilih Pesanan')
+                                    TextInput::make('id_pemesanan')
+                                        ->label('ID Pesanan')
                                         ->default(fn () => request()->query('id_pemesanan'))
-                                        ->options(
-                                            Pemesanan::whereDoesntHave('pembayaran')
-                                                ->where('status_pemesanan', 'diproses')
-                                                ->pluck('id_pesanan', 'id')
-                                        )
-                                        ->searchable()
-                                        ->required()
-                                        ->reactive()
+                                        ->hidden()
+                                        ->dehydrated(),
 
-                                        ->afterStateUpdated(function ($state, Set $set) {
+                                    Placeholder::make('rincian_pesanan')
+                                        ->label('Rincian Pesanan')
+                                        ->content(function (Get $get) {
+                                            $idPemesanan = $get('id_pemesanan') ?: request()->query('id_pemesanan');
 
-                                            $pesanan = Pemesanan::find($state);
+                                            $pesanan = \App\Models\Pemesanan::with('DetailPesanan.menu', 'pelanggan')
+                                                ->find($idPemesanan);
 
-                                            if ($pesanan) {
+                                            if (!$pesanan) return 'Pesanan tidak ditemukan';
 
-                                                $set('total_pembayaran', $pesanan->subtotal);
+                                            $html = "<div class='space-y-2'>";
+                                            $html .= "<div><strong>Nama Pelanggan:</strong> {$pesanan->pelanggan->nama_pelanggan}</div>";
+                                            $html .= "<div><strong>No Pesanan:</strong> {$pesanan->id_pesanan}</div>";
+                                            $html .= "<div><strong>Menu:</strong></div><ul class='list-disc list-inside ml-4'>";
+
+                                            foreach ($pesanan->DetailPesanan as $item) {
+                                                $namaMenu = $item->menu ? $item->menu->nama_menu : 'Menu tidak ditemukan';
+                                                $html .= "<li>{$namaMenu} x {$item->jumlah} - Rp " . number_format($item->subtotal, 0, ',', '.') . "</li>";
                                             }
+
+                                            $html .= "</ul>";
+                                            $html .= "<div><strong>Total:</strong> Rp " . number_format($pesanan->subtotal, 0, ',', '.') . "</div>";
+                                            $html .= "</div>";
+
+                                            return new \Illuminate\Support\HtmlString($html);
                                         }),
 
                                     TextInput::make('total_pembayaran')
@@ -100,19 +110,19 @@ class PembayaranResource extends Resource
                                         ->numeric()
                                         ->prefix('Rp')
                                         ->readonly()
-                                        ->required(),
+                                        ->required()
+                                        ->default(fn () => request()->query('id_pemesanan') ? \App\Models\Pemesanan::find(request()->query('id_pemesanan'))?->subtotal : 0),
 
                                     Select::make('metode_pembayaran')
                                         ->label('Metode Pembayaran')
                                         ->options([
                                             'cash'     => 'Cash',
                                             'qris'     => 'QRIS',
-                                            'transfer' => 'Transfer',
                                         ])
                                         ->required()
                                         ->reactive()
                                         ->afterStateUpdated(function ($state, Set $set) {
-                                            if (in_array($state, ['qris', 'transfer'])) {
+                                            if (in_array($state, ['qris'])) {
                                                 $set('status_pembayaran', 'pending');
                                             } else {
                                                 $set('status_pembayaran', 'lunas');
