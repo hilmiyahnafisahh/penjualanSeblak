@@ -17,7 +17,7 @@ class CreatePenggajian extends CreateRecord
         $penggajian = $this->record;
 
         if ($penggajian->status === 'Dibayarkan') {
-            $penggajian->status = 'Pending';
+            $penggajian->status = 'Ditangguhkan';
             $penggajian->save();
 
             if (config('services.midtrans.server_key')) {

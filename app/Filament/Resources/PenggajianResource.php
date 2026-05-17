@@ -11,7 +11,7 @@ use Filament\Forms\Components\Wizard;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
+// BadgeColumn removed (deprecated in Filament v3, use TextColumn->badge() instead)
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables;
@@ -188,11 +188,11 @@ class PenggajianResource extends Resource
                             Select::make('status')
                                 ->label('Status Pembayaran')
                                 ->options([
-                                    'Ditangguhkan'       => 'Ditangguhkan',
-                                    'Dibayarkan' => 'Dibayarkan',
+                                    'Ditangguhkan' => 'Ditangguhkan',
+                                    'Dibayarkan'   => 'Dibayarkan',
                                 ])
                                 ->required()
-                                ->default('Dibayarkan'),
+                                ->default('Ditangguhkan'),
                         ])
                         ->columns(2),
  
@@ -235,12 +235,13 @@ class PenggajianResource extends Resource
                     ->label('Total Gaji')
                     ->money('IDR')
                     ->sortable(),
-                BadgeColumn::make('status')
-                    ->colors([
-                        'success' => 'Dibayarkan',
-                        'warning' => 'Ditangguhkan',
-                        'secondary' => 'Pending',
-                    ]),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Dibayarkan'   => 'success',
+                        'Ditangguhkan' => 'warning',
+                        default        => 'gray',
+                    }),
                 
             ])
             ->filters([
@@ -251,6 +252,7 @@ class PenggajianResource extends Resource
                 Action::make('bayarGaji')
                     ->label('Bayar Gaji')
                     ->icon('heroicon-o-credit-card')
+                    ->color('success')
                     ->url(fn (Penggajian $record): string => route('penggajian.midtrans', ['id' => $record->id]))
                     ->visible(fn (?Penggajian $record): bool => $record !== null && in_array($record->status, ['Ditangguhkan', 'Pending'])),
             ])
