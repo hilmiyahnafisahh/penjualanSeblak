@@ -37,6 +37,10 @@
         .text-right {
             text-align: right;
         }
+
+        .text-left {
+            text-align: left;
+        }
     </style>
 </head>
 
@@ -51,8 +55,8 @@
                 <th>Tanggal</th>
                 <th>Jenis Beban</th>
                 <th>Keterangan</th>
-                <th>Total</th>
                 <th>Status</th>
+                <th>Total</th>
             </tr>
         </thead>
 
@@ -65,15 +69,19 @@
                 <td>{{ $row->tanggal }}</td>
                 <td>{{ $row->jenis_beban }}</td>
                 <td>{{ $row->keterangan }}</td>
-                <td class="text-right">
-                    Rp {{ number_format($row->total, 0, ',', '.') }}
-                </td>
+
+                <!-- STATUS -->
                 <td class="text-center">
                     @if($row->status == 'lunas')
                         <span style="color: green;">LUNAS</span>
                     @else
                         <span style="color: red;">BELUM LUNAS</span>
                     @endif
+                </td>
+
+                <!-- TOTAL -->
+                <td class="text-right">
+                    Rp {{ number_format($row->total, 0, ',', '.') }}
                 </td>
             </tr>
 
@@ -82,11 +90,13 @@
 
             <!-- TOTAL SEMUA -->
             <tr>
-                <td colspan="4" class="text-right"><strong>Total Keseluruhan</strong></td>
+                <td colspan="5" class="text-left">
+                    <strong>Total Keseluruhan</strong>
+                </td>
+
                 <td class="text-right">
                     <strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong>
                 </td>
-                <td></td>
             </tr>
         </tbody>
     </table>
