@@ -26,6 +26,8 @@ use Filament\Forms\Set;
 
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Actions\Action;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use Illuminate\Support\HtmlString;
 
@@ -63,46 +65,52 @@ class PembayaranResource extends Resource
 
                                     TextInput::make('id_pembayaran')
                                         ->label('No Pembayaran')
-                                        ->default(fn () => Pembayaran::getKodePembayaran())
                                         ->required()
-                                        ->readonly(),
+                                        ->readOnly()
+                                        ->dehydrated()
+                                        ->afterStateHydrated(function ($state, callable $set) {
+
+                                    if (!$state) {
+
+                                            $set(
+                                                    'id_pembayaran',
+                                                    Pembayaran::getKodePembayaran()
+                                        );
+                                        }
+                                    }),
 
                                     DateTimePicker::make('tanggal_pembayaran')
                                         ->label('Tanggal Pembayaran')
-                                        ->default(now('Asia/Jakarta'))
-                                        ->required(),
-
-                                    TextInput::make('id_pemesanan')
-                                        ->label('ID Pesanan')
-                                        ->default(fn () => request()->query('id_pemesanan'))
-                                        ->hidden()
-                                        ->dehydrated(),
-
-                                    Placeholder::make('rincian_pesanan')
-                                        ->label('Rincian Pesanan')
-                                        ->content(function (Get $get) {
-                                            $idPemesanan = $get('id_pemesanan') ?: request()->query('id_pemesanan');
-
-                                            $pesanan = \App\Models\Pemesanan::with('DetailPesanan.menu', 'pelanggan')
-                                                ->find($idPemesanan);
-
-                                            if (!$pesanan) return 'Pesanan tidak ditemukan';
-
-                                            $html = "<div class='space-y-2'>";
-                                            $html .= "<div><strong>Nama Pelanggan:</strong> {$pesanan->pelanggan->nama_pelanggan}</div>";
-                                            $html .= "<div><strong>No Pesanan:</strong> {$pesanan->id_pesanan}</div>";
-                                            $html .= "<div><strong>Menu:</strong></div><ul class='list-disc list-inside ml-4'>";
-
-                                            foreach ($pesanan->DetailPesanan as $item) {
-                                                $namaMenu = $item->menu ? $item->menu->nama_menu : 'Menu tidak ditemukan';
-                                                $html .= "<li>{$namaMenu} x {$item->jumlah} - Rp " . number_format($item->subtotal, 0, ',', '.') . "</li>";
+                                        ->default(fn () => now('Asia/Jakarta')->format('Y-m-d H:i:s'))
+                                        ->timezone('Asia/Jakarta')
+                                        ->required()
+                                        ->afterStateHydrated(function ($state, callable $set) {
+                                            if (!$state) {
+                                                $set('tanggal_pembayaran', now('Asia/Jakarta')->format('Y-m-d H:i:s'));
                                             }
+                                        }),
 
-                                            $html .= "</ul>";
-                                            $html .= "<div><strong>Total:</strong> Rp " . number_format($pesanan->subtotal, 0, ',', '.') . "</div>";
-                                            $html .= "</div>";
+                                    Select::make('id_pemesanan')
+                                        ->label('Pilih Pesanan')
+                                        ->default(fn () => request()->query('id_pemesanan'))
+                                        ->options(
+                                            Pemesanan::whereDoesntHave('pembayaran')
+                                                ->where('status_pemesanan', 'diproses')
+                                                ->pluck('id_pesanan', 'id')
+                                        )
+                                        ->getOptionLabelUsing(fn ($value) => Pemesanan::find($value)?->id_pesanan)
+                                        ->searchable()
+                                        ->required()
+                                        ->reactive()
 
-                                            return new \Illuminate\Support\HtmlString($html);
+                                        ->afterStateUpdated(function ($state, Set $set) {
+
+                                            $pesanan = Pemesanan::find($state);
+
+                                            if ($pesanan) {
+
+                                                $set('total_pembayaran', $pesanan->subtotal);
+                                            }
                                         }),
 
                                     TextInput::make('total_pembayaran')
@@ -110,19 +118,19 @@ class PembayaranResource extends Resource
                                         ->numeric()
                                         ->prefix('Rp')
                                         ->readonly()
-                                        ->required()
-                                        ->default(fn () => request()->query('id_pemesanan') ? \App\Models\Pemesanan::find(request()->query('id_pemesanan'))?->subtotal : 0),
+                                        ->required(),
 
                                     Select::make('metode_pembayaran')
                                         ->label('Metode Pembayaran')
                                         ->options([
                                             'cash'     => 'Cash',
                                             'qris'     => 'QRIS',
+                                            'transfer' => 'Transfer',
                                         ])
                                         ->required()
                                         ->reactive()
                                         ->afterStateUpdated(function ($state, Set $set) {
-                                            if (in_array($state, ['qris'])) {
+                                            if (in_array($state, ['qris', 'transfer'])) {
                                                 $set('status_pembayaran', 'pending');
                                             } else {
                                                 $set('status_pembayaran', 'lunas');
@@ -257,6 +265,11 @@ class PembayaranResource extends Resource
                                             </div>
 
                                             <div>
+                                                <strong>No Pesanan:</strong>
+                                                ' . optional(Pemesanan::find($get('id_pemesanan')))->id_pesanan . '
+                                            </div>
+
+                                            <div>
                                                 <strong>Total:</strong>
                                                 Rp ' . number_format((float) $get('total_pembayaran'), 0, ',', '.') . '
                                             </div>
@@ -353,20 +366,31 @@ class PembayaranResource extends Resource
             ])
 
             ->actions([
-
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-
             ])
+            ->headerActions([
+                Action::make('download_all_invoices')
+                    ->label('Unduh PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function () {
+                        $pembayaran = Pembayaran::with('pemesanan.DetailPesanan.menu', 'pemesanan.pelanggan')->get();
 
+                        $pdf = Pdf::loadView('pdf.invoice_pembayaran_semua', [
+                            'pembayarans' => $pembayaran,
+                        ])->setPaper('A4', 'portrait');
+
+                        return response()->streamDownload(
+                            fn () => print($pdf->output()),
+                            'unduh-pdf-pembayaran.pdf'
+                        );
+                    }),
+            ])
             ->bulkActions([
-
                 Tables\Actions\BulkActionGroup::make([
-
                     Tables\Actions\DeleteBulkAction::make(),
-
                 ]),
-
             ]);
     }
 

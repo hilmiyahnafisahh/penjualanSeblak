@@ -3,8 +3,6 @@
 namespace App\Filament\Resources\PembayaranResource\Pages;
 
 use App\Filament\Resources\PembayaranResource;
-use App\Models\Pembayaran;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePembayaran extends CreateRecord
@@ -17,17 +15,19 @@ class CreatePembayaran extends CreateRecord
     {
         parent::mount();
 
-        // Cek jika ada parameter id_pemesanan di URL
+        // cek parameter dari URL
         $idPemesanan = request()->query('id_pemesanan');
+
         if ($idPemesanan) {
-            // Ambil data pemesanan
+
             $pemesanan = \App\Models\Pemesanan::find($idPemesanan);
-            
+
             if ($pemesanan) {
-                // Isi form dengan data pemesanan
+
                 $this->form->fill([
-                    'id_pemesanan' => $idPemesanan,
-                    'total_pembayaran' => $pemesanan->subtotal,
+                    'id_pemesanan'      => $idPemesanan,
+                    'total_pembayaran'  => $pemesanan->subtotal,
+                    'tanggal_pembayaran'=> now('Asia/Jakarta'),
                 ]);
             }
         }
@@ -35,28 +35,43 @@ class CreatePembayaran extends CreateRecord
 
     protected function afterCreate(): void
     {
-        parent::afterCreate();
-
         $pembayaran = $this->record;
 
+        // jika qris / transfer
         if (in_array($pembayaran->metode_pembayaran, ['qris', 'transfer'])) {
+
             $pembayaran->status_pembayaran = 'pending';
             $pembayaran->save();
-            $this->redirectUrl = route('pembayaran.midtrans', ['id' => $pembayaran->id]);
 
+            if (config('services.midtrans.server_key')) {
+                $this->redirectUrl = route(
+                    'pembayaran.midtrans',
+                    ['id' => $pembayaran->id]
+                );
+
+                return;
+            }
+
+            session()->flash('warning', 'Midtrans belum dikonfigurasi. Pembayaran disimpan sebagai pending.');
             return;
         }
 
+        // jika cash
         $pembayaran->status_pembayaran = 'lunas';
         $pembayaran->save();
 
+        // update status pesanan
         if ($pembayaran->pemesanan) {
-            $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
+
+            $pembayaran->pemesanan->update([
+                'status_pemesanan' => 'selesai'
+            ]);
         }
     }
 
     protected function getRedirectUrl(): string
     {
-        return $this->redirectUrl ?? $this->getResource()::getUrl('index');
+        return $this->redirectUrl
+            ?? $this->getResource()::getUrl('index');
     }
 }
