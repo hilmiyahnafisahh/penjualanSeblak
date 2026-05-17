@@ -7,7 +7,8 @@ use App\Models\CatatBeban;
 use App\Models\Pembayaran;
 use App\Models\Pemesanan;
 use App\Models\Penggajian;
-
+use App\Mail\PenggajianDibayarkan;
+use Illuminate\Support\Facades\Mail;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -138,9 +139,40 @@ class MidtransController extends Controller
             ],
         ];
 
+        if ($penggajian->status !== 'Ditangguhkan') {
+            $penggajian->update(['status' => 'Ditangguhkan']);
+        }
+
         $snapToken = Snap::getSnapToken($params);
 
         return view('midtrans.penggajian', compact('snapToken', 'penggajian'));
+    }
+
+    public function successPenggajian(Request $request, $id)
+    {
+        $penggajian = Penggajian::findOrFail($id);
+        $payload = $request->all();
+        $transaction_status = data_get($payload, 'transaction_status') ?? data_get($payload, 'result.transaction_status');
+        $fraud_status = data_get($payload, 'fraud_status') ?? data_get($payload, 'result.fraud_status');
+
+        if (in_array($transaction_status, ['capture', 'settlement'], true)) {
+            $penggajian->status = 'Dibayarkan';
+        } elseif ($transaction_status === 'pending') {
+            $penggajian->status = 'Ditangguhkan';
+        } else {
+            $penggajian->status = 'Ditangguhkan';
+        }
+
+        $penggajian->save();
+
+        if ($penggajian->status === 'Dibayarkan') {
+            Mail::to(config('mail.from.address'))->send(new PenggajianDibayarkan($penggajian));
+        }
+
+        return response()->json([
+            'message' => 'Status penggajian diperbarui',
+            'status' => $penggajian->status,
+        ]);
     }
 
 
@@ -260,7 +292,7 @@ class MidtransController extends Controller
             } elseif ($transaction_status == 'settlement') {
                 $penggajian->status = 'Dibayarkan';
             } elseif ($transaction_status == 'pending') {
-                $penggajian->status = 'Pending';
+                $penggajian->status = 'Ditangguhkan';
             } elseif (
                 $transaction_status == 'deny' ||
                 $transaction_status == 'expire' ||

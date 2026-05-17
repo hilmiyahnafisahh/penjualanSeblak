@@ -12,8 +12,8 @@
         .header h1 { margin: 0 0 .5rem; font-size: 1.5rem; }
         .detail { margin-bottom: 1.25rem; }
         .detail div { margin-bottom: .75rem; }
-        .button { display: inline-block; padding: .9rem 1.4rem; border: none; border-radius: 8px; background: #2563eb; color: #fff; font-size: 1rem; cursor: pointer; }
-        .button:hover { background: #1d4ed8; }
+        .button { display: inline-block; padding: .9rem 1.4rem; border: none; border-radius: 8px; background: #16a34a; color: #fff; font-size: 1rem; cursor: pointer; }
+        .button:hover { background: #15803d; }
     </style>
 </head>
 <body>
@@ -39,15 +39,28 @@
     </div>
 
     <script>
+        function updatePenggajian(result) {
+            return fetch('{{ route('penggajian.midtrans.success', ['id' => $penggajian->id]) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(result)
+            });
+        }
+
         document.getElementById('pay-button').addEventListener('click', function () {
             window.snap.pay('{{ $snapToken }}', {
                 onSuccess: function(result){
-                    alert('Pembayaran sukses. Data akan diperbarui setelah konfirmasi Midtrans.');
-                    window.location.href = '{{ url('/admin/penggajian') }}';
+                    updatePenggajian(result).finally(function() {
+                        window.location.href = '{{ url('/admin/penggajians') }}';
+                    });
                 },
                 onPending: function(result){
-                    alert('Pembayaran menunggu konfirmasi.');
-                    window.location.href = '{{ url('/admin/penggajian') }}';
+                    updatePenggajian(result).finally(function() {
+                        window.location.href = '{{ url('/admin/penggajians') }}';
+                    });
                 },
                 onError: function(result){
                     alert('Pembayaran gagal. Silakan coba lagi.');
