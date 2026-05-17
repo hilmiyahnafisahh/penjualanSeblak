@@ -41,7 +41,7 @@ class CatatBebanResource extends Resource
                                 ->schema([
                                     Select::make('kode_akun')
                                         ->label('Kategori Beban')
-                                        ->relationship('akun', 'nama_akun')
+                                        ->relationship('akun', 'nama_akun') //mengambil nama_akun dari tabel akun
                                         ->searchable()
                                         ->required(),
 
