@@ -87,26 +87,26 @@ class BarangResource extends Resource
     {
         return $table
             ->columns([
-                Textcolumn::make('id_barang')
+                TextColumn::make('id_barang')
                     ->label('Kode Barang')
                     ->sortable()
                     ->searchable(),
-                Textcolumn::make('nama_barang')
+                TextColumn::make('nama_barang')
                     ->label('Nama Barang')
                     ->sortable()
                     ->searchable(),
-                Textcolumn::make('stok')
+                TextColumn::make('stok')
                     ->label('Stok')
                     ->sortable()
                     ->searchable(),
-                Textcolumn::make('satuan')
+                TextColumn::make('satuan')
                     ->label('Satuan'),
-                textcolumn::make('harga_beli')
+                TextColumn::make('harga_beli')
                     ->label('Harga Beli')
                     ->formatStateUsing(fn (string|int|null $state): string => rupiah($state))
                     ->extraAttributes(['class' => 'text-right']) // Tambahkan kelas CSS untuk rata kanan
                     ->sortable(),
-                Textcolumn::make('harga_jual')
+                TextColumn::make('harga_jual')
                     ->label('Harga Jual')
                     ->formatStateUsing(fn (string|int|null $state): string => rupiah($state))
                     ->extraAttributes(['class' => 'text-right']) // Tambahkan kelas CSS untuk rata kanan

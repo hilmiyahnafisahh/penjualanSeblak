@@ -239,6 +239,7 @@ class PenggajianResource extends Resource
                     ->colors([
                         'success' => 'Dibayarkan',
                         'warning' => 'Ditangguhkan',
+                        'secondary' => 'Pending',
                     ]),
                 
             ])
@@ -247,6 +248,11 @@ class PenggajianResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make('bayarGaji')
+                    ->label('Bayar Gaji')
+                    ->icon('heroicon-o-credit-card')
+                    ->url(fn (Penggajian $record): string => route('penggajian.midtrans', ['id' => $record->id]))
+                    ->visible(fn (?Penggajian $record): bool => $record !== null && in_array($record->status, ['Ditangguhkan', 'Pending'])),
             ])
 
             // tombol tambahan

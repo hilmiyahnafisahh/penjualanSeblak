@@ -56,9 +56,6 @@ class LayananResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->sortable(),
-
                 TextColumn::make('id_layanan')
                     ->label('Kode')
                     ->searchable(),
@@ -67,7 +64,7 @@ class LayananResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match ($state){
                         'Dine In' => 'primary',
-                        'Take Away' => 'secondary',
+                        'Take Away' => 'warning',
                     }),
 
                 TextColumn::make('deskripsi')
@@ -79,9 +76,6 @@ class LayananResource extends Resource
                         'Tersedia' => 'success',
                         'Tidak Tersedia' => 'danger',
                     }),
-
-                TextColumn::make('created_at')
-                    ->dateTime(),
             ])
             ->actions([
                 EditAction::make(),
