@@ -9,19 +9,22 @@ class DetailPesanan extends Model
     protected $table = 'detail_pemesanan';
 
     protected $fillable = [
-    'id_pemesanan',
-    'id_menu',
-    'jumlah',
-    'harga_menu',
-    'subtotal',
-    'catatan',
-];
+        'id_pemesanan',
+        'id_menu',
+        'jumlah',
+        'harga_menu',
+        'harga_jual',   // ← tambahkan
+        'subtotal',
+        'catatan',
+        'topping',      // ← tambahkan agar JSON topping tersimpan
+    ];
 
     protected $casts = [
         'harga_jual' => 'integer',
-        'subtotal' => 'integer',
-        'jumlah' => 'integer',
-        'topping' => 'array',
+        'harga_menu' => 'integer',
+        'subtotal'   => 'integer',
+        'jumlah'     => 'integer',
+        'topping'    => 'array',  // ← otomatis encode/decode JSON
     ];
 
     public function pemesanan()
