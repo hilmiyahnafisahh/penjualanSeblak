@@ -5,7 +5,8 @@ use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\BebanPdfController;
 use App\Http\Controllers\CobaMidtransController;
 use App\Http\Controllers\PembayaranPdfController;
-use App\Http\Controllers\PembelianPdfController; // Pastikan controller ini ada jika digunakan
+use App\Http\Controllers\PembelianPdfController;
+use App\Http\Controllers\PengirimanEmailController;
 
 // Halaman awal
 Route::get('/', function () {
@@ -41,3 +42,23 @@ Route::get('/admin/pembayaran/{id}/invoice', [PembayaranPdfController::class, 'd
 // Untuk mendownload PDF pembelian
 Route::get('/pembelian/pdf', [PembelianPdfController::class, 'pembelian'])
     ->name('pembelian.pdf');
+
+// ============================================================
+// Pengiriman Email
+// ============================================================
+
+// ✅ Route autorefresh — dipanggil dari browser sesuai modul
+Route::get('/proses_pengiriman_email_pembayaran', [PengirimanEmailController::class, 'kirimSemua'])
+    ->name('pengiriman-email.proses');
+
+// Daftar riwayat pengiriman email
+Route::get('/pengiriman-email', [PengirimanEmailController::class, 'index'])
+    ->name('pengiriman-email.index');
+
+// Kirim invoice per pesanan dari tombol
+Route::get('/pengiriman-email/kirim/{id}', [PengirimanEmailController::class, 'kirim'])
+    ->name('pengiriman-email.kirim');
+
+// Hapus riwayat
+Route::delete('/pengiriman-email/{id}', [PengirimanEmailController::class, 'destroy'])
+    ->name('pengiriman-email.destroy');
