@@ -43,7 +43,14 @@ class BarangResource extends Resource
                 TextInput::make('stok')
                     ->label('Stok')
                     ->placeholder('Masukkan jumlah stok')
-                    ->required(),
+                    ->required()
+                    ->numeric()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        if ($state > 0 && $get('harga_beli') > 0) {
+                            $set('harga_jual', hargajual($get('harga_beli'), $state));
+                        }
+                    }),
                 TextInput::make('satuan')
                     ->label('Satuan')
                     ->default('pcs')
@@ -51,14 +58,27 @@ class BarangResource extends Resource
                 TextInput::make('harga_beli')
                     ->label('Harga Beli')
                     ->placeholder('Masukkan harga beli')
-                    ->required(),
+                    ->required()
+                    ->numeric()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        if ($state > 0 && $get('stok') > 0) {
+                            $set('harga_jual', hargajual($state, $get('stok')));
+                        }
+                    }),
                 TextInput::make('harga_jual')
                     ->label('Harga Jual')
-                    ->placeholder('Masukkan harga jual')
+                    ->placeholder('Harga jual otomatis')
+                    ->disabled()
+                    ->numeric()
+                    ->default(fn ($get) => ($get('harga_beli') > 0 && $get('stok') > 0) ? hargajual($get('harga_beli'), $get('stok')) : null)
                     ->required(),
                 FileUpload::make('gambar')
                     ->label('Gambar Barang')
                     ->placeholder('Unggah gambar barang')
+                    ->image()
+                    ->directory('barangs')
+                    ->disk('public')
                     ->required(),
             ]);
     }
@@ -67,34 +87,35 @@ class BarangResource extends Resource
     {
         return $table
             ->columns([
-                Textcolumn::make('id_barang')
+                TextColumn::make('id_barang')
                     ->label('Kode Barang')
                     ->sortable()
                     ->searchable(),
-                Textcolumn::make('nama_barang')
+                TextColumn::make('nama_barang')
                     ->label('Nama Barang')
                     ->sortable()
                     ->searchable(),
-                Textcolumn::make('stok')
+                TextColumn::make('stok')
                     ->label('Stok')
                     ->sortable()
                     ->searchable(),
-                Textcolumn::make('satuan')
+                TextColumn::make('satuan')
                     ->label('Satuan'),
-                textcolumn::make('harga_beli')
+                TextColumn::make('harga_beli')
                     ->label('Harga Beli')
                     ->formatStateUsing(fn (string|int|null $state): string => rupiah($state))
                     ->extraAttributes(['class' => 'text-right']) // Tambahkan kelas CSS untuk rata kanan
                     ->sortable(),
-                Textcolumn::make('harga_jual')
+                TextColumn::make('harga_jual')
                     ->label('Harga Jual')
                     ->formatStateUsing(fn (string|int|null $state): string => rupiah($state))
                     ->extraAttributes(['class' => 'text-right']) // Tambahkan kelas CSS untuk rata kanan
                     ->sortable(),
                 ImageColumn::make('gambar')
                     ->label('Gambar')
+                    ->disk('public')
                     ->circular()
-                    ->square() // Tambahkan ini untuk memastikan gambar tetap berbentuk persegi
+                    ->square()
                     ->sortable()
                     ->searchable(),
             ])

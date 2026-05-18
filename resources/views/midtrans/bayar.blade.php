@@ -5,7 +5,7 @@
 
     <!-- Midtrans Snap -->
     <script src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key="{{ config('midtrans.client_key') }}"></script>
+        data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 </head>
 <body>
 

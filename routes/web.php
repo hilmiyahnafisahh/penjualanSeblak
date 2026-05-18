@@ -20,6 +20,14 @@ Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
 Route::get('/bayar-pemesanan/{id}', [MidtransController::class, 'bayarPemesanan'])
     ->name('pembayaran.midtrans');
 
+// Untuk membuka halaman pembayaran penggajian lewat Midtrans
+Route::get('/bayar-penggajian/{id}', [MidtransController::class, 'bayarPenggajian'])
+    ->name('penggajian.midtrans');
+
+// Untuk menerima hasil sukses pembayaran gaji dari front-end
+Route::post('/midtrans/penggajian/success/{id}', [MidtransController::class, 'successPenggajian'])
+    ->name('penggajian.midtrans.success');
+
 // Contoh sampel sederhana untuk mengetes midtrans
 Route::get('/cekmidtrans', [CobaMidtransController::class, 'cekmidtrans']);
 
