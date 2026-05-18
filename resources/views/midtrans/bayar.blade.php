@@ -13,11 +13,11 @@
 
     <p>Total: Rp {{ number_format($beban->total, 0, ',', '.') }}</p>
 
-    <button id="pay-button">Bayar Sekarang</button>
+    <button id="pay-button">Bayar Sekarang</button>//tombol bayar
 
     <script>
-        document.getElementById('pay-button').onclick = function () {
-            snap.pay('{{ $snapToken }}', {
+        document.getElementById('pay-button').onclick = function () {  // Ketika tombol bayar diklik, panggil fungsi snap.pay dengan snapToken yang diberikan dari controller
+            snap.pay('{{ $snapToken }}', { //diambil dari controller
                 onSuccess: function(result){
                     alert("Pembayaran berhasil");
                     window.location.href = "/admin/catat-bebans";

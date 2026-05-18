@@ -63,6 +63,7 @@ class CatatBebanResource extends Resource
 
                                     FileUpload::make('gambar')
                                         ->image()
+                                        ->disk('public') // ← TAMBAHKAN DI SINI
                                         ->directory('beban'),
 
                                     TextInput::make('total')
