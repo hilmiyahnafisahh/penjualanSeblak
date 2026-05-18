@@ -3,25 +3,24 @@
 namespace App\Filament\Resources\PemesananResource\Pages;
 
 use App\Filament\Resources\PemesananResource;
-use App\Models\Barang;
-use App\Models\Menu;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\DB;
+use App\Models\Barang;
+use App\Models\Menu;
 
 class CreatePemesanan extends CreateRecord
 {
     protected static string $resource = PemesananResource::class;
 
-    protected ?string $redirectUrl = null;
     protected bool $redirectToPayment = false;
 
-    // Hitung ulang subtotal dari detail sebelum disimpan
+    // hitung subtotal
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $total = 0;
 
-        foreach ($data['DetailPesanan'] ?? [] as $detailKey => $item) {
+        foreach ($data['detail_pesanan'] ?? [] as $item) {
             $total += $item['subtotal'] ?? 0;
 
             // Pastikan harga dan subtotal topping terisi dari database
@@ -44,8 +43,7 @@ class CreatePemesanan extends CreateRecord
 
         return $data;
     }
-
-    protected function afterCreate(): void
+protected function afterCreate(): void
     {
         $detailItems = $this->data['DetailPesanan'] ?? [];
         $this->decreaseStockFromPesanan($detailItems);
@@ -71,22 +69,28 @@ class CreatePemesanan extends CreateRecord
             }
         });
     }
-
+    // redirect setelah create
     protected function getRedirectUrl(): string
     {
-        return $this->redirectUrl ?? $this->getResource()::getUrl('index');
+        if ($this->redirectToPayment && $this->record) {
+            return route('pembayaran.show', ['id' => $this->record->id]);
+        }
+
+        return $this->getResource()::getUrl('index');
     }
 
+    // tombol tambahan
     protected function getFormActions(): array
     {
         return [
-            Action::make('create')
-                ->label('Simpan Pesanan')
-                ->submit('create'),
+            $this->getCreateFormAction()
+                ->label('Simpan Pesanan'),
+
             Action::make('bayarSekarang')
                 ->label('Bayar Sekarang')
                 ->color('success')
                 ->action('bayarSekarang'),
+
             $this->getCancelFormAction(),
         ];
     }
@@ -94,6 +98,7 @@ class CreatePemesanan extends CreateRecord
     public function bayarSekarang(): void
     {
         $this->redirectToPayment = true;
+
         $this->create();
     }
 }
