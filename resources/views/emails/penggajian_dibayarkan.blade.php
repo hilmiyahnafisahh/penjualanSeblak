@@ -2,10 +2,10 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Penggajian Dibayarkan</title>
+    <title>Penggajian Berhasil Dibayarkan</title>
 </head>
 <body>
-    <h1>Penggajian Dibayarkan</h1>
+    <h1>Penggajian Berhasil Dibayarkan</h1>
     <p>Penggajian dengan ID <strong>{{ $penggajian->id_penggajian }}</strong> telah dibayarkan.</p>
     <p>Karyawan: <strong>{{ $penggajian->karyawan->nama ?? 'Tidak Diketahui' }}</strong></p>
     <p>Periode: <strong>{{ $penggajian->periode }}</strong></p>

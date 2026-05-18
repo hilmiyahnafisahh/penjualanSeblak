@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\ImageColumn;
 
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Section;
@@ -62,8 +63,16 @@ class CatatBebanResource extends Resource
                                     Textarea::make('keterangan'),
 
                                     FileUpload::make('gambar')
+                                        ->label('Gambar Bukti Tagihan')
+                                        ->placeholder('Unggah gambar bukti tagihan')
                                         ->image()
-                                        ->directory('beban'),
+                                        ->imageEditor()
+                                        ->directory('beban')
+                                        ->disk('public')
+                                        ->visibility('public')
+                                        ->maxSize(2048)
+                                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                        ->nullable(),
 
                                     TextInput::make('total')
                                         ->numeric()
@@ -110,8 +119,11 @@ class CatatBebanResource extends Resource
                     ->label('Kategori Beban')
                     ->searchable(),
 
-                Tables\Columns\ImageColumn::make('gambar')
-                    ->label('Bukti Tagihan'),
+                ImageColumn::make('gambar')
+                    ->label('Gambar')
+                    ->disk('public')
+                    ->square()
+                    ->defaultImageUrl(url('/images/placeholder.png')),
 
                 Tables\Columns\TextColumn::make('tanggal')
                     ->date(),
@@ -124,10 +136,11 @@ class CatatBebanResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->colors([
-                        'success' => 'lunas',
-                        'danger' => 'belum lunas',
-                    ]),
+                    ->color(fn (string $state): string => match ($state) {
+                        'lunas'       => 'success',
+                        'belum lunas' => 'danger',
+                        default       => 'gray',
+                    }),
             ])
 
             ->actions([
