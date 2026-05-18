@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('kode_akun') ->unique();
             $table->string('nama_akun');
-            $table->enum('jenis_akun', ['Asset', 'Hutang', 'Modal', 'Pendapatan', 'Biaya']);
+            $table->enum('jenis_akun', ['Asset', 'Hutang', 'Modal', 'Pendapatan', 'Beban']);
             $table->timestamps();
         });
     }
