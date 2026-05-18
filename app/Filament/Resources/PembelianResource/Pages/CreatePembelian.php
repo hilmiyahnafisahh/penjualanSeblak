@@ -13,22 +13,26 @@ class CreatePembelian extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $items = $this->data['barang'] ?? [];
+        $record = $this->record;
+        $items  = $this->data['barang'] ?? [];
 
-        DB::transaction(function () use ($items) {
+        DB::transaction(function () use ($record, $items) {
+            // ✅ Update stok barang
             foreach ($items as $item) {
                 if (!empty($item['id_barang']) && !empty($item['jumlah'])) {
                     $barang = Barang::where('id_barang', $item['id_barang'])->first();
                     if ($barang) {
-                        // Stok BERTAMBAH karena ini transaksi pembelian masuk
                         $barang->increment('stok', (int) $item['jumlah']);
                     }
                 }
             }
-        });
 
+            // ✅ Ambil jumlah_bayar dari relasi pembayaran yang sudah tersimpan
+            $jumlahBayar = $record->pembayaran()->sum('jumlah_bayar');
+            $record->update(['total_bayar' => $jumlahBayar]);
+        });
     }
-    
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

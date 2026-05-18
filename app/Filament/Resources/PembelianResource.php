@@ -48,7 +48,7 @@ class PembelianResource extends Resource
                                         ->default(fn () => Pembelian::getKodeFakturBeli())
                                         ->required()
                                         ->readonly(),
-                                    
+
                                     DateTimePicker::make('tgl')
                                         ->label('Tanggal Transaksi')
                                         ->default(now())
@@ -60,7 +60,7 @@ class PembelianResource extends Resource
                                         ->searchable()
                                         ->preload()
                                         ->required(),
-                                    
+
                                     Hidden::make('total_bayar')->default(0),
                                     Hidden::make('tagihan')->default(0),
                                     Hidden::make('status')->default('pending'),
@@ -94,9 +94,9 @@ class PembelianResource extends Resource
 
                             Forms\Components\Actions::make([
                                 Action::make('konfirmasi')
-                                    ->label('Hitung Total')
+                                    ->label('Konfirmasi Pembayaran')
                                     ->color('success')
-                                    ->icon('heroicon-m-calculator')
+                                    ->icon('heroicon-m-check-circle')
                                     ->form([
                                         Select::make('status_bayar')
                                             ->options(['lunas' => 'Lunas', 'hutang' => 'Hutang'])
@@ -104,18 +104,22 @@ class PembelianResource extends Resource
                                     ])
                                     ->action(function ($get, $set, $data) {
                                         $items = $get('barang') ?? [];
-                                        $total = collect($items)->sum(fn($i) => (floatval($i['harga_beli']) * floatval($i['jumlah'])));
-                                        
+                                        $total = collect($items)->sum(fn($i) => floatval($i['harga_beli']) * floatval($i['jumlah']));
+
                                         $set('status', $data['status_bayar']);
-                                        $set('total_bayar', $data['status_bayar'] === 'lunas' ? $total : 0);
+
+                                        // ✅ total_bayar selalu diisi total belanja
+                                        $set('total_bayar', $total);
+
+                                        // ✅ tagihan diisi jika hutang
                                         $set('tagihan', $data['status_bayar'] === 'hutang' ? $total : 0);
 
                                         $set('pembayaran', [[
-                                            'tgl_bayar' => $get('tgl') ?? now(),
+                                            'tgl_bayar'        => $get('tgl') ?? now(),
                                             'jenis_pembayaran' => 'cash',
-                                            'nama_vendor' => '-',
-                                            'jumlah_bayar' => $data['status_bayar'] === 'lunas' ? $total : 0,
-                                            'sisa_tagihan' => $data['status_bayar'] === 'hutang' ? $total : 0,
+                                            'nama_vendor'      => '-',
+                                            'jumlah_bayar'     => $data['status_bayar'] === 'lunas' ? $total : 0,
+                                            'sisa_tagihan'     => $data['status_bayar'] === 'hutang' ? $total : 0,
                                         ]]);
                                     }),
                             ]),
@@ -127,23 +131,52 @@ class PembelianResource extends Resource
                             Repeater::make('pembayaran')
                                 ->relationship()
                                 ->schema([
-                                    DatePicker::make('tgl_bayar')->required(),
-                                    Select::make('jenis_pembayaran')->options(['cash' => 'Cash', 'transfer' => 'Transfer'])->required(),
-                                    TextInput::make('nama_vendor')->default('-')->required(),
-                                    TextInput::make('jumlah_bayar')->numeric()->prefix('Rp')->readOnly(),
-                                    TextInput::make('sisa_tagihan')->numeric()->prefix('Rp')->readOnly(),
+                                    DatePicker::make('tgl_bayar')
+                                        ->required(),
+
+                                    Select::make('jenis_pembayaran')
+                                        ->options(['cash' => 'Cash', 'transfer' => 'Transfer'])
+                                        ->required(),
+
+                                    TextInput::make('nama_vendor')
+                                        ->default('-')
+                                        ->required(),
+
+                                    TextInput::make('jumlah_bayar')
+                                        ->numeric()
+                                        ->prefix('Rp')
+                                        ->live()
+                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                            $tagihan = floatval($get('../../tagihan') ?? 0);
+                                            $bayar   = floatval($state ?? 0);
+
+                                            if ($bayar > $tagihan) {
+                                                $bayar = $tagihan;
+                                                $set('jumlah_bayar', $bayar);
+                                            }
+
+                                            $set('sisa_tagihan', max(0, $tagihan - $bayar));
+                                        }),
+
+                                    TextInput::make('sisa_tagihan')
+                                        ->numeric()
+                                        ->prefix('Rp')
+                                        ->readOnly(),
                                 ])
-                                ->columns(3)->addable(false)->deletable(false),
+                                ->columns(3)
+                                ->addable(false)
+                                ->deletable(false),
                         ]),
 
                     Step::make('Selesai')
                         ->icon('heroicon-m-check-circle')
                         ->schema([
-                            Forms\Components\Placeholder::make('final')->content('Klik "Create" untuk simpan.'),
+                            Forms\Components\Placeholder::make('final')
+                                ->content('Klik "Create" untuk simpan.'),
                         ]),
                 ])
                 ->columnSpanFull()
-                ->skippable(false)
+                ->skippable(false),
             ]);
     }
 
@@ -154,7 +187,7 @@ class PembelianResource extends Resource
                 TextColumn::make('id_pembelian')
                     ->label('Faktur')
                     ->searchable(),
-                
+
                 TextColumn::make('karyawan.nama')
                     ->label('Karyawan')
                     ->placeholder('Tidak ada karyawan')
@@ -165,7 +198,7 @@ class PembelianResource extends Resource
                         'success' => 'lunas',
                         'warning' => 'hutang',
                     ]),
-                
+
                 TextColumn::make('total_bayar')
                     ->money('IDR')
                     ->label('Total Bayar'),
@@ -180,7 +213,7 @@ class PembelianResource extends Resource
                     ->label('Vendor')
                     ->placeholder('-')
                     ->searchable(),
-                
+
                 TextColumn::make('tgl')
                     ->label('Tgl')
                     ->dateTime('M d, Y H:i:s'),
@@ -193,7 +226,6 @@ class PembelianResource extends Resource
                     ->color('success')
                     ->action(function () {
                         $pembelian = Pembelian::with(['barang', 'pembayaran', 'karyawan'])->get();
-
                         $pdf = Pdf::loadView('pdf.pembelian', ['pembelian' => $pembelian]);
 
                         return response()->streamDownload(
@@ -215,11 +247,9 @@ class PembelianResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPembelians::route('/'),
+            'index'  => Pages\ListPembelians::route('/'),
             'create' => Pages\CreatePembelian::route('/create'),
-            'edit' => Pages\EditPembelian::route('/{record}/edit'),
+            'edit'   => Pages\EditPembelian::route('/{record}/edit'),
         ];
     }
 }
-
-//punya reksa nih
