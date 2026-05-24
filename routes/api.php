@@ -17,3 +17,6 @@ Route::post('/midtrans-callback', [App\Http\Controllers\KeranjangController::cla
 
 // CALLBACK MIDTRANS
 Route::post('/midtrans/callback', [MidtransController::class, 'callback']);
+
+// CHECK STATUS PEMBAYARAN
+Route::get('/pembayaran/{id}/status', [MidtransController::class, 'checkStatus']);

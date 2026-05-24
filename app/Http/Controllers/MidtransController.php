@@ -86,6 +86,9 @@ class MidtransController extends Controller
         // format order id
         $order_id = 'PAY-' . $pembayaran->id . '-' . time();
 
+        // Simpan order_id ke database
+        $pembayaran->update(['order_id' => $order_id]);
+
         // data transaksi
         $params = [
             'transaction_details' => [
@@ -111,6 +114,87 @@ class MidtransController extends Controller
         return view('midtrans.pembayaran', compact('snapToken', 'pembayaran', 'pemesanan'));
     }
 
+
+    // ======================================================
+    // CECK STATUS PEMBAYARAN
+    // ======================================================
+
+    public function checkStatus($id)
+    {
+        $pembayaran = Pembayaran::find($id);
+
+        if (!$pembayaran) {
+            return response()->json(['error' => 'Pembayaran tidak ditemukan'], 404);
+        }
+
+        // Jika sudah lunas, langsung return
+        if ($pembayaran->status_pembayaran === 'lunas') {
+            return response()->json([
+                'id' => $pembayaran->id,
+                'status' => $pembayaran->status_pembayaran,
+                'metode' => $pembayaran->metode_pembayaran,
+                'pesanan_status' => $pembayaran->pemesanan?->status_pemesanan,
+            ]);
+        }
+
+        // Jika metode bukan midtrans, langsung return status yang ada
+        if (!in_array($pembayaran->metode_pembayaran, ['qris', 'transfer'])) {
+            return response()->json([
+                'id' => $pembayaran->id,
+                'status' => $pembayaran->status_pembayaran,
+                'metode' => $pembayaran->metode_pembayaran,
+                'pesanan_status' => $pembayaran->pemesanan?->status_pemesanan,
+            ]);
+        }
+
+        // Verifikasi dengan Midtrans API untuk transaksi QRIS/Transfer
+        $this->verifyMidtransPayment($pembayaran);
+
+        $pembayaran->refresh();
+
+        return response()->json([
+            'id' => $pembayaran->id,
+            'status' => $pembayaran->status_pembayaran,
+            'metode' => $pembayaran->metode_pembayaran,
+            'pesanan_status' => $pembayaran->pemesanan?->status_pemesanan,
+        ]);
+    }
+
+    // ======================================================
+    // VERIFIKASI STATUS DARI MIDTRANS API
+    // ======================================================
+
+    private function verifyMidtransPayment($pembayaran)
+    {
+        try {
+            $this->configureMidtrans();
+
+            // Jika order_id tersimpan, query status dari Midtrans
+            if ($pembayaran->order_id) {
+                $status = \Midtrans\Transaction::status($pembayaran->order_id);
+
+                if ($status) {
+                    $transaction_status = $status->transaction_status ?? null;
+                    $fraud_status = $status->fraud_status ?? null;
+
+                    // Update status berdasarkan response Midtrans
+                    if ($transaction_status == 'capture' || $transaction_status == 'settlement') {
+                        if ($fraud_status != 'deny') {
+                            $pembayaran->status_pembayaran = 'lunas';
+                            $pembayaran->save();
+
+                            // Update status pesanan jika pembayaran lunas
+                            if ($pembayaran->pemesanan) {
+                                $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Midtrans verification error: ' . $e->getMessage());
+        }
+    }
 
     // ======================================================
     // WEBHOOK / CALLBACK MIDTRANS

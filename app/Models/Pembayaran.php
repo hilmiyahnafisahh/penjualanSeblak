@@ -13,7 +13,9 @@ class Pembayaran extends Model
 
     protected $fillable = [
         'id_pembayaran',
+        'order_id',
         'id_pemesanan',
+        'id_karyawan',
         'metode_pembayaran',
         'tanggal_pembayaran',
         'total_pembayaran',
@@ -36,6 +38,11 @@ class Pembayaran extends Model
         return $this->belongsTo(Pemesanan::class, 'id_pemesanan');
     }
 
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'id_karyawan');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | GENERATE KODE PEMBAYARAN
@@ -49,11 +56,11 @@ class Pembayaran extends Model
 
         // kalau belum ada data
         if (!$lastPembayaran) {
-            return 'BYR-0000001';
+            return 'BYR-0001';
         }
 
         // ambil angka dari kode terakhir
-        // contoh: BYR-0000001 -> 0000001
+        // contoh: BYR-0001 -> 1
         $lastNumber = (int) str_replace(
             'BYR-',
             '',
@@ -64,7 +71,7 @@ class Pembayaran extends Model
         $newNumber = $lastNumber + 1;
 
         // format ulang
-        return 'BYR-' . str_pad($newNumber, 7, '0', STR_PAD_LEFT);
+        return 'BYR-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /*

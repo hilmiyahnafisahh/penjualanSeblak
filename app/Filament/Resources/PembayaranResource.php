@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PembayaranResource\Pages;
 use App\Models\Pembayaran;
 use App\Models\Pemesanan;
+use App\Models\Karyawan;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -136,6 +137,12 @@ class PembayaranResource extends Resource
                                                 $set('status_pembayaran', 'lunas');
                                             }
                                         }),
+
+                                    Select::make('id_karyawan')
+                                        ->label('Karyawan')
+                                        ->options(Karyawan::pluck('nama', 'id_karyawan'))
+                                        ->searchable()
+                                        ->columnSpan(1),
 
                                     TextInput::make('status_pembayaran')
                                         ->default('lunas')
@@ -324,6 +331,10 @@ class PembayaranResource extends Resource
                     ->label('Pelanggan')
                     ->searchable(),
 
+                TextColumn::make('karyawan.nama')
+                    ->label('Karyawan')
+                    ->searchable(),
+
                 TextColumn::make('metode_pembayaran')
                     ->badge()
                     ->color('success'),
@@ -404,4 +415,5 @@ class PembayaranResource extends Resource
 
         ];
     }
+   
 }
