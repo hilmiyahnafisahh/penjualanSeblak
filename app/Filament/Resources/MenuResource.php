@@ -39,12 +39,7 @@ class MenuResource extends Resource
     {
         return $form
             ->schema([
-                 TextInput::make('id_menu')
-                    ->label('ID Menu')
-                    ->readonly()
-                    ->required(),
-
-                Select::make('kategori_menu')
+            Select::make('kategori_menu')
                     ->options([
                         'Makanan' => 'Makanan',
                         'Minuman' => 'Minuman',
@@ -61,6 +56,11 @@ class MenuResource extends Resource
                 ->required()
                 ->label('Kategori'),
 
+             TextInput::make('id_menu')
+                ->label('ID Menu')
+                ->readonly()
+                ->required(),
+
             TextInput::make('nama_menu')
                 ->required()
                 ->label('Nama Menu'),
@@ -72,9 +72,11 @@ class MenuResource extends Resource
                 ->label('Harga'),
 
             FileUpload::make('gambar_menu')
+                ->label('Gambar Barang')
+                ->placeholder('Unggah gambar barang')
                 ->image()
                 ->directory('menu')
-                ->label('Gambar'),
+                ->disk('public')                    ->required(),
 
             TextInput::make('deskripsi')
                 ->label('Deskripsi')
@@ -111,7 +113,11 @@ class MenuResource extends Resource
 
             ImageColumn::make('gambar_menu')
                 ->label('Gambar')
-                ->size(35),
+                ->disk('public')
+                ->circular()
+                ->square()
+                ->sortable()
+                ->searchable(),
             ])
             ->filters([
                 //

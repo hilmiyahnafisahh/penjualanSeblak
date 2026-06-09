@@ -58,9 +58,16 @@ class Pembelian extends Model
         return $this->hasMany(PembelianBarang::class, 'id_pembelian'); //hasMany karena satu pembelian bisa memiliki banyak pembelian_barang
     }
 
+    // relasi ke tabel pembayaran
+    public function pembayaran()
+    {
+        return $this->hasMany(PembayaranBarang::class, 'id_pembelian');
+    }
+
     // relasi ke tabel karyawan
+    // ✅ BENAR
     public function karyawan()
     {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+        return $this->belongsTo(Karyawan::class, 'karyawan_id', 'id');
     }
 }

@@ -15,6 +15,11 @@ function hitungGajiPerHari($jamKerja, $upahPerJam)
     return $jamKerja * $upahPerJam;
 }
 
+function hargajual ($harga_beli, $stok) {
+    $harga_jual = ($harga_beli/$stok) * 1.4; // markup 40%
+    return (int)round($harga_jual, 0); // pembulatan ke angka terdekat
+}
+
 // HITUNG TOTAL GAJI
 function hitungTotalGaji($jamKerja, $upahPerJam, $hariKerja)
 {
