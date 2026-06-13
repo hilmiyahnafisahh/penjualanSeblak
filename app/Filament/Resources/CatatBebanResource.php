@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CatatBebanResource\Pages;
 use App\Models\CatatBeban;
-use Filament\Forms;
+
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -18,6 +18,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 
+use Filament\Tables\Columns\ImageColumn;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class CatatBebanResource extends Resource
@@ -25,23 +27,31 @@ class CatatBebanResource extends Resource
     protected static ?string $model = CatatBeban::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+
     protected static ?string $navigationGroup = 'Transaksi';
+
     protected static ?string $maxContentWidth = 'full';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+
                 Wizard::make([
 
-                    // STEP 1
                     Wizard\Step::make('Data Beban')
+                        ->icon('heroicon-o-document-text')
                         ->schema([
+
                             Section::make('Informasi Beban')
                                 ->schema([
+
                                     Select::make('kode_akun')
                                         ->label('Kategori Beban')
-                                        ->relationship('akun', 'nama_akun') //mengambil nama_akun dari tabel akun
+                                        ->relationship(
+                                            'akun',
+                                            'nama_akun'
+                                        )
                                         ->searchable()
                                         ->required(),
 
@@ -50,34 +60,47 @@ class CatatBebanResource extends Resource
 
                                     TextInput::make('jenis_beban')
                                         ->required(),
+
                                 ])
                                 ->columns(3),
+
                         ]),
 
-                    // STEP 2
                     Wizard\Step::make('Detail')
+                        ->icon('heroicon-o-document')
                         ->schema([
+
                             Section::make('Detail Beban')
                                 ->schema([
+
                                     Textarea::make('keterangan'),
 
                                     FileUpload::make('gambar')
+                                        ->label('Gambar Bukti Tagihan')
                                         ->image()
-                                        ->disk('public') // ← TAMBAHKAN DI SINI
-                                        ->directory('beban'),
+                                        ->imageEditor()
+                                        ->directory('beban')
+                                        ->disk('public')
+                                        ->visibility('public')
+                                        ->maxSize(2048)
+                                        ->nullable(),
 
                                     TextInput::make('total')
                                         ->numeric()
                                         ->required(),
+
                                 ])
                                 ->columns(3),
+
                         ]),
 
-                    // STEP 3
                     Wizard\Step::make('Status')
+                        ->icon('heroicon-o-check-circle')
                         ->schema([
-                            Section::make('Status Pembayaran')
+
+                            Section::make('Status Beban')
                                 ->schema([
+
                                     Select::make('status')
                                         ->options([
                                             'lunas' => 'Lunas',
@@ -86,33 +109,36 @@ class CatatBebanResource extends Resource
                                         ->default('lunas')
                                         ->required(),
 
-                                    // tombol bayar
-                                    Forms\Components\Actions::make([
-                                        Forms\Components\Actions\Action::make('bayar')
-                                            ->label('Bayar Sekarang')
-                                            ->color('success')
-                                            ->icon('heroicon-o-credit-card')
-                                            ->url(fn () => url('/bayar-beban/' . request()->route('record')))
-                                            ->openUrlInNewTab()
-                                            ->visible(fn () => request()->route('record') !== null),
-                                    ]),
                                 ])
                                 ->columns(1),
+
                         ]),
-                ])->columnSpan(3),
+
+                ])
+                    ->skippable(false)
+                    ->persistStepInQueryString()
+                    ->columnSpanFull(),
+
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+
             ->columns([
+
                 Tables\Columns\TextColumn::make('akun.nama_akun')
                     ->label('Kategori Beban')
                     ->searchable(),
 
-                Tables\Columns\ImageColumn::make('gambar')
-                    ->label('Bukti Tagihan'),
+                ImageColumn::make('gambar')
+                    ->label('Gambar')
+                    ->disk('public')
+                    ->square()
+                    ->defaultImageUrl(
+                        url('/images/placeholder.png')
+                    ),
 
                 Tables\Columns\TextColumn::make('tanggal')
                     ->date(),
@@ -121,48 +147,121 @@ class CatatBebanResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('total')
-                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
+                    ->formatStateUsing(
+                        fn($state) =>
+                        'Rp ' . number_format(
+                            $state,
+                            0,
+                            ',',
+                            '.'
+                        )
+                    ),
 
+                // STATUS BAGUS (BADGE)
                 Tables\Columns\TextColumn::make('status')
+
                     ->badge()
-                    ->colors([
-                        'success' => 'lunas',
-                        'danger' => 'belum lunas',
-                    ]),
+
+                    ->formatStateUsing(
+                        fn($state) =>
+                        $state === 'lunas'
+                        ? 'Lunas'
+                        : 'Belum Lunas'
+                    )
+
+                    ->color(
+                        fn($state) =>
+                        match ($state) {
+                            'lunas' => 'success',
+                            'belum lunas' => 'danger',
+                            default => 'gray',
+                        }
+                    ),
+
             ])
 
             ->actions([
 
                 Tables\Actions\ViewAction::make(),
+
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\Action::make('bayar')
-                    ->label('Bayar')
-                    ->icon('heroicon-o-credit-card')
-                    ->color('success')
-                    ->url(fn ($record) => url('/bayar-beban/' . $record->id_beban))
-                    ->openUrlInNewTab()
-                    ->visible(fn ($record) => $record->status !== 'lunas'),
-            ])
 
-            // ✅ BULK PDF (CHECKLIST)
-            ->bulkActions([
-                Tables\Actions\BulkAction::make('download_pdf')
-                    ->label('Download PDF')
-                    ->icon('heroicon-o-document')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->action(function ($records) {
+                // BUTTON UBAH STATUS
+                Tables\Actions\Action::make('ubahStatus')
 
-                        $pdf = Pdf::loadView('pdf.beban', [
-                            'data' => $records
+                    ->label('Ubah Status')
+
+                    ->icon('heroicon-o-pencil-square')
+
+                    ->color('warning')
+
+                    ->fillForm(fn($record) => [
+                        'status' => $record->status,
+                    ])
+
+                    ->form([
+
+                        Select::make('status')
+                            ->label('Pilih Status')
+
+                            ->options([
+                                'lunas' => 'Lunas',
+                                'belum lunas' => 'Belum Lunas',
+                            ])
+
+                            ->required(),
+
+                    ])
+
+                    ->action(function (
+                        CatatBeban $record,
+                        array $data
+                    ) {
+
+                        $record->update([
+                            'status' => $data['status'],
                         ]);
 
-                        return response()->streamDownload(
-                            fn () => print($pdf->output()),
-                            'laporan-beban.pdf'
-                        );
                     }),
+
+                Tables\Actions\DeleteAction::make(),
+
+            ])
+
+            ->bulkActions([
+
+                Tables\Actions\BulkAction::make(
+                    'download_pdf'
+                )
+
+                    ->label('Download PDF')
+
+                    ->icon('heroicon-o-document')
+
+                    ->color('success')
+
+                    ->action(function ($records) {
+
+                        $pdf = Pdf::loadView(
+                            'pdf.beban',
+                            [
+                                'data' => $records
+                            ]
+                        );
+
+                        return response()
+                            ->streamDownload(
+
+                                fn() =>
+                                print(
+                                    $pdf->output()
+                                ),
+
+                                'laporan-beban.pdf'
+                            );
+
+                    }),
+
             ]);
     }
 
@@ -174,10 +273,19 @@ class CatatBebanResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCatatBebans::route('/'),
-            'create' => Pages\CreateCatatBeban::route('/create'),
-            'edit' => Pages\EditCatatBeban::route('/{record}/edit'),
-            'view' => Pages\ViewCatatBeban::route('/{record}'),
+
+            'index' =>
+            Pages\ListCatatBebans::route('/'),
+
+            'create' =>
+            Pages\CreateCatatBeban::route('/create'),
+
+            'edit' =>
+            Pages\EditCatatBeban::route('/{record}/edit'),
+
+            'view' =>
+            Pages\ViewCatatBeban::route('/{record}'),
+
         ];
     }
 }

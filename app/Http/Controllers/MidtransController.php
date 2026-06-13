@@ -16,7 +16,7 @@ class MidtransController extends Controller
 {
     private function configureMidtrans()
     {
-        $serverKey = config('services.midtrans.server_key');
+        $serverKey = config('services.midtrans.server_key'); 
 
         if (!$serverKey) {
             abort(500, 'Midtrans server key is not configured. Please set MIDTRANS_SERVER_KEY in your .env file.');
@@ -39,14 +39,14 @@ class MidtransController extends Controller
         $this->configureMidtrans();
 
         // format order id
-        $order_id = 'BEBAN-' . $beban->id_beban . '-' . time();
+        $order_id = 'BEBAN-' . $beban->id_beban . '-' . time(); 
 
         // data transaksi
         $params = [
 
             'transaction_details' => [
                 'order_id' => $order_id,
-                'gross_amount' => (int) $beban->total,
+                'gross_amount' => (int) $beban->total, 
             ],
 
             'item_details' => [
@@ -113,29 +113,31 @@ class MidtransController extends Controller
         return view('midtrans.pembayaran', compact('snapToken', 'pembayaran', 'pemesanan'));
     }
 
-    public function bayarPenggajian($id)
+    //============PENGGAJIAN================
+    public function bayarPenggajian($id) // bayar gaji karyawan
     {
-        $penggajian = Penggajian::findOrFail($id);
+        $penggajian = Penggajian::findOrFail($id); //findOrFail untuk memastikan data penggajian ada, $id adalah id penggajian yang ingin dibayar, $penggajian adalah variabel yang menyimpan data penggajian yang ditemukan berdasarkan id tersebut
 
-        $this->configureMidtrans();
+        $this->configureMidtrans(); //memanggil method configureMidtrans untuk mengatur konfigurasi Midtrans sebelum melakukan proses pembayaran, seperti mengatur server key, mode produksi, dan lainnya
 
-        $order_id = 'PGJ-' . $penggajian->id . '-' . time();
-
-        $params = [
+        $order_id = 'PGJ-' . $penggajian->id . '-' . time(); //membuat order_id unik untuk transaksi pembayaran gaji, formatnya adalah PGJ- diikuti dengan id penggajian dan timestamp saat ini, order_id ini akan digunakan untuk mengidentifikasi transaksi pembayaran gaji di Midtrans
+        //order_id adalah nomor nota pembayaran yang unik untuk setiap transaksi pembayaran gaji, formatnya adalah PGJ- diikuti dengan id penggajian dan timestamp saat ini, misalnya PGJ-123-1616161616
+        $params = [ //membuat array $params yang berisi detail transaksi pembayaran gaji, termasuk transaction_details, item_details, dan customer_details yang akan dikirim ke Midtrans untuk memproses pembayaran
             'transaction_details' => [
                 'order_id' => $order_id,
-                'gross_amount' => (int) $penggajian->nominal,
+                'gross_amount' => (int) $penggajian->nominal, //mengambil nominal gaji dari data penggajian dan mengkonversinya menjadi integer untuk digunakan sebagai gross_amount dalam transaksi pembayaran di Midtrans
             ],
             'item_details' => [
                 [
-                    'id' => $penggajian->id,
-                    'price' => (int) $penggajian->nominal,
-                    'quantity' => 1,
-                    'name' => 'Gaji ' . ($penggajian->karyawan->nama ?? 'Karyawan'),
+                    'id' => $penggajian->id, //menggunakan id penggajian sebagai id item dalam transaksi pembayaran, ini akan membantu mengidentifikasi item yang dibayar dalam transaksi di Midtrans
+                    //id adalah data dari item id penggajian yang akan dibayar, misalnya id penggajian 123
+                    'price' => (int) $penggajian->nominal,//mengambil nominal gaji dari data penggajian dan mengkonversinya menjadi integer untuk digunakan sebagai price dalam item_details transaksi pembayaran di Midtrans
+                    'quantity' => 1, //1 adalah jumlah item yang dibayar, dalam kasus ini adalah 1 gaji karyawan
+                    'name' => 'Gaji ' . ($penggajian->karyawan->nama ?? 'Karyawan'), //menggunakan nama karyawan yang terkait dengan data penggajian untuk membuat nama item dalam transaksi pembayaran, jika nama karyawan tidak tersedia maka akan menggunakan 'Karyawan' sebagai nama item, misalnya 'Gaji John Doe'
                 ],
             ],
             'customer_details' => [
-                'first_name' => $penggajian->karyawan->nama ?? 'Karyawan',
+                'first_name' => $penggajian->karyawan->nama ?? 'Karyawan', //menggunakan nama karyawan yang terkait dengan data penggajian untuk mengisi first_name dalam customer_details transaksi pembayaran, jika nama karyawan tidak tersedia maka akan menggunakan 'Karyawan' sebagai first_name, misalnya 'John Doe'
             ],
         ];
 
@@ -143,33 +145,33 @@ class MidtransController extends Controller
             $penggajian->update(['status' => 'Ditangguhkan']);
         }
 
-        $snapToken = Snap::getSnapToken($params);
+        $snapToken = Snap::getSnapToken($params); //memanggil method getSnapToken dari class Snap untuk mendapatkan snap token yang akan digunakan untuk memproses pembayaran di Midtrans, snap token ini akan dikirim ke view untuk digunakan dalam proses pembayaran di frontend
 
-        return view('midtrans.penggajian', compact('snapToken', 'penggajian'));
+        return view('midtrans.penggajian', compact('snapToken', 'penggajian')); //mengembalikan view midtrans.penggajian dengan data snapToken dan penggajian yang akan digunakan
     }
 
-    public function successPenggajian(Request $request, $id)
+    public function successPenggajian(Request $request, $id) //method ini akan dipanggil ketika pembayaran gaji berhasil, method ini menerima request dari Midtrans dan id penggajian yang dibayar, method ini akan memproses payload dari Midtrans untuk memperbarui status penggajian dan mengirim email notifikasi jika gaji berhasil dibayarkan
     {
         $penggajian = Penggajian::findOrFail($id);
-        $payload = $request->all();
-        $transaction_status = data_get($payload, 'transaction_status') ?? data_get($payload, 'result.transaction_status');
-        $fraud_status = data_get($payload, 'fraud_status') ?? data_get($payload, 'result.fraud_status');
+        $payload = $request->all(); //mengambil semua data dari request yang dikirim oleh Midtrans setelah pembayaran berhasil, data ini akan berisi informasi tentang transaksi pembayaran yang dilakukan, seperti order_id, transaction_status, fraud_status, dan lainnya
+        $transaction_status = data_get($payload, 'transaction_status') ?? data_get($payload, 'result.transaction_status'); //mengambil nilai transaction_status dari payload, jika tidak ditemukan maka akan mencoba mengambil dari result.transaction_status, transaction_status ini akan digunakan untuk menentukan status penggajian setelah pembayaran berhasil
+        $fraud_status = data_get($payload, 'fraud_status') ?? data_get($payload, 'result.fraud_status'); //mengambil nilai fraud_status dari payload, jika tidak ditemukan maka akan mencoba mengambil dari result.fraud_status, fraud_status ini akan digunakan untuk menentukan apakah transaksi pembayaran dianggap aman atau tidak, dan akan mempengaruhi status penggajian setelah pembayaran berhasil
 
         if (in_array($transaction_status, ['capture', 'settlement'], true)) {
-            $penggajian->status = 'Dibayarkan';
+            $penggajian->status = 'Dibayarkan'; //jika transaction_status adalah capture atau settlement, maka status penggajian akan diubah menjadi 'Dib
         } elseif ($transaction_status === 'pending') {
-            $penggajian->status = 'Ditangguhkan';
+            $penggajian->status = 'Ditangguhkan'; 
         } else {
-            $penggajian->status = 'Ditangguhkan';
+            $penggajian->status = 'Ditangguhkan';  
         }
 
-        $penggajian->save();
+        $penggajian->save(); //menyimpan perubahan status penggajian ke database setelah memproses transaction_status dan fraud_status dari payload Midtrans
 
         if ($penggajian->status === 'Dibayarkan') {
-            Mail::to(config('mail.from.address'))->send(new PenggajianDibayarkan($penggajian));
+            Mail::to(config('mail.from.address'))->send(new PenggajianDibayarkan($penggajian)); //jika status penggajian adalah 'Dibayarkan', maka akan mengirim email notifikasi menggunakan class PenggajianDibayarkan ke alamat email yang ditentukan dalam konfigurasi mail, email ini akan berisi informasi tentang penggajian yang berhasil dibayarkan
         }
 
-        return response()->json([
+        return response()->json([ //mengembalikan response JSON yang berisi pesan bahwa status penggajian telah diperbarui dan juga menyertakan status penggajian yang baru setelah diproses, response ini akan dikirim kembali ke Midtrans sebagai konfirmasi bahwa callback telah berhasil diproses
             'message' => 'Status penggajian diperbarui',
             'status' => $penggajian->status,
         ]);

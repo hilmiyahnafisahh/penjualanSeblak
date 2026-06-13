@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>Bayar Beban</title>
@@ -13,7 +13,7 @@
 
     <p>Total: Rp {{ number_format($beban->total, 0, ',', '.') }}</p>
 
-    <button id="pay-button">Bayar Sekarang</button>//tombol bayar
+    <button id="pay-button">Bayar Sekarang</button>
 
     <script>
         document.getElementById('pay-button').onclick = function () {  // Ketika tombol bayar diklik, panggil fungsi snap.pay dengan snapToken yang diberikan dari controller
@@ -33,4 +33,4 @@
     </script>
 
 </body>
-</html>
+</html> -->

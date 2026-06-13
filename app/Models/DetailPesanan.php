@@ -12,15 +12,19 @@ class DetailPesanan extends Model
         'id_pemesanan',
         'id_menu',
         'jumlah',
-        'harga_jual',
+        'harga_menu',
+        'harga_jual',   // ← tambahkan
         'subtotal',
         'catatan',
+        'topping',      // ← tambahkan agar JSON topping tersimpan
     ];
 
     protected $casts = [
         'harga_jual' => 'integer',
-        'subtotal' => 'integer',
-        'jumlah' => 'integer',
+        'harga_menu' => 'integer',
+        'subtotal'   => 'integer',
+        'jumlah'     => 'integer',
+        'topping'    => 'array',  // ← otomatis encode/decode JSON
     ];
 
     public function pemesanan()
