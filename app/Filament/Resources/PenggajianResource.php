@@ -30,16 +30,16 @@ class PenggajianResource extends Resource
 {
     protected static ?string $model = Penggajian::class; // Model yang digunakan resource ini
     protected static ?string $navigationGroup = 'Transaksi';
-
+    
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    protected static ?string $navigationLabel = 'Penggajian'; // Label untuk menu di sidebar
-    protected static ?string $modelLabel = 'Penggajian'; // Label untuk model di halaman ui
-    protected static function hitungGaji($jam, $upah, $hari): array // Fungsi untuk menghitung gaji berdasarkan jam kerja, upah per jam, dan jumlah hari kehadiran
-{
-    $gajiPerHari = $jam * $upah; //parameter yang diinputkan user untuk menghitung gaji per hari
-    $nominal = $gajiPerHari * $hari; //hasil gaji per hari dikalikan dengan jumlah hari kehadiran untuk mendapatkan nominal total gaji yang akan dibayarkan
+    protected static ?string $navigationLabel = 'Penggajian'; 
+    protected static ?string $modelLabel = 'Penggajian'; 
+    protected static function hitungGaji($jam, $upah, $hari): array 
+    {
+    $gajiPerHari = $jam * $upah; 
+    $nominal = $gajiPerHari * $hari; 
 
-    return [ // Mengembalikan hasil perhitungan dalam bentuk array
+    return [ 
         'gaji_per_hari' => $gajiPerHari,
         'nominal' => $nominal,
     ];
@@ -55,21 +55,21 @@ class PenggajianResource extends Resource
                         ->description('Pilih karyawan yang akan digaji')
                         ->icon('heroicon-o-user')
                         ->schema([
-                            TextInput::make('id_penggajian') //namanya id_penggajian karena harus konsisten dengan nama field di database, meskipun nanti akan diisi otomatis oleh fungsi getIDPenggajian() di model Penggajian
+                            TextInput::make('id_penggajian') 
                                 ->label('ID Penggajian')
-                                ->disabled() //agar field ini tidak bisa diedit oleh user karena akan otomatis di-generate
-                                ->dehydrated() //agar field ini tetap disimpan ke database meskipun disabled
-                                ->default(fn () => Penggajian::getIDPenggajian()) //otomatis generate ID Penggajian berdasarkan fungsi getIDPenggajian() di model Penggajian
-                                ->columnSpanFull(), // agar field ini mengambil seluruh lebar kolom
+                                ->disabled() 
+                                ->dehydrated() 
+                                ->default(fn () => Penggajian::getIDPenggajian()) 
+                                ->columnSpanFull(), 
  
                             Select::make('id_karyawan')
                                 ->label('Karyawan')
-                                ->options( //mengambil data karyawan yang memiliki nama tidak null dan tidak kosong untuk ditampilkan di dropdown
-                                    \App\Models\Karyawan::query() //
-                                        ->whereNotNull('nama') // memastikan nama tidak null
-                                        ->where('nama', '!=', '')// memastikan nama tidak kosong
-                                        ->pluck('nama', 'id_karyawan')// mengambil nama sebagai label dan id_karyawan sebagai value untuk dropdown
-                                        ->toArray()// mengubah hasil pluck menjadi array biasa
+                                ->options( 
+                                    \App\Models\Karyawan::query() 
+                                        ->whereNotNull('nama') 
+                                        ->where('nama', '!=', '')
+                                        ->pluck('nama', 'id_karyawan')
+                                        ->toArray()
                                 )
                                 ->searchable()
                                 ->required()
@@ -89,16 +89,16 @@ class PenggajianResource extends Resource
 
                                 TextInput::make('jam_kerja')
                                     ->label('Jam Kerja Per Hari')
-                                    ->numeric() // memastikan input hanya angka
+                                    ->numeric() 
                                     ->required()
-                                    ->suffix('jam') //menambahkan keterangan "jam" di belakang input
-                                    ->minValue(4) // memastikan jam kerja minimal 4 jam per hari
-                                    ->live(onBlur: true) // menghitung gaji per hari dan nominal total gaji setiap kali input jam kerja diubah (setelah input kehilangan fokus)
-                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) { //Menjalankan function setelah nilai field berubah
-                                    $hasil = self::hitungGaji( //memanggi; fungsi hitungGaji dari array yang sudah dibuat sebelumnya untuk menghitung gaji per hari dan nominal total gaji berdasarkan nilai jam kerja, upah per jam, dan kehadiran yang diinputkan user
-                                        floatval($state), //mengambil nilai jam kerja yang baru diinputkan, mengubahnya menjadi float, dan memasukkannya ke fungsi hitungGaji untuk menghitung gaji per hari dan nominal total gaji
-                                        floatval($get('upah_per_jam')), //mengambil nilai upah per jam yang sudah diinputkan sebelumnya, mengubahnya menjadi float, dan memasukkannya ke fungsi hitungGaji untuk menghitung gaji per hari dan nominal total gaji
-                                        floatval($get('kehadiran')) //mengambil nilai kehadiran yang sudah diinputkan sebelumnya, mengubahnya menjadi float, dan memasukkannya ke fungsi hitungGaji untuk menghitung gaji per hari dan nominal total gaji
+                                    ->suffix('jam') 
+                                    ->minValue(4) 
+                                    ->live(onBlur: true) 
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) { 
+                                    $hasil = self::hitungGaji( 
+                                        floatval($state), 
+                                        floatval($get('upah_per_jam')), 
+                                        floatval($get('kehadiran')) 
                                     );
 
                                     $set('gaji_per_hari', $hasil['gaji_per_hari']); //mengambil hasil gaji per hari dari fungsi hitungGaji dan memasukkannya ke field gaji_per_hari agar otomatis terisi setelah jam kerja diubah
@@ -109,14 +109,14 @@ class PenggajianResource extends Resource
                                     ->label('Upah Per Jam')
                                     ->numeric()
                                     ->required()
-                                    ->formatStateUsing(fn (string|int|null $state): string => rupiah($state)) //menggunakan fungsi rupiah dari helper untuk menampilkan format mata uang rupiah saat user menginputkan upah per jam
-                                    ->minValue(13000) // memastikan upah per jam minimal sesuai dengan UMK 2024 (13.000 IDR)
-                                    ->live(onBlur: true) // menghitung gaji per hari dan nominal total gaji setiap kali input upah per jam diubah (setelah input kehilangan fokus)
+                                    ->formatStateUsing(fn (string|int|null $state): string => rupiah($state)) 
+                                    ->minValue(13000) 
+                                    ->live(onBlur: true)
                                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
 
                                     $hasil = self::hitungGaji(
                                         floatval($get('jam_kerja')),
-                                        floatval($state),
+                                        floatval($state), 
                                         floatval($get('kehadiran'))
                                     );
 
@@ -132,8 +132,7 @@ class PenggajianResource extends Resource
                                     ->suffix('hari')
                                     ->minValue(20)   
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) { //karena field bisa berubah masing-masing, maka perlu dibuat function afterStateUpdated untuk masing-masing field agar ketika salah satu field diubah, maka gaji per hari dan nominal total gaji akan otomatis dihitung ulang berdasarkan nilai terbaru dari ketiga field (jam kerja, upah per jam, dan kehadiran)
-
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) { 
                                     $hasil = self::hitungGaji(
                                         floatval($get('jam_kerja')),
                                         floatval($get('upah_per_jam')),
@@ -247,13 +246,12 @@ class PenggajianResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Struk')
+                    ->icon('heroicon-o-document-text')
+                    ->color('info'),
                 Tables\Actions\EditAction::make(),
-                Action::make('bayarGaji')
-                    ->label('Bayar Gaji')
-                    ->icon('heroicon-o-credit-card')
-                    ->color('success')
-                    ->url(fn (Penggajian $record): string => route('penggajian.midtrans', ['id' => $record->id])) //mengarahkan ke route penggajian.midtrans dengan parameter id penggajian untuk memproses pembayaran melalui Midtrans
-                    ->visible(fn (?Penggajian $record): bool => $record !== null && in_array($record->status, ['Ditangguhkan', 'Pending'])), //tombol bayar gaji hanya akan muncul jika status penggajian adalah Ditangguhkan atau Pending, dan tidak muncul jika status sudah Dibayarkan atau record null
+                Tables\Actions\DeleteAction::make(),
             ])
 
             // tombol tambahan
@@ -265,18 +263,16 @@ class PenggajianResource extends Resource
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('success')
                 ->action(function () {
-                    $penggajian = Penggajian::all(); //mengambil semua data penggajian untuk dimasukkan ke dalam PDF. Bisa disesuaikan jika ingin mengambil data tertentu saja (misal berdasarkan filter atau pagination)
-
-                    $pdf = Pdf::loadView('pdf.penggajian', ['penggajian' => $penggajian]); //menggunakan view resources/views/pdf/penggajian.blade.php untuk membuat tampilan PDF, dan mengirimkan data penggajian ke view tersebut untuk ditampilkan di PDF. Pastikan kamu sudah membuat view ini dengan format yang sesuai untuk laporan penggajian.
-
-                    return response()->streamDownload( //mengembalikan response untuk mengunduh file PDF yang sudah dibuat
-                        fn () => print($pdf->output()), //mencetak output PDF yang sudah dibuat ke dalam response stream untuk diunduh
-                        'penggajian-list.pdf' //nama file PDF yang akan diunduh. Bisa disesuaikan sesuai kebutuhan (misal menambahkan timestamp agar nama file unik)
+                    $penggajian = Penggajian::all(); 
+                    $pdf = Pdf::loadView('pdf.penggajian', ['penggajian' => $penggajian]); 
+                    return response()->streamDownload( 
+                        fn () => print($pdf->output()), 
+                        'penggajian-list.pdf' 
                     );
                 })
             ])
 
-            ->bulkActions([ // untuk menambahkan tombol aksi massal (bulk action) di tabel, seperti hapus banyak data sekaligus
+            ->bulkActions([ 
                 Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
                 ]),
@@ -294,6 +290,7 @@ class PenggajianResource extends Resource
             'index'  => Pages\ListPenggajians::route('/'),
             'create' => Pages\CreatePenggajian::route('/create'),
             'edit'   => Pages\EditPenggajian::route('/{record}/edit'),
+            'view'   => Pages\ViewPenggajian::route('/{record}'),
         ];
     }
 }

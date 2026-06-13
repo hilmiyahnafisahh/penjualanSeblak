@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('jurnal_detail', function (Blueprint $table) {
             $table->id();
             $table->foreignId('jurnal_id')->constrained('jurnal')->cascadeOnDelete();
-            $table->foreignId('coa_id')->constrained('coa')->cascadeOnDelete();
+            $table->foreignId('kode_akun')->constrained('akun')->cascadeOnDelete();
             $table->string('deskripsi')->nullable();
             $table->decimal('debit',15,2)->default(0);
             $table->decimal('credit',15,2)->default(0);
