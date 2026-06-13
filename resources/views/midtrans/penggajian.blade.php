@@ -66,8 +66,8 @@
     </div>
 
     <script>
-        function updatePenggajian(result) {
-            return fetch('{{ route('penggajian.midtrans.success', ['id' => $penggajian->id]) }}', { //fungsi ini akan mengirim data hasil pembayaran dari Midtrans ke server untuk memperbarui status penggajian, URL endpoint yang digunakan adalah route 'penggajian.midtrans.success' dengan parameter id penggajian yang sedang diproses
+        function updatePenggajian(result) { //update statusgaji server
+            return fetch('{{ route('penggajian.midtrans.success', ['id' => $penggajian->id]) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -81,12 +81,12 @@
             window.snap.pay('{{ $snapToken }}', {
                 onSuccess: function(result){
                     updatePenggajian(result).finally(function() {
-                        window.location.href = '{{ url('/admin/penggajians') }}'; //setelah memperbarui status penggajian di server, pengguna akan diarahkan kembali ke halaman daftar penggajian di admin, ini memastikan bahwa pengguna dapat melihat status terbaru dari penggajian setelah melakukan pembayaran melalui Midtrans
+                        window.location.href = '{{ url('/admin/penggajians') }}'; 
                     });
                 },
                 onPending: function(result){
                     updatePenggajian(result).finally(function() {
-                        window.location.href = '{{ url('/admin/penggajians') }}'; //jika pembayaran masih pending, status penggajian juga akan diperbarui di server dan pengguna akan diarahkan kembali ke halaman daftar penggajian untuk melihat status terbaru, ini memungkinkan pengguna untuk memantau status pembayaran yang belum selesai melalui Midtrans
+                        window.location.href = '{{ url('/admin/penggajians') }}'; 
                     });
                 },
                 onError: function(result){
