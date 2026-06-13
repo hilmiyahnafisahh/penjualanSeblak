@@ -104,8 +104,25 @@
         method: 'DELETE',
         headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
       })
-      .then(r => r.json())
+      .then(async r => {
+        if (!r.ok) {
+          const contentType = r.headers.get('content-type') || '';
+          const body = await r.text();
+          if (contentType.includes('text/html') || body.includes('login')) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Login diperlukan',
+              text: 'Silakan login terlebih dahulu untuk menghapus item dari keranjang.',
+              confirmButtonText: 'Login'
+            }).then(() => window.location.href = '{{ route('login') }}');
+            return;
+          }
+          throw new Error('Gagal menghapus item.');
+        }
+        return r.json();
+      })
       .then(data => {
+        if (!data) return;
         if (data.success) {
           Swal.fire({ icon: 'success', title: 'Dihapus!', showConfirmButton: false, timer: 1500 });
           syncCartUI(data.total, data.jmlbarangdibeli);
