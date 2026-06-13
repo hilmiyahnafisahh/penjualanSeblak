@@ -5,20 +5,31 @@ use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\BebanPdfController;
 use App\Http\Controllers\CobaMidtransController;
 use App\Http\Controllers\PembayaranPdfController;
+use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\PembayaranEmailController;
+use App\Http\Controllers\PembelianPdfController;
+use App\Http\Controllers\PengirimanEmailController;
+use App\Http\Controllers\KasirController;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PembayaranInvoiceMail;
 use App\Models\Pembayaran;
-use App\Http\Controllers\PembayaranEmailController;
-
-use App\Http\Controllers\PembelianPdfController;
-use App\Http\Controllers\PengirimanEmailController;
 
 
 // Halaman awal
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Kasir khusus
+Route::get('/kasir', [KasirController::class, 'index'])->name('kasir.home');
+Route::get('/kasir/login', [KasirController::class, 'showLogin'])->name('kasir.login');
+Route::post('/kasir/login', [KasirController::class, 'login'])->name('kasir.login.post');
+Route::post('/kasir/logout', [KasirController::class, 'logout'])->name('kasir.logout');
+Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
+Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.pesanan');
+Route::get('/kasir/pembayaran', [KasirController::class, 'pembayaran'])->name('kasir.pembayaran');
+Route::get('/kasir/stok-menu', [KasirController::class, 'stokMenu'])->name('kasir.stok_menu');
 
 // Untuk membuka halaman pembayaran beban
 Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
@@ -27,6 +38,14 @@ Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
 // Untuk membuka halaman pembayaran pemesanan lewat Midtrans
 Route::get('/bayar-pemesanan/{id}', [MidtransController::class, 'bayarPemesanan'])
     ->name('pembayaran.midtrans');
+
+// Halaman pembuatan / tampilan form pembayaran (dari admin)
+Route::get('/admin/pembayaran/{id}/create', [PembayaranController::class, 'show'])
+    ->name('pembayaran.show');
+
+// Proses penyimpanan pembayaran untuk pesanan (form action di view)
+Route::post('/admin/pembayaran/{id}', [PembayaranController::class, 'store'])
+    ->name('pembayaran.store');
 
 // Untuk membuka halaman pembayaran penggajian lewat Midtrans
 Route::get('/bayar-penggajian/{id}', [MidtransController::class, 'bayarPenggajian'])

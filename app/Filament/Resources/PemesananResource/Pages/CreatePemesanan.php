@@ -8,6 +8,7 @@ use Filament\Actions\Action;
 use Illuminate\Support\Facades\DB;
 use App\Models\Barang;
 use App\Models\Menu;
+use App\Models\Pembayaran;
 
 class CreatePemesanan extends CreateRecord
 {
@@ -48,8 +49,23 @@ protected function afterCreate(): void
         $detailItems = $this->data['DetailPesanan'] ?? [];
         $this->decreaseStockFromPesanan($detailItems);
 
-        if ($this->redirectToPayment) {
-            $this->redirectUrl = '/admin/pembayaran/create?id_pemesanan=' . $this->record->id;
+        // Jika user memilih tombol "Bayar Sekarang", buat record pembayaran
+        // otomatis dan arahkan ke Midtrans untuk proses pembayaran.
+        if ($this->redirectToPayment && $this->record) {
+            $pemesananId = $this->record->id;
+
+            // Buat pembayaran default (metode QRIS, status pending)
+            $pembayaran = Pembayaran::create([
+                'id_pemesanan' => $pemesananId,
+                'total_pembayaran' => $this->record->subtotal ?? 0,
+                'metode_pembayaran' => 'qris',
+                'tanggal_pembayaran' => now('Asia/Jakarta'),
+                'status_pembayaran' => 'pending',
+            ]);
+
+            // Redirect ke daftar admin Pembayaran agar admin dapat melihat
+            // transaksi yang baru dibuat.
+            $this->redirectUrl = url('/admin/pembayaran');
         }
     }
 
@@ -72,6 +88,11 @@ protected function afterCreate(): void
     // redirect setelah create
     protected function getRedirectUrl(): string
     {
+        // Jika sebuah redirect khusus sudah ditentukan di afterCreate(), pakai itu.
+        if (!empty($this->redirectUrl)) {
+            return $this->redirectUrl;
+        }
+
         if ($this->redirectToPayment && $this->record) {
             return route('pembayaran.show', ['id' => $this->record->id]);
         }

@@ -95,8 +95,9 @@ class PembayaranResource extends Resource
                                         ->label('Pilih Pesanan')
                                         ->default(fn () => request()->query('id_pemesanan'))
                                         ->options(
-                                            Pemesanan::whereDoesntHave('pembayaran')
-                                                ->where('status_pemesanan', 'diproses')
+                                            // Tampilkan hanya pesanan yang belum selesai (belum bayar / pending)
+                                            Pemesanan::where('status_pemesanan', '!=', 'selesai')
+                                                ->orderBy('tanggal_pemesanan', 'desc')
                                                 ->pluck('id_pesanan', 'id')
                                         )
                                         ->getOptionLabelUsing(fn ($value) => Pemesanan::find($value)?->id_pesanan)
