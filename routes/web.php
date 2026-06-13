@@ -23,7 +23,10 @@ use App\Models\Barang;
 Route::get('/', function () {
     return view('welcome');
 });
-
+// // Untuk membuka halaman pembayaran beban
+// Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
+//     ->name('beban.bayar');
+=======
 // ============================================================
 // Customer Auth (Login & Register)
 // ============================================================
@@ -81,6 +84,9 @@ Route::get('/kasir/stok-menu', [KasirController::class, 'stokMenu'])->name('kasi
 // Untuk membuka halaman pembayaran beban
 Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
     ->name('beban.bayar');
+// // Untuk membuka halaman pembayaran beban
+// Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
+//     ->name('beban.bayar');
 
 // Untuk membuka halaman pembayaran pemesanan lewat Midtrans
 Route::get('/bayar-pemesanan/{id}', [MidtransController::class, 'bayarPemesanan'])
