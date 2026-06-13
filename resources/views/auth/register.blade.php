@@ -1,66 +1,85 @@
-@extends('layout')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Pelanggan</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 { text-align: center; margin-bottom: 1.5rem; color: #1f2937; font-size: 1.5rem; }
+        label { display: block; margin-bottom: 0.3rem; font-size: 0.875rem; color: #374151; }
+        input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        input:focus { outline: none; border-color: #6366f1; }
+        .error { color: #dc2626; font-size: 0.8rem; margin-top: -0.8rem; margin-bottom: 0.8rem; }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover { background: #4f46e5; }
+        .login-link { text-align: center; margin-top: 1rem; font-size: 0.875rem; }
+        .login-link a { color: #6366f1; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>📝 Daftar Pelanggan</h1>
 
-@section('title', 'Daftar Pelanggan - Seblak Nusantara')
+        @if ($errors->any())
+            @foreach ($errors->all() as $error)
+                <div class="error">{{ $error }}</div>
+            @endforeach
+        @endif
 
-@section('konten')
-<div class="page-hero">
-    <div class="container-fluid">
-        <h1>📝 Daftar Akun</h1>
-        <p>Buat akun untuk memesan seblak dan melihat riwayat pesanan Anda.</p>
-    </div>
-</div>
+        <form method="POST" action="{{ route('pelanggan.register.post') }}">
+            @csrf
 
-<section class="pb-5">
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4">
-                        <form method="POST" action="{{ route('register') }}">
-                            @csrf
+            <label for="name">Nama Lengkap</label>
+            <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus>
 
-                            @if($errors->any())
-                                <div class="alert alert-danger">
-                                    <ul class="mb-0">
-                                        @foreach($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ old('email') }}" required>
 
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nama Lengkap</label>
-                                <input id="name" type="text" name="name" value="{{ old('name') }}" class="form-control" required autofocus>
-                            </div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
 
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input id="email" type="email" name="email" value="{{ old('email') }}" class="form-control" required>
-                            </div>
+            <label for="password_confirmation">Konfirmasi Password</label>
+            <input type="password" id="password_confirmation" name="password_confirmation" required>
 
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input id="password" type="password" name="password" class="form-control" required>
-                            </div>
+            <button type="submit">Daftar</button>
+        </form>
 
-                            <div class="mb-3">
-                                <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
-                                <input id="password_confirmation" type="password" name="password_confirmation" class="form-control" required>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-danger btn-lg">Daftar</button>
-                            </div>
-                        </form>
-
-                        <div class="mt-4 text-center">
-                            <p class="mb-0">Sudah punya akun? <a href="{{ route('login') }}">Masuk di sini</a>.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="login-link">
+            Sudah punya akun? <a href="{{ route('pelanggan.login') }}">Login di sini</a>
         </div>
     </div>
-</section>
-@endsection
+</body>
+</html>

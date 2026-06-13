@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>FoodMart - Free eCommerce Grocery Store HTML Website Template</title>
+    <title>Seblak Sangkuriang - Free eCommerce Grocery Store HTML Website Template</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,16 +31,17 @@
   <body class="bg-light">
     <header class="navbar navbar-expand-lg navbar-light bg-white border-bottom mb-4">
       <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="{{ route('depan') }}">Seblak Nusantara</a>
+        @auth
+          <a class="navbar-brand d-flex align-items-center fw-bold gap-2" href="{{ route('pelanggan.dashboard') }}">
+        @else
+          <a class="navbar-brand d-flex align-items-center fw-bold gap-2" href="{{ route('depan') }}">
+        @endauth
+          <img src="{{ asset('images/logo-seblak.png') }}" alt="Seblak Sangkuriang"
+               style="width:44px;height:44px;object-fit:contain;border-radius:50%;">
+          <span style="font-size:.95rem;font-weight:700;color:#8b1a1a;">Seblak Sangkuriang</span>
+        </a>
         <div class="d-flex align-items-center gap-2 ms-auto">
           @auth
-            <a href="{{ route('depan') }}" class="btn btn-outline-secondary btn-sm">Menu</a>
-            <a href="{{ route('cart.index') }}" class="btn btn-outline-secondary btn-sm">Keranjang</a>
-            <a href="{{ route('history') }}" class="btn btn-outline-secondary btn-sm">Riwayat</a>
-            <form method="POST" action="{{ route('logout') }}" class="d-inline">
-              @csrf
-              <button type="submit" class="btn btn-danger btn-sm">Logout</button>
-            </form>
           @else
             <a href="{{ route('login') }}" class="btn btn-outline-secondary btn-sm">Masuk</a>
             <a href="{{ route('register') }}" class="btn btn-danger btn-sm">Daftar</a>

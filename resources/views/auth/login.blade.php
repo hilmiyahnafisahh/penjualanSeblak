@@ -1,56 +1,77 @@
-@extends('layout')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Pelanggan</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 { text-align: center; margin-bottom: 1.5rem; color: #1f2937; font-size: 1.5rem; }
+        label { display: block; margin-bottom: 0.3rem; font-size: 0.875rem; color: #374151; }
+        input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        input:focus { outline: none; border-color: #6366f1; }
+        .error { color: #dc2626; font-size: 0.8rem; margin-top: -0.8rem; margin-bottom: 0.8rem; }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover { background: #4f46e5; }
+        .register-link { text-align: center; margin-top: 1rem; font-size: 0.875rem; }
+        .register-link a { color: #6366f1; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🛒 Login Pelanggan</h1>
 
-@section('title', 'Login Pelanggan - Seblak Nusantara')
+        @if ($errors->any())
+            <div class="error">{{ $errors->first() }}</div>
+        @endif
 
-@section('konten')
-<div class="page-hero">
-    <div class="container-fluid">
-        <h1>🔐 Login Pelanggan</h1>
-        <p>Masuk untuk melanjutkan pemesanan dan melihat keranjang.</p>
-    </div>
-</div>
+        <form method="POST" action="{{ route('pelanggan.login.post') }}">
+            @csrf
 
-<section class="pb-5">
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4">
-                        <form method="POST" action="{{ route('login') }}">
-                            @csrf
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus>
 
-                            @if($errors->any())
-                                <div class="alert alert-danger">
-                                    <ul class="mb-0">
-                                        @foreach($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
 
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input id="email" type="email" name="email" value="{{ old('email') }}" class="form-control" required autofocus>
-                            </div>
+            <button type="submit">Masuk</button>
+        </form>
 
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input id="password" type="password" name="password" class="form-control" required>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-danger btn-lg">Login</button>
-                            </div>
-                        </form>
-
-                        <div class="mt-4 text-center">
-                            <p class="mb-0">Belum punya akun? <a href="{{ route('register') }}">Daftar sekarang</a>.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="register-link">
+            Belum punya akun? <a href="{{ route('pelanggan.register') }}">Daftar di sini</a>
         </div>
     </div>
-</section>
-@endsection
+</body>
+</html>
