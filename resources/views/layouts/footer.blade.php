@@ -97,6 +97,7 @@
       }
     </script>
 
+    </main>
     @stack('scripts')
   </body>
 </html>
