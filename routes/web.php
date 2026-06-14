@@ -161,10 +161,10 @@ Route::get('/tesemail/{id}', function ($id) {
 // --------------------------
 // Admin auth aliases for Filament compatibility
 // --------------------------
-Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('admin.login');
+Route::get('/admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login.post');
 Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
-Route::get('/admin/seblak-login', [AuthController::class, 'showLogin'])->name('filament.admin.auth.login');
+Route::get('/admin/seblak-login', [AuthController::class, 'showLoginForm'])->name('filament.admin.auth.login');
 Route::post('/admin/seblak-login', [AuthController::class, 'login'])->name('filament.admin.auth.login.post');
 Route::match(['get','post'], '/admin/seblak-logout', [AuthController::class, 'logout'])->name('filament.admin.auth.logout');
