@@ -316,14 +316,13 @@ h1.fi-simple-header-heading,
 .fi-main { transition: margin-left .22s ease, padding-left .22s ease !important; }
 
 /* Ensure main content is shifted to accomodate sidebar width so cards don't get cut off */
-html body .fi-sidebar.fi-sidebar-open ~ .fi-main,
-html body aside.fi-sidebar.fi-sidebar-open ~ .fi-main {
+/* use the wrapper class set in the layout blade instead of sibling selectors */
+.fi-main-ctn-sidebar-open .fi-main {
     margin-left: 18rem !important; /* match Filament default sidebar width */
 }
 
 /* When sidebar is collapsed keep a compact margin so main content aligns nicely */
-html body .fi-sidebar.fi-sidebar-collapsed ~ .fi-main,
-html body .fi-sidebar:not(.fi-sidebar-open) ~ .fi-main {
+.fi-main-ctn:not(.fi-main-ctn-sidebar-open) .fi-main {
     margin-left: var(--sidebar-collapsed-width, 5.25rem) !important;
 }
 
