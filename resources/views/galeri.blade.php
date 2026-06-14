@@ -104,8 +104,25 @@
       headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
       body: formData
     })
-    .then(r => r.json())
+    .then(async r => {
+      if (!r.ok) {
+        const contentType = r.headers.get('content-type') || '';
+        const body = await r.text();
+        if (contentType.includes('text/html') || body.includes('login')) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Login diperlukan',
+            text: 'Silakan login terlebih dahulu untuk menambahkan menu ke keranjang.',
+            confirmButtonText: 'Login'
+          }).then(() => window.location.href = '{{ route('login') }}');
+          return;
+        }
+        throw new Error('Gagal menambahkan produk ke keranjang.');
+      }
+      return r.json();
+    })
     .then(data => {
+      if (!data) return;
       if (data.success) {
         Swal.fire({ icon: 'success', title: 'Ditambahkan!', text: 'Produk berhasil masuk keranjang.', showConfirmButton: false, timer: 1800 });
         syncCartUI(data.total, data.jmlbarangdibeli);

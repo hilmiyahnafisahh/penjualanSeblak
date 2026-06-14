@@ -32,14 +32,14 @@ class PenggajianResource extends Resource
     protected static ?string $navigationGroup = '💵 Transaksi';
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    protected static ?string $navigationLabel = 'Penggajian';
-    protected static ?string $modelLabel = 'Penggajian';
-    protected static function hitungGaji($jam, $upah, $hari): array
-{
-    $gajiPerHari = $jam * $upah;
-    $nominal = $gajiPerHari * $hari;
+    protected static ?string $navigationLabel = 'Penggajian'; 
+    protected static ?string $modelLabel = 'Penggajian'; 
+    protected static function hitungGaji($jam, $upah, $hari): array 
+    {
+    $gajiPerHari = $jam * $upah; 
+    $nominal = $gajiPerHari * $hari; 
 
-    return [
+    return [ 
         'gaji_per_hari' => $gajiPerHari,
         'nominal' => $nominal,
     ];
@@ -50,23 +50,23 @@ class PenggajianResource extends Resource
             ->schema([
                 Wizard::make([
  
-                    // ─── STEP 1: Data Karyawan ───────────────────────────
+                    // ─── STEP 1: Data Karyawan ───────────────────────────//
                     Wizard\Step::make('Data Karyawan')
                         ->description('Pilih karyawan yang akan digaji')
                         ->icon('heroicon-o-user')
                         ->schema([
-                            TextInput::make('id_penggajian')
+                            TextInput::make('id_penggajian') 
                                 ->label('ID Penggajian')
-                                ->disabled()
-                                ->dehydrated()
-                                ->default(fn () => Penggajian::getIDPenggajian())
-                                ->columnSpanFull(),
+                                ->disabled() 
+                                ->dehydrated() 
+                                ->default(fn () => Penggajian::getIDPenggajian()) 
+                                ->columnSpanFull(), 
  
                             Select::make('id_karyawan')
                                 ->label('Karyawan')
-                                ->options(
-                                    \App\Models\Karyawan::query()
-                                        ->whereNotNull('nama')
+                                ->options( 
+                                    \App\Models\Karyawan::query() 
+                                        ->whereNotNull('nama') 
                                         ->where('nama', '!=', '')
                                         ->pluck('nama', 'id_karyawan')
                                         ->toArray()
@@ -89,20 +89,19 @@ class PenggajianResource extends Resource
 
                                 TextInput::make('jam_kerja')
                                     ->label('Jam Kerja Per Hari')
-                                    ->numeric()
+                                    ->numeric() 
                                     ->required()
-                                    ->suffix('jam')
-                                    ->minValue(4)
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-
-                                    $hasil = self::hitungGaji(
-                                        floatval($state),
-                                        floatval($get('upah_per_jam')),
-                                        floatval($get('kehadiran'))
+                                    ->suffix('jam') 
+                                    ->minValue(4) 
+                                    ->live(onBlur: true) 
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) { 
+                                    $hasil = self::hitungGaji( 
+                                        floatval($state), 
+                                        floatval($get('upah_per_jam')), 
+                                        floatval($get('kehadiran')) 
                                     );
 
-                                    $set('gaji_per_hari', $hasil['gaji_per_hari']);
+                                    $set('gaji_per_hari', $hasil['gaji_per_hari']); //mengambil hasil gaji per hari dari fungsi hitungGaji dan memasukkannya ke field gaji_per_hari agar otomatis terisi setelah jam kerja diubah
                                     $set('nominal', $hasil['nominal']);
                                 }),
 
@@ -110,14 +109,14 @@ class PenggajianResource extends Resource
                                     ->label('Upah Per Jam')
                                     ->numeric()
                                     ->required()
-                                    ->formatStateUsing(fn (string|int|null $state): string => rupiah($state))
-                                    ->minValue(13000)
+                                    ->formatStateUsing(fn (string|int|null $state): string => rupiah($state)) 
+                                    ->minValue(13000) 
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
 
                                     $hasil = self::hitungGaji(
                                         floatval($get('jam_kerja')),
-                                        floatval($state),
+                                        floatval($state), 
                                         floatval($get('kehadiran'))
                                     );
 
@@ -133,8 +132,7 @@ class PenggajianResource extends Resource
                                     ->suffix('hari')
                                     ->minValue(20)   
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) { 
                                     $hasil = self::hitungGaji(
                                         floatval($get('jam_kerja')),
                                         floatval($get('upah_per_jam')),
@@ -248,13 +246,12 @@ class PenggajianResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Struk')
+                    ->icon('heroicon-o-document-text')
+                    ->color('info'),
                 Tables\Actions\EditAction::make(),
-                Action::make('bayarGaji')
-                    ->label('Bayar Gaji')
-                    ->icon('heroicon-o-credit-card')
-                    ->color('success')
-                    ->url(fn (Penggajian $record): string => route('penggajian.midtrans', ['id' => $record->id]))
-                    ->visible(fn (?Penggajian $record): bool => $record !== null && in_array($record->status, ['Ditangguhkan', 'Pending'])),
+                Tables\Actions\DeleteAction::make(),
             ])
 
             // tombol tambahan
@@ -266,18 +263,16 @@ class PenggajianResource extends Resource
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('success')
                 ->action(function () {
-                    $penggajian = Penggajian::all();
-
-                    $pdf = Pdf::loadView('pdf.penggajian', ['penggajian' => $penggajian]);
-
-                    return response()->streamDownload(
-                        fn () => print($pdf->output()),
-                        'penggajian-list.pdf'
+                    $penggajian = Penggajian::all(); 
+                    $pdf = Pdf::loadView('pdf.penggajian', ['penggajian' => $penggajian]); 
+                    return response()->streamDownload( 
+                        fn () => print($pdf->output()), 
+                        'penggajian-list.pdf' 
                     );
                 })
             ])
 
-            ->bulkActions([
+            ->bulkActions([ 
                 Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
                 ]),
@@ -295,6 +290,7 @@ class PenggajianResource extends Resource
             'index'  => Pages\ListPenggajians::route('/'),
             'create' => Pages\CreatePenggajian::route('/create'),
             'edit'   => Pages\EditPenggajian::route('/{record}/edit'),
+            'view'   => Pages\ViewPenggajian::route('/{record}'),
         ];
     }
 }

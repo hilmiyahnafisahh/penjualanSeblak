@@ -15,12 +15,12 @@ class PenggajianDibayarkan extends Mailable
 
     public function __construct(Penggajian $penggajian)
     {
-        $this->penggajian = $penggajian;
+        $this->penggajian = $penggajian; 
     }
 
     public function build()
     {
-        return $this->subject('Penggajian Dibayarkan')
-            ->view('emails.penggajian_dibayarkan');
+        return $this->subject('Penggajian Dibayarkan') 
+            ->view('emails.penggajian_dibayarkan'); 
     }
 }

@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CatatBeban extends Model
 {
-    protected $table = 'catat_beban';
-    protected $primaryKey = 'id_beban';
+    protected $table = 'catat_beban';   // nama tabel 
+    protected $primaryKey = 'id_beban'; // Menentukan primary key jika bukan 'id'
 
     protected $fillable = [
         'kode_akun',
@@ -21,6 +21,6 @@ class CatatBeban extends Model
 
     public function akun()
     {
-        return $this->belongsTo(Akun::class, 'kode_akun', 'kode_akun');
+        return $this->belongsTo(Akun::class, 'kode_akun', 'kode_akun'); // relasi dengan akun pada kode_akun
     }
 }

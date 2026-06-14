@@ -3,59 +3,96 @@
 namespace App\Filament\Resources\PemesananResource\Pages;
 
 use App\Filament\Resources\PemesananResource;
+use App\Models\Barang;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
-use Filament\Actions\Action;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class CreatePemesanan extends CreateRecord
 {
     protected static string $resource = PemesananResource::class;
 
-    protected bool $redirectToPayment = false;
-
-    // hitung subtotal
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        $total = 0;
-
-        foreach ($data['detail_pesanan'] ?? [] as $item) {
-            $total += $item['subtotal'] ?? 0;
-        }
-
-        $data['subtotal'] = $total;
-
-        return $data;
-    }
-
-    // redirect setelah create
     protected function getRedirectUrl(): string
     {
-        if ($this->redirectToPayment && $this->record) {
-            return route('pembayaran.show', ['id' => $this->record->id]);
-        }
-
         return $this->getResource()::getUrl('index');
     }
 
-    // tombol tambahan
-    protected function getFormActions(): array
+    protected function mutateFormDataBeforeCreate(array $data): array
     {
-        return [
-            $this->getCreateFormAction()
-                ->label('Simpan Pesanan'),
-
-            Action::make('bayarSekarang')
-                ->label('Bayar Sekarang')
-                ->color('success')
-                ->action('bayarSekarang'),
-
-            $this->getCancelFormAction(),
-        ];
+        if (empty($data['id_pesanan'])) {
+            $data['id_pesanan'] = \App\Models\Pemesanan::getKodeFaktur();
+        }
+        return $data;
     }
 
-    public function bayarSekarang(): void
+    /**
+     * Biarkan Filament handle create + relasi,
+     * lalu kurangi stok setelah record tersimpan.
+     */
+    protected function handleRecordCreation(array $data): Model
     {
-        $this->redirectToPayment = true;
+        return DB::transaction(function () use ($data) {
+            // Filament handle simpan pemesanan + DetailPesanan
+            $record = parent::handleRecordCreation($data);
 
-        $this->create();
+            // Kurangi stok topping
+            $this->kurangiStokTopping($record);
+
+            return $record;
+        });
+    }
+
+    /**
+     * Kurangi stok barang berdasarkan topping di setiap detail.
+     */
+    private function kurangiStokTopping(Model $pemesanan): void
+    {
+        $pemesanan->load('DetailPesanan');
+
+        foreach ($pemesanan->DetailPesanan as $detail) {
+
+            $toppings = $detail->topping ?? []; // sudah di-decode oleh cast array
+
+            if (empty($toppings) || ! is_array($toppings)) {
+                continue;
+            }
+
+            foreach ($toppings as $topping) {
+                $idBarang = $topping['id_barang'] ?? null;
+                $qty      = (int) ($topping['qty'] ?? 0);
+
+                if (! $idBarang || $qty <= 0) {
+                    continue;
+                }
+
+                $barang = Barang::where('id_barang', $idBarang)->lockForUpdate()->first();
+
+                if (! $barang) {
+                    continue;
+                }
+
+                if ($barang->stok_barang < $qty) {
+                    Notification::make()
+                        ->title('Stok Tidak Cukup')
+                        ->body("Stok {$barang->nama_barang} hanya {$barang->stok_barang}, dibutuhkan {$qty}.")
+                        ->danger()
+                        ->persistent()
+                        ->send();
+
+                    // Batalkan seluruh transaction
+                    throw new \Exception("Stok {$barang->nama_barang} tidak mencukupi.");
+                }
+
+                // Kurangi stok dengan cara aman (hindari race condition)
+                $barang->decrement('stok_barang', $qty);
+            }
+        }
+
+        Notification::make()
+            ->title('Pemesanan Berhasil')
+            ->body('Stok topping berhasil diperbarui.')
+            ->success()
+            ->send();
     }
 }

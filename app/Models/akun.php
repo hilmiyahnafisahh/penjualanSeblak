@@ -40,4 +40,14 @@ class Akun extends Model
     {
         $this->attributes['kode_akun'] = str_replace('.', '', $value);
     }
+    public function beban()
+    {
+        return $this->hasMany(CatatBeban::class, 'kode_akun', 'kode_akun');
+    }
+    // relasi ke tabel jurnal detail
+    public function jurnalDetails()
+    {
+        return $this->hasMany(JurnalDetail::class, 'akun_id');
+    }
+
 }
