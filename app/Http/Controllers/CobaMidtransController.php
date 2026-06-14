@@ -23,7 +23,7 @@ class CobaMidtransController extends Controller
         \Midtrans\Config::$isSanitized = true;
         \Midtrans\Config::$is3ds = true;
     }
-
+ 
     //contoh sampel sederhana method untuk tester fungsionalitas midtrans
     public function cekmidtrans(Request $request)
     {

@@ -32,7 +32,8 @@ class PemesananResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
-    protected static ?string $navigationGroup = 'Transaksi';
+    protected static ?string $navigationGroup = '💵 Transaksi';
+
 
     protected static ?string $modelLabel        = 'Pemesanan';
     protected static ?string $pluralModelLabel  = 'Pemesanan';

@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Storage; //untuk menyimpan file PDF ke storage
 class PenggajianResource extends Resource
 {
     protected static ?string $model = Penggajian::class;
-    protected static ?string $navigationGroup = 'Transaksi';
+    protected static ?string $navigationGroup = '💵 Transaksi';
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Penggajian';

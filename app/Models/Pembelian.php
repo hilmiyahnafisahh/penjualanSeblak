@@ -24,7 +24,6 @@ class Pembelian extends Model
                 WHERE id_pembelian LIKE 'BL-%'";
         $kodefaktur = DB::select($sql);
 
-        // cacah hasilnya
         foreach ($kodefaktur as $kdpmbl) {
             $kd = $kdpmbl->id_pembelian;
         }
@@ -41,7 +40,6 @@ class Pembelian extends Model
     parent::boot();
 
     static::deleting(function ($pembelian) {
-        // Kurangi stok barang sebelum data dihapus
         foreach ($pembelian->barang as $item) {
             $barang = Barang::where('id_barang', $item->id_barang)->first();
             if ($barang) {
