@@ -11,6 +11,7 @@ use App\Http\Controllers\PembelianPdfController;
 use App\Http\Controllers\PengirimanEmailController;
 use App\Http\Controllers\KasirController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PembayaranController;
@@ -161,10 +162,10 @@ Route::get('/tesemail/{id}', function ($id) {
 // --------------------------
 // Admin auth aliases for Filament compatibility
 // --------------------------
-Route::get('/admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
-Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login.post');
-Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.post');
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
-Route::get('/admin/seblak-login', [AuthController::class, 'showLoginForm'])->name('filament.admin.auth.login');
-Route::post('/admin/seblak-login', [AuthController::class, 'login'])->name('filament.admin.auth.login.post');
-Route::match(['get','post'], '/admin/seblak-logout', [AuthController::class, 'logout'])->name('filament.admin.auth.logout');
+Route::get('/admin/seblak-login', [AdminAuthController::class, 'showLogin'])->name('filament.admin.auth.login');
+Route::post('/admin/seblak-login', [AdminAuthController::class, 'login'])->name('filament.admin.auth.login.post');
+Route::match(['get','post'], '/admin/seblak-logout', [AdminAuthController::class, 'logout'])->name('filament.admin.auth.logout');
