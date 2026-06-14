@@ -63,7 +63,7 @@ html body .fi-sidebar.fi-sidebar-open {
     --tw-ring-shadow:         0 0 #0000 !important;
     --tw-ring-offset-shadow:  0 0 #0000 !important;
     --tw-ring-offset-width:   0px !important;
-    box-shadow: 4px 0 28px rgba(59,10,10,.50) !important;
+    box-shadow: 2px 0 18px rgba(59,10,10,.40) !important;
 }
 
 @media (min-width: 1024px) {
@@ -313,6 +313,22 @@ h1.fi-simple-header-heading,
     width: 100% !important;
     min-width: 0 !important;
 }
+.fi-main { transition: margin-left .22s ease, padding-left .22s ease !important; }
+
+/* Ensure main content is shifted to accomodate sidebar width so cards don't get cut off */
+html body .fi-sidebar.fi-sidebar-open ~ .fi-main,
+html body aside.fi-sidebar.fi-sidebar-open ~ .fi-main {
+    margin-left: 18rem !important; /* match Filament default sidebar width */
+}
+
+/* When sidebar is collapsed keep a compact margin so main content aligns nicely */
+html body .fi-sidebar.fi-sidebar-collapsed ~ .fi-main,
+html body .fi-sidebar:not(.fi-sidebar-open) ~ .fi-main {
+    margin-left: var(--sidebar-collapsed-width, 5.25rem) !important;
+}
+
+/* small extra padding to prevent visual clipping from sidebar shadow */
+html body .fi-main { padding-left: .75rem !important; }
 .fi-main-ctn { min-width: 0 !important; }
 .fi-page, .fi-page-content { color: var(--dark) !important; }
 
