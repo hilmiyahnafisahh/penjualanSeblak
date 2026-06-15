@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-<<<<<<< HEAD
 use App\Models\Menu;
 use App\Models\Pembayaran;
 use App\Models\Pemesanan;
@@ -42,25 +41,10 @@ class KasirController extends Controller
         }
 
         return view('kasir.login');
-=======
-use Illuminate\Http\Request;
-
-class KasirController extends Controller
-{
-    public function index()
-    {
-        return redirect()->route('kasir.login');
-    }
-
-    public function showLogin()
-    {
-        return abort(404, 'Kasir login not implemented yet.');
->>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b
     }
 
     public function login(Request $request)
     {
-<<<<<<< HEAD
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
@@ -82,14 +66,10 @@ class KasirController extends Controller
         $request->session()->put('kasir_user_name', $user->name);
 
         return redirect()->route('kasir.dashboard');
-=======
-        return abort(404, 'Kasir login not implemented yet.');
->>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b
     }
 
     public function logout(Request $request)
     {
-<<<<<<< HEAD
         $request->session()->forget([
             'kasir_user_id',
             'kasir_user_name'
@@ -110,7 +90,7 @@ class KasirController extends Controller
         $todayRevenue = Pembayaran::whereDate('tanggal_pembayaran', now())->sum('total_pembayaran');
 
         $recentOrders = Pemesanan::with('Pelanggan')
-            ->orderBy('tanggal_pemesanan', 'desc')
+            ->orderBy('id', 'desc')
             ->take(5)
             ->get();
 
@@ -139,7 +119,7 @@ class KasirController extends Controller
         ];
 
         $query = Pemesanan::with('Pelanggan')
-            ->orderBy('tanggal_pemesanan', 'desc');
+            ->orderBy('id', 'desc');
 
         if ($statusMap[$statusParam] ?? null) {
             $query->where('status_pemesanan', $statusMap[$statusParam]);
@@ -172,6 +152,36 @@ class KasirController extends Controller
         return view('kasir.pembayaran', compact('pembayaran', 'statusParam'));
     }
 
+    public function bayarPembayaran(Request $request, $id)
+    {
+        if (!$this->guardKasir($request)) {
+            return redirect()->route('kasir.login');
+        }
+
+        $pembayaran = Pembayaran::with('pemesanan')->find($id);
+
+        if (!$pembayaran) {
+            abort(404);
+        }
+
+        if ($pembayaran->status_pembayaran !== 'pending' || strtolower($pembayaran->metode_pembayaran) !== 'tunai') {
+            return redirect()->route('kasir.pembayaran')
+                ->with('error', 'Hanya pembayaran tunai pending yang dapat dilunasi di kasir.');
+        }
+
+        $pembayaran->update([
+            'status_pembayaran' => 'lunas',
+            'tanggal_pembayaran' => $pembayaran->tanggal_pembayaran ?: now(),
+        ]);
+
+        if ($pembayaran->pemesanan) {
+            $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
+        }
+
+        return redirect()->route('kasir.pembayaran')
+            ->with('success', 'Pembayaran tunai berhasil diproses.');
+    }
+
     public function stokMenu(Request $request)
     {
         if (!$this->guardKasir($request)) {
@@ -190,28 +200,3 @@ class KasirController extends Controller
         ));
     }
 }
-=======
-        return abort(404, 'Kasir logout not implemented yet.');
-    }
-
-    public function dashboard()
-    {
-        return abort(404, 'Kasir dashboard not implemented yet.');
-    }
-
-    public function pesanan()
-    {
-        return abort(404, 'Kasir pesanan not implemented yet.');
-    }
-
-    public function pembayaran()
-    {
-        return abort(404, 'Kasir pembayaran not implemented yet.');
-    }
-
-    public function stokMenu()
-    {
-        return abort(404, 'Kasir stokMenu not implemented yet.');
-    }
-}
->>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b

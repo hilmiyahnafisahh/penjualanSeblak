@@ -78,6 +78,7 @@ Route::post('/kasir/logout', [KasirController::class, 'logout'])->name('kasir.lo
 Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
 Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.pesanan');
 Route::get('/kasir/pembayaran', [KasirController::class, 'pembayaran'])->name('kasir.pembayaran');
+Route::post('/kasir/pembayaran/{id}/bayar', [KasirController::class, 'bayarPembayaran'])->name('kasir.pembayaran.bayar');
 Route::get('/kasir/stok-menu', [KasirController::class, 'stokMenu'])->name('kasir.stok_menu');
 
 // ============================================================

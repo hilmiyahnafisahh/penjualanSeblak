@@ -14,21 +14,27 @@
     <title>Pesanan Masuk | Kasir</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <style>
+        :root { --merah: #8b1a1a; --merah-light: #c85a57; --sidebar-bg: #3d0c0c; --sidebar-hover: rgba(255,255,255,.1); }
         body { background: #fdf0f0; }
-        .sidebar { min-height: 100vh; background: #8b1a1a; color: white; }
-        .sidebar a { color: #f0d7d7; }
-        .sidebar a:hover { background: rgba(255,255,255,.08); color: #fff; }
-        .sidebar a.active { background: rgba(255,255,255,.08); color: #fff; }
+        .sidebar { min-height: 100vh; background: var(--sidebar-bg); color: #f5e6e6; border-right: none; }
+        .sidebar a { color: #f5c6c6; text-decoration: none; }
+        .sidebar a:hover { background: var(--sidebar-hover); color: #fff; }
+        .sidebar a.active { background: rgba(255,255,255,.15); color: #fff; font-weight: 600; border-left: 3px solid #f87171; }
         .table-card { border-radius: 1rem; }
         .badge-status { font-size: .85rem; }
+        .btn-merah { background: var(--merah); color: #fff; border-radius: .6rem; border: none; padding: .35rem .7rem; box-shadow: 0 6px 18px rgba(139,26,26,.06); }
+        .btn-outline-merah { background: transparent; color: var(--merah); border: 1.5px solid var(--merah); border-radius: .6rem; padding: .25rem .6rem; }
     </style>
 </head>
 <body>
 <div class="d-flex">
     <aside class="sidebar p-4 flex-shrink-0" style="width:280px;">
-        <div class="mb-5">
-            <h3 class="fw-bold">🌶️ SEBLAK</h3>
-            <div class="text-muted">Panel Kasir</div>
+        <div class="mb-5 d-flex align-items-center gap-2">
+            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="width:42px;height:42px;object-fit:contain;">
+            <div>
+                <h3 class="fw-bold mb-0">Seblak Sangkuriang</h3>
+                <div style="color:#f5c6c6;font-size:.85rem;">Panel Kasir</div>
+            </div>
         </div>
         <div class="mb-4">
             <a href="{{ route('kasir.dashboard') }}" class="d-block p-3 rounded-3 mb-2">Dashboard</a>
@@ -36,12 +42,12 @@
             <a href="{{ route('kasir.pembayaran') }}" class="d-block p-3 rounded-3 mb-2">Pembayaran</a>
             <a href="{{ route('kasir.stok_menu') }}" class="d-block p-3 rounded-3 mb-2">Stok & Menu</a>
         </div>
-        <div class="mt-auto pt-4 border-top border-white-25">
-            <div class="mb-2">Login sebagai</div>
-            <div class="fw-semibold">{{ session('kasir_user_name', 'Kasir') }}</div>
+        <div class="mt-auto pt-4 border-top" style="border-color:rgba(255,255,255,.15)!important;">
+            <div class="mb-2" style="color:#f5c6c6;font-size:.85rem;">Login sebagai</div>
+            <div class="fw-semibold text-white">{{ session('kasir_user_name', 'Kasir') }}</div>
             <form action="{{ route('kasir.logout') }}" method="POST" class="mt-3">
                 @csrf
-                <button type="submit" class="btn btn-outline-light w-100">Keluar</button>
+                <button type="submit" class="btn btn-outline-danger w-100">Keluar</button>
             </form>
         </div>
     </aside>
@@ -56,7 +62,7 @@
 
         <div class="mb-4">
             @foreach($statusLabels as $key => $label)
-                <a href="{{ route('kasir.pesanan', ['status' => $key]) }}" class="btn btn-sm {{ $statusParam === $key ? 'btn-danger' : 'btn-outline-secondary' }} me-2 mb-2">{{ $label }}</a>
+                <a href="{{ route('kasir.pesanan', ['status' => $key]) }}" class="btn btn-sm {{ $statusParam === $key ? 'btn-merah' : 'btn-outline-merah' }} me-2 mb-2">{{ $label }}</a>
             @endforeach
         </div>
 
