@@ -64,6 +64,8 @@ Route::post('/pelanggan/keranjang/update', [PelangganController::class, 'updateC
 Route::post('/pelanggan/keranjang/remove', [PelangganController::class, 'removeCartItem'])->name('pelanggan.keranjang.remove');
 Route::get('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout');
 Route::post('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout.post');
+Route::get('/pelanggan/checkout/qris/success', [PelangganController::class, 'checkoutQrisSuccess'])->name('pelanggan.checkout.qris.success');
+Route::get('/pelanggan/bayar-qris/{id}', [PelangganController::class, 'bayarQris'])->name('pelanggan.bayar.qris');
 Route::get('/pelanggan/pesanan', [PelangganController::class, 'pesanan'])->name('pelanggan.pesanan');
 Route::get('/pelanggan/riwayat', [PelangganController::class, 'riwayat'])->name('pelanggan.riwayat');
 // Route depan customer (halaman galeri/beranda)
