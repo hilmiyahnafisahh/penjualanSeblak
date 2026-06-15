@@ -17,26 +17,36 @@
         <thead>
             <tr>
                 <th>Karyawan</th>
-                <th>Periode</th>
-                <th>Tanggal</th>
-                <th>jam kerja</th>
-                <th>upah per jam</th>
-                <th>kehadiran</th>
-                <th>Gaji</th>
-                <th>status</th>
+                <th style="text-align: center;">Periode</th>
+                <th style="text-align: center;">Tanggal</th>
+                <th style="text-align: center;">jam kerja</th>
+                <th style="text-align: center;">upah per jam</th>
+                <th style="text-align: center;">kehadiran</th>
+                <th style="text-align: center;">Gaji</th>
+                <th style="text-align: center;">status</th>
             </tr>
         </thead>
         <tbody>
             @foreach($penggajian as $p)
             <tr>
                 <td>{{ $p->karyawan->nama }}</td>
-                <td>{{ $p->periode }}</td>
-                <td>{{ $p->tanggal_penggajian }}</td>
-                <td>{{ $p->jam_kerja }}</td>
-                <td>{{ rupiah($p->upah_per_jam) }}</td>
-                <td>{{ $p->kehadiran }}</td>
+                <td style="text-align: center;">{{ $p->periode }}</td>
+                <td style="text-align: center;">{{ $p->tanggal_penggajian }}</td>
+                <td style="text-align: center;">{{ $p->jam_kerja }}</td>
+                <td style="text-align: center;">{{ rupiah($p->upah_per_jam) }}</td>
+                <td style="text-align: center;">{{ $p->kehadiran }}</td>
                 <td class="text-right">{{ rupiah($p->nominal) }}</td>
-                <td>{{ $p->status }}</td>
+                <td style="text-align: center;">
+                    @if($p->status == 'Dibayarkan')
+                        <span style="color: green; font-weight: bold;">
+                            {{ $p->status }}
+                        </span>
+                    @elseif($p->status == 'Ditangguhkan')
+                        <span style="color: orange; font-weight: bold;">
+                            {{ $p->status }}
+                        </span>
+                    @endif
+                </td>
             </tr>
             @endforeach
         </tbody>

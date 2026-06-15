@@ -16,7 +16,7 @@ class MidtransController extends Controller
 {
     private function configureMidtrans()
     {
-        $serverKey = config('services.midtrans.server_key');
+        $serverKey = config('services.midtrans.server_key'); 
 
         if (!$serverKey) {
             abort(500, 'Midtrans server key is not configured. Please set MIDTRANS_SERVER_KEY in your .env file.');
@@ -39,14 +39,14 @@ class MidtransController extends Controller
         $this->configureMidtrans();
 
         // format order id
-        $order_id = 'BEBAN-' . $beban->id_beban . '-' . time();
+        $order_id = 'BEBAN-' . $beban->id_beban . '-' . time(); 
 
         // data transaksi
         $params = [
 
             'transaction_details' => [
                 'order_id' => $order_id,
-                'gross_amount' => (int) $beban->total,
+                'gross_amount' => (int) $beban->total, 
             ],
 
             'item_details' => [

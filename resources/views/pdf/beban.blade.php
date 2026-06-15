@@ -61,12 +61,12 @@
         </thead>
 
         <tbody>
-            @php $grandTotal = 0; @endphp
+            @php $grandTotal = 0; @endphp //variabel untuk menyimpan total keseluruhan
 
-            @foreach($data as $i => $row)
+            @foreach($data as $i => $row) //looping untuk setiap baris data beban
             <tr>
-                <td class="text-center">{{ $i + 1 }}</td>
-                <td>{{ $row->tanggal }}</td>
+                <td class="text-center">{{ $i + 1 }}</td> //menampilkan nomor urut 
+                <td>{{ $row->tanggal }}</td> 
                 <td>{{ $row->jenis_beban }}</td>
                 <td>{{ $row->keterangan }}</td>
 
@@ -85,7 +85,7 @@
                 </td>
             </tr>
 
-            @php $grandTotal += $row->total; @endphp
+            @php $grandTotal += $row->total; @endphp //menjumlahkan total untuk setiap baris ke grandTotal
             @endforeach
 
             <!-- TOTAL SEMUA -->

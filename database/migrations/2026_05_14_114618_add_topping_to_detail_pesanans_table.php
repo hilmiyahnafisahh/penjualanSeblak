@@ -6,25 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::table('detail_pemesanan', function (Blueprint $table) {
-            // Tambah kolom topping (JSON) jika belum ada
-            if (!Schema::hasColumn('detail_pemesanan', 'topping')) {
-                $table->json('topping')->nullable()->after('catatan');
-            }
-
-            // Tambah kolom harga_jual jika belum ada
-            if (!Schema::hasColumn('detail_pemesanan', 'harga_jual')) {
-                $table->integer('harga_jual')->default(0)->after('harga_menu');
-            }
+        Schema::create('jurnal_detail', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('jurnal_id')->constrained('jurnal')->cascadeOnDelete();
+            $table->foreignId('coa_id')->constrained('coa')->cascadeOnDelete();
+            $table->string('deskripsi')->nullable();
+            $table->decimal('debit',15,2)->default(0);
+            $table->decimal('credit',15,2)->default(0);
+            $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::table('detail_pemesanan', function (Blueprint $table) {
-            $table->dropColumn(['topping', 'harga_jual']);
-        });
+        Schema::dropIfExists('jurnal_detail');
     }
 };

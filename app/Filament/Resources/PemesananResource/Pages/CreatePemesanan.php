@@ -3,12 +3,13 @@
 namespace App\Filament\Resources\PemesananResource\Pages;
 
 use App\Filament\Resources\PemesananResource;
-use Filament\Resources\Pages\CreateRecord;
-use Filament\Actions\Action;
-use Illuminate\Support\Facades\DB;
 use App\Models\Barang;
 use App\Models\Menu;
-use App\Models\Pembayaran;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
+use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class CreatePemesanan extends CreateRecord
 {
@@ -16,60 +17,21 @@ class CreatePemesanan extends CreateRecord
 
     protected bool $redirectToPayment = false;
 
-    // hitung subtotal
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $total = 0;
-
-        foreach ($data['detail_pesanan'] ?? [] as $item) {
-            $total += $item['subtotal'] ?? 0;
-
-            // Pastikan harga dan subtotal topping terisi dari database
-            if (!empty($item['topping']) && is_array($item['topping'])) {
-                foreach ($item['topping'] as $toppingKey => $topping) {
-                    $barang = Barang::where('id_barang', $topping['id_barang'] ?? null)->first();
-                    $hargaTopping = (float) ($barang?->harga_barang ?? $topping['harga'] ?? 0);
-                    $qtyTopping = (int) ($topping['qty'] ?? 1);
-                    $subtotalTopping = $hargaTopping * $qtyTopping;
-
-                    $data['DetailPesanan'][$detailKey]['topping'][$toppingKey]['harga'] = $hargaTopping;
-                    $data['DetailPesanan'][$detailKey]['topping'][$toppingKey]['subtotal'] = $subtotalTopping;
-
-                    $total += $subtotalTopping;
-                }
-            }
+        if (empty($data['id_pesanan'])) {
+            $data['id_pesanan'] = \App\Models\Pemesanan::getKodeFaktur();
         }
-
-        $data['subtotal'] = $total;
-
         return $data;
     }
-protected function afterCreate(): void
+
+    protected function afterCreate(): void
     {
         $detailItems = $this->data['DetailPesanan'] ?? [];
-        $this->decreaseStockFromPesanan($detailItems);
-
-        // Jika user memilih tombol "Bayar Sekarang", buat record pembayaran
-        // otomatis dan arahkan ke Midtrans untuk proses pembayaran.
-        if ($this->redirectToPayment && $this->record) {
-            $pemesananId = $this->record->id;
-
-            // Buat pembayaran default (metode QRIS, status pending)
-            $pembayaran = Pembayaran::create([
-                'id_pemesanan' => $pemesananId,
-                'total_pembayaran' => $this->record->subtotal ?? 0,
-                'metode_pembayaran' => 'qris',
-                'tanggal_pembayaran' => now('Asia/Jakarta'),
-                'status_pembayaran' => 'pending',
-            ]);
-
-            // Redirect ke daftar admin Pembayaran agar admin dapat melihat
-            // transaksi yang baru dibuat.
-            $this->redirectUrl = url('/admin/pembayaran');
-        }
+        $this->kurangiStokTopping($detailItems);
     }
 
-    protected function decreaseStockFromPesanan(array $detailItems): void
+    private function kurangiStokTopping(array $detailItems): void
     {
         DB::transaction(function () use ($detailItems) {
             foreach ($detailItems as $detail) {
@@ -85,14 +47,9 @@ protected function afterCreate(): void
             }
         });
     }
-    // redirect setelah create
+
     protected function getRedirectUrl(): string
     {
-        // Jika sebuah redirect khusus sudah ditentukan di afterCreate(), pakai itu.
-        if (!empty($this->redirectUrl)) {
-            return $this->redirectUrl;
-        }
-
         if ($this->redirectToPayment && $this->record) {
             return route('pembayaran.show', ['id' => $this->record->id]);
         }
@@ -100,7 +57,6 @@ protected function afterCreate(): void
         return $this->getResource()::getUrl('index');
     }
 
-    // tombol tambahan
     protected function getFormActions(): array
     {
         return [
@@ -119,7 +75,6 @@ protected function afterCreate(): void
     public function bayarSekarang(): void
     {
         $this->redirectToPayment = true;
-
         $this->create();
     }
 }

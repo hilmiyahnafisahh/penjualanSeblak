@@ -17,11 +17,11 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    // public function boot(): void
-    // {
-    //     //ini seharusnya kosong, kalau dipanggil dari ngrok maka seperti ini
-    //     if (config('app.env') === 'local') {
-    //         \URL::forceScheme('https');
-    //     }
-    // }
+    public function boot(): void
+    {
+        //ini seharusnya kosong, kalau dipanggil dari ngrok maka seperti ini
+        if (config('app.env') === 'local') {
+            \URL::forceScheme('https');
+        }
+    }
 }
