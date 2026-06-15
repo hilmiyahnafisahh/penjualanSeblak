@@ -65,6 +65,12 @@
             <label for="name">Nama Lengkap</label>
             <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus>
 
+            <label for="alamat">Alamat</label>
+            <input type="text" id="alamat" name="alamat" value="{{ old('alamat') }}" required>
+
+            <label for="no_hp">No. HP</label>
+            <input type="text" id="no_hp" name="no_hp" value="{{ old('no_hp') }}" required> 
+
             <label for="email">Email</label>
             <input type="email" id="email" name="email" value="{{ old('email') }}" required>
 

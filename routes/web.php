@@ -26,6 +26,7 @@ Route::get('/', function () {
 // // Untuk membuka halaman pembayaran beban
 // Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
 //     ->name('beban.bayar');
+
 // ============================================================
 // Customer Auth (Login & Register)
 // ============================================================

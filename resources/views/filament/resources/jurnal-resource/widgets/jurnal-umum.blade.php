@@ -21,7 +21,7 @@
                 <br><br>
                
                 <div class="col-sm-12" style="background-color:white;" align="center">
-                    <b>Toko Mukena</b><br>
+                    <b>Seblak Sangkuriang</b><br>
                     <b>Jurnal Umum</b><br>
                     <b>Periode {{ $periode ? \Carbon\Carbon::createFromFormat('Y-m', $periode)->translatedFormat('F Y') : now()->translatedFormat('F Y') }} </b><br>
                 </div>
@@ -32,7 +32,7 @@
             <table class="w-full text-sm text-left border border-gray-200">
                 <thead class="bg-gray-100 text-xs uppercase">
                     <tr>
-                        <th class="px-4 py-2 border">ID Jurnal</th>
+                        <th class="px-4 py-2 border">No.</th>
                         <th class="px-4 py-2 border">Tanggal</th>
                         <th class="px-4 py-2 border">Akun</th>
                         <th class="px-4 py-2 border">Reff</th>
@@ -44,16 +44,16 @@
                     @foreach($jurnals as $jurnal)
                         @foreach($jurnal->jurnaldetail as $detail)
                             <tr>
-                                <td class="px-4 py-2 border">{{ $jurnal->id }}</td>
+                                <td class="px-4 py-2 border">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-2 border">{{ \Carbon\Carbon::parse($jurnal->tgl)->format('Y-m-d') }}</td>
                                 
                                 {{-- Hanya tampilkan kolom jika debit ≠ 0 --}}
                                 @if($detail->debit != 0)
-                                    <td class="px-4 py-2 border">{{ $detail->coa->nama_akun ?? '-' }}</td>
+                                    <td class="px-4 py-2 border">{{ optional($detail->akun)->nama_akun ?? '-' }}</td>
                                     <td class="px-4 py-2 border">{{ $jurnal->no_referensi }}</td>
                                     <td class="px-4 py-2 border text-right">{{ rupiah($detail->debit) }}</td>
                                 @else
-                                    <td class="px-4 py-2 border">&nbsp;&nbsp;&nbsp;{{ $detail->coa->nama_akun ?? '-' }}</td>
+                                    <td class="px-4 py-2 border">&nbsp;&nbsp;&nbsp;{{ optional($detail->akun)->nama_akun ?? '-' }}</td>
                                     <td class="px-4 py-2 border">{{ $jurnal->no_referensi }}</td>
                                     <td class="px-4 py-2 border text-right"></td>
                                 @endif
