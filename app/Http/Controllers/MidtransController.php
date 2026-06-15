@@ -329,36 +329,50 @@ class MidtransController extends Controller
             $pembayaran = Pembayaran::find($id_pembayaran);
 
             if (!$pembayaran) {
-                return response()->json([
-                    'message' => 'Data tidak ditemukan'
-                ], 404);
+                return response()->json(['message' => 'Data tidak ditemukan'], 404);
             }
 
             if ($transaction_status == 'capture') {
-                if ($fraud_status == 'accept') {
-                    $pembayaran->status_pembayaran = 'lunas';
-                }
+                if ($fraud_status == 'accept') { $pembayaran->status_pembayaran = 'lunas'; }
             } elseif ($transaction_status == 'settlement') {
                 $pembayaran->status_pembayaran = 'lunas';
             } elseif ($transaction_status == 'pending') {
                 $pembayaran->status_pembayaran = 'pending';
-            } elseif (
-                $transaction_status == 'deny' ||
-                $transaction_status == 'expire' ||
-                $transaction_status == 'cancel'
-            ) {
+            } elseif (in_array($transaction_status, ['deny','expire','cancel'])) {
                 $pembayaran->status_pembayaran = 'batal';
             }
 
             if ($pembayaran->status_pembayaran === 'lunas' && $pembayaran->pemesanan) {
                 $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
             }
-
             $pembayaran->save();
+            return response()->json(['message' => 'Callback berhasil']);
+        }
 
-            return response()->json([
-                'message' => 'Callback berhasil'
-            ]);
+        // PLG = pembayaran QRIS dari pelanggan
+        if ($type === 'PLG') {
+            $id_pembayaran = $explode[1] ?? null;
+            $pembayaran = Pembayaran::with('pemesanan')->find($id_pembayaran);
+
+            if (!$pembayaran) {
+                return response()->json(['message' => 'Data tidak ditemukan'], 404);
+            }
+
+            if ($transaction_status == 'capture') {
+                if ($fraud_status == 'accept') { $pembayaran->status_pembayaran = 'lunas'; }
+            } elseif ($transaction_status == 'settlement') {
+                $pembayaran->status_pembayaran = 'lunas';
+            } elseif ($transaction_status == 'pending') {
+                $pembayaran->status_pembayaran = 'pending';
+            } elseif (in_array($transaction_status, ['deny','expire','cancel'])) {
+                $pembayaran->status_pembayaran = 'batal';
+            }
+
+            if ($pembayaran->status_pembayaran === 'lunas' && $pembayaran->pemesanan) {
+                $pembayaran->pemesanan->update(['status_pemesanan' => 'diproses']);
+            }
+            $pembayaran->save();
+            return response()->json(['message' => 'Callback QRIS berhasil']);
         }
 
         if ($type === 'PGJ') {

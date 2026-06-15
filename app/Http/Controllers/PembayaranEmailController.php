@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Mail\PembayaranInvoiceMail;
 use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+=======
+use Illuminate\Http\Request;
+>>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b
 
 class PembayaranEmailController extends Controller
 {
     public function show($id)
     {
+<<<<<<< HEAD
         $pembayaran = Pembayaran::with('pemesanan.Pelanggan', 'pemesanan.DetailPesanan.menu')
             ->findOrFail($id);
 
@@ -18,10 +23,14 @@ class PembayaranEmailController extends Controller
             'pembayaran' => $pembayaran,
             'pelangganEmail' => $pembayaran->pemesanan?->Pelanggan?->email,
         ]);
+=======
+        return abort(404, 'Payment email preview is not available.');
+>>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b
     }
 
     public function send(Request $request, $id)
     {
+<<<<<<< HEAD
         $request->validate([
             'email' => 'required|email',
         ]);
@@ -52,5 +61,8 @@ class PembayaranEmailController extends Controller
         Mail::to($recipient)->send(new PembayaranInvoiceMail($data));
 
         return redirect()->back()->with('success', 'Invoice PDF berhasil dikirim ke ' . $recipient);
+=======
+        return abort(404, 'Payment email sending is not available.');
+>>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b
     }
 }

@@ -1,164 +1,212 @@
-@extends('layout')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesan {{ $menu->nama_menu }} | Seblak Sangkuriang</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root{--merah:#8b1a1a;--merah-gelap:#600e0e;--bg:#fdf0f0;}
+        body{background:var(--bg);font-family:'Segoe UI',sans-serif;}
+        .navbar-custom{background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:200;}
+        .btn-merah{background:var(--merah);color:white;border:none;}
+        .btn-merah:hover{background:var(--merah-gelap);color:white;}
+        .nav-tabs-custom{border-bottom:2px solid #f0d0d0;}
+        .nav-tabs-custom .nav-link{color:#555;border:none;padding:.6rem 1.2rem;font-size:.875rem;border-radius:0;}
+        .nav-tabs-custom .nav-link.active{color:var(--merah);font-weight:700;border-bottom:2px solid var(--merah);margin-bottom:-2px;}
+        .menu-img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:1rem;}
+        .topping-card{border:1.5px solid #e5e5e5;border-radius:.75rem;padding:.75rem;cursor:pointer;transition:all .15s;}
+        .topping-card:has(input:checked){border-color:var(--merah);background:#fff8f8;}
+        .qty-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid #ddd;background:white;font-size:1.2rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+        .qty-btn:hover{border-color:var(--merah);color:var(--merah);}
+        .summary-sticky{position:sticky;top:80px;}
+        .summary-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #f5f5f5;font-size:.875rem;}
+    </style>
+</head>
+<body>
+<svg style="display:none;"><defs><symbol id="ic-user" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/></symbol></defs></svg>
 
-@section('title', 'Pesan ' . $menu->nama_menu)
-
-@section('konten')
-<div class="page-hero">
-  <div class="container-fluid">
-    <h1>Pesan {{ $menu->nama_menu }}</h1>
-    <p>Pilih topping dan jumlah sebelum menambahkan ke keranjang.</p>
+{{-- Navbar --}}
+<nav class="navbar-custom">
+  <div class="container-fluid px-3">
+    <div class="d-flex align-items-center py-2 gap-3">
+      <a href="{{ route('pelanggan.dashboard') }}" class="d-flex align-items-center gap-2 text-decoration-none">
+        <img src="{{ asset('images/logo-seblak.png') }}" style="height:40px;width:40px;border-radius:50%;object-fit:contain;">
+        <div class="d-none d-sm-block" style="font-weight:700;color:var(--merah);font-size:.95rem;">Seblak Sangkuriang</div>
+      </a>
+      <nav aria-label="breadcrumb" class="ms-2 d-none d-md-block">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a href="{{ route('pelanggan.dashboard') }}" class="text-decoration-none" style="color:var(--merah);">Menu</a></li>
+          <li class="breadcrumb-item active">{{ $menu->nama_menu }}</li>
+        </ol>
+      </nav>
+      <div class="ms-auto"><a href="{{ route('pelanggan.keranjang') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-cart3 me-1"></i>Keranjang</a></div>
+    </div>
   </div>
-</div>
+</nav>
 
-<section class="pb-5">
-  <div class="container-fluid">
-    <div class="row g-4">
-      <div class="col-lg-6">
-        <div class="card p-4">
-          <img src="{{ $menu->gambar_menu ? asset('storage/'.$menu->gambar_menu) : asset('images/placeholder-seblak.jpg') }}" class="img-fluid rounded mb-4" alt="{{ $menu->nama_menu }}">
-          <h2>{{ $menu->nama_menu }}</h2>
-          <p class="text-muted">Kategori: {{ $menu->kategori_menu }}</p>
-          <p class="fs-5 text-danger">Rp {{ number_format($menu->harga_menu, 0, ',', '.') }}</p>
-          <p>{{ $menu->deskripsi ?? 'Tambahkan topping favorit Anda.' }}</p>
+<div class="container-fluid px-3 py-4" style="max-width:960px;">
+  <div class="row g-4">
+    {{-- Kiri: Info + Form --}}
+    <div class="col-lg-7">
+      @if($menu->gambar_menu)
+        <img src="{{ asset('storage/'.$menu->gambar_menu) }}" class="menu-img mb-3" alt="{{ $menu->nama_menu }}">
+      @else
+        <div class="menu-img mb-3 d-flex align-items-center justify-content-center" style="background:#fdf0f0;font-size:5rem;">🍲</div>
+      @endif
+      <h3 class="fw-bold mb-1">{{ $menu->nama_menu }}</h3>
+      <div class="text-muted small mb-1">{{ $menu->kategori_menu }}</div>
+      <div class="fw-bold fs-5 mb-3" style="color:var(--merah);">Rp {{ number_format($menu->harga_menu, 0, ',', '.') }}</div>
+      @if($menu->deskripsi)<p class="text-muted small mb-4">{{ $menu->deskripsi }}</p>@endif
 
-          <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST">
-            @csrf
-            <input type="hidden" name="id_produk" value="{{ $menu->id_menu }}">
-            <input type="hidden" name="qty" value="1" id="menuQty">
+      <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST" id="menuForm">
+        @csrf
+        <input type="hidden" name="id_produk" value="{{ $menu->id_menu }}">
+        <input type="hidden" name="qty" value="1" id="hiddenQty">
 
-            <div class="mb-4">
-              <label class="form-label">Jumlah pembelian</label>
-              <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-outline-secondary" onclick="ubahQty(-1)">−</button>
-                <span id="qtyValue" class="fw-bold">1</span>
-                <button type="button" class="btn btn-outline-secondary" onclick="ubahQty(1)">+</button>
-              </div>
+        {{-- Jumlah --}}
+        <div class="mb-4">
+          <label class="fw-semibold mb-2 d-block">Jumlah</label>
+          <div class="d-flex align-items-center gap-3">
+            <button type="button" class="qty-btn" onclick="ubahQty(-1)">−</button>
+            <span id="qtyDisplay" class="fw-bold fs-5">1</span>
+            <button type="button" class="qty-btn" onclick="ubahQty(1)">+</button>
+          </div>
+        </div>
+
+        {{-- Rasa --}}
+        <div class="mb-3">
+          <label class="fw-semibold mb-2 d-block">Rasa <span class="text-danger">*</span></label>
+          <select name="rasa" class="form-select" required onchange="updateSummary()">
+            <option value="">-- Pilih Rasa --</option>
+            @foreach($rasaOptions as $r)<option value="{{ $r }}">{{ $r }}</option>@endforeach
+          </select>
+        </div>
+
+        {{-- Sayur --}}
+        <div class="mb-3">
+          <label class="fw-semibold mb-2 d-block">Sayur / Kuah <span class="text-danger">*</span></label>
+          <select name="sayur_sawi" class="form-select" required onchange="updateSummary()">
+            <option value="">-- Pilih Sayur --</option>
+            @foreach($sayurOptions as $s)<option value="{{ $s }}">{{ $s }}</option>@endforeach
+          </select>
+        </div>
+
+        {{-- Level Pedas --}}
+        <div class="mb-3">
+          <label class="fw-semibold mb-2 d-block">Level Pedas <span class="text-danger">*</span></label>
+          <div class="d-flex gap-2 flex-wrap">
+            @foreach($levelPedasOptions as $lv)
+            <div>
+              <input type="radio" class="d-none" name="level_pedas" id="lv_{{ $loop->index }}" value="{{ $lv }}" required onchange="updateSummary()">
+              <label for="lv_{{ $loop->index }}" class="btn btn-outline-secondary btn-sm" style="border-radius:2rem;">{{ $lv }}</label>
             </div>
+            @endforeach
+          </div>
+        </div>
 
-            <div class="mb-4">
-              <h5>Rincian Pesanan</h5>
-              <div class="mb-3">
-                <label class="form-label">Rasa Seblak</label>
-                <select name="rasa" class="form-select" required>
-                  <option value="">Pilih rasa</option>
-                  @foreach($rasaOptions as $rasa)
-                    <option value="{{ $rasa }}">{{ $rasa }}</option>
-                  @endforeach
-                </select>
-              </div>
+        {{-- Catatan --}}
+        <div class="mb-4">
+          <label class="fw-semibold mb-2 d-block">Catatan (opsional)</label>
+          <textarea name="catatan" class="form-control" rows="2" placeholder="Contoh: tidak pakai bawang, kurang asin..."></textarea>
+        </div>
 
-              <div class="mb-3">
-                <label class="form-label">Pilihan Sayur</label>
-                <select name="sayur_sawi" class="form-select" required>
-                  <option value="">Pilih sayur</option>
-                  @foreach($sayurOptions as $sayur)
-                    <option value="{{ $sayur }}">{{ $sayur }}</option>
-                  @endforeach
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Level Pedas</label>
-                <select name="level_pedas" class="form-select" required>
-                  <option value="">Pilih level pedas</option>
-                  @foreach($levelPedasOptions as $level)
-                    <option value="{{ $level }}">{{ $level }}</option>
-                  @endforeach
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Catatan tambahan (opsional)</label>
-                <textarea name="catatan" class="form-control" rows="3" placeholder="Contoh: Kurangi garam, tidak pakai bawang"></textarea>
-              </div>
-            </div>
-
-            <div class="mb-4">
-              <h5>Pilih Topping / Barang Opsional</h5>
-              @foreach($toppingBarang as $topping)
-                <div class="form-check mb-3">
-                  <input class="form-check-input" type="checkbox"
-                         id="topping-{{ $topping->id_barang }}"
-                         name="toppings[{{ $topping->id_barang }}][included]"
-                         value="1">
-                  <label class="form-check-label" for="topping-{{ $topping->id_barang }}">
-                    {{ $topping->nama_barang }} — Rp {{ number_format($topping->harga_jual, 0, ',', '.') }}
-                  </label>
-                  <div class="mt-2 ms-4">
-                    <label class="small text-muted">Jumlah</label>
-                    <input type="number" name="toppings[{{ $topping->id_barang }}][qty]" value="1" min="1" class="form-control form-control-sm" style="width:100px;">
-                    <input type="hidden" name="toppings[{{ $topping->id_barang }}][harga]" value="{{ $topping->harga_jual }}">
-                  </div>
+        {{-- Topping --}}
+        @if($toppingBarang->isNotEmpty())
+        <div class="mb-4">
+          <label class="fw-semibold mb-2 d-block">Pilih Topping (opsional)</label>
+          <div class="row g-2">
+            @foreach($toppingBarang as $top)
+            <div class="col-6">
+              <div class="topping-card" onclick="toggleTopping('{{ $top->id_barang }}')">
+                <div class="form-check d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-check-label fw-semibold" style="font-size:.85rem;cursor:pointer;">{{ $top->nama_barang }}</label>
+                  <input class="form-check-input" type="checkbox" name="toppings[{{ $top->id_barang }}][included]" id="top_{{ $top->id_barang }}" value="1" onclick="event.stopPropagation()">
                 </div>
-              @endforeach
+                <div class="text-muted" style="font-size:.75rem;">Rp {{ number_format($top->harga_jual,0,',','.') }}</div>
+                <input type="hidden" name="toppings[{{ $top->id_barang }}][harga]" value="{{ $top->harga_jual }}">
+                <input type="number" name="toppings[{{ $top->id_barang }}][qty]" value="1" min="1" class="form-control form-control-sm mt-2" style="width:70px;" id="topQty_{{ $top->id_barang }}">
+              </div>
             </div>
+            @endforeach
+          </div>
+        </div>
+        @endif
 
-            <button type="submit" class="btn btn-danger btn-lg w-100">Tambah Pesanan ke Keranjang</button>
-          </form>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="card p-4">
-          <h5>Ringkasan Pesanan</h5>
-          <p class="text-muted">Mohon pilih topping dan rincian pesanan, lalu tekan tombol tambah.</p>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Menu</span>
-              <strong>{{ $menu->nama_menu }}</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Rasa</span>
-              <strong id="summaryRasa">-</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Sayur / Kuah</span>
-              <strong id="summarySayur">-</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Level Pedas</span>
-              <strong id="summaryPedas">-</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Harga dasar</span>
-              <strong>Rp {{ number_format($menu->harga_menu, 0, ',', '.') }}</strong>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Jumlah</span>
-              <strong id="summaryQty">1</strong>
-            </li>
-          </ul>
-        </div>
+        <button type="submit" class="btn btn-merah w-100 py-3 fw-bold fs-6">
+          <i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang
+        </button>
+      </form>
+    </div>
+
+    {{-- Kanan: Ringkasan --}}
+    <div class="col-lg-5">
+      <div class="summary-sticky bg-white rounded-3 p-4 border" style="border-color:#f0d0d0!important;">
+        <h6 class="fw-bold mb-3">Ringkasan Pesanan</h6>
+        <div class="summary-row"><span class="text-muted">Menu</span><span class="fw-semibold">{{ $menu->nama_menu }}</span></div>
+        <div class="summary-row"><span class="text-muted">Rasa</span><span id="sumRasa" class="fw-semibold text-muted">Belum dipilih</span></div>
+        <div class="summary-row"><span class="text-muted">Sayur</span><span id="sumSayur" class="fw-semibold text-muted">Belum dipilih</span></div>
+        <div class="summary-row"><span class="text-muted">Level Pedas</span><span id="sumPedas" class="fw-semibold text-muted">Belum dipilih</span></div>
+        <div class="summary-row"><span class="text-muted">Jumlah</span><span id="sumQty" class="fw-semibold">1</span></div>
+        <div class="summary-row"><span class="text-muted">Harga Dasar</span><span id="sumHargaDasar" class="fw-semibold">Rp {{ number_format($menu->harga_menu,0,',','.') }}</span></div>
+        <div class="summary-row"><span class="text-muted">Topping</span><span id="sumTopping" class="fw-semibold">Rp 0</span></div>
+        <hr>
+        <div class="d-flex justify-content-between fw-bold"><span>Estimasi Total</span><span id="sumTotal" style="color:var(--merah);font-size:1.05rem;">Rp {{ number_format($menu->harga_menu,0,',','.') }}</span></div>
+        <p class="text-muted mt-2" style="font-size:.75rem;">*Harga dapat berubah sesuai topping yang dipilih.</p>
       </div>
     </div>
   </div>
-</section>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  function ubahQty(delta) {
-    const qtyValue = document.getElementById('qtyValue');
-    const inputQty = document.getElementById('menuQty');
-    let qty = parseInt(qtyValue.textContent) + delta;
-    if (qty < 1) qty = 1;
-    qtyValue.textContent = qty;
-    inputQty.value = qty;
-    document.getElementById('summaryQty').textContent = qty;
-  }
+const hargaDasar = {{ $menu->harga_menu }};
+let qty = 1;
 
-  function updateSummary() {
-    const rasa = document.querySelector('[name="rasa"]').value || '-';
-    const sayur = document.querySelector('[name="sayur_sawi"]').value || '-';
-    const pedas = document.querySelector('[name="level_pedas"]').value || '-';
+function ubahQty(d) {
+  qty = Math.max(1, qty + d);
+  document.getElementById('qtyDisplay').textContent = qty;
+  document.getElementById('hiddenQty').value = qty;
+  document.getElementById('sumQty').textContent = qty;
+  hitungTotal();
+}
 
-    document.getElementById('summaryRasa').textContent = rasa;
-    document.getElementById('summarySayur').textContent = sayur;
-    document.getElementById('summaryPedas').textContent = pedas;
-  }
+function toggleTopping(id) {
+  const cb = document.getElementById('top_'+id);
+  cb.checked = !cb.checked;
+  hitungTotal();
+}
 
-  document.addEventListener('DOMContentLoaded', function () {
-    updateSummary();
-    document.querySelector('[name="rasa"]').addEventListener('change', updateSummary);
-    document.querySelector('[name="sayur_sawi"]').addEventListener('change', updateSummary);
-    document.querySelector('[name="level_pedas"]').addEventListener('change', updateSummary);
+function updateSummary() {
+  const rasa  = document.querySelector('[name="rasa"]').value;
+  const sayur = document.querySelector('[name="sayur_sawi"]').value;
+  const pedas = document.querySelector('input[name="level_pedas"]:checked');
+  document.getElementById('sumRasa').textContent  = rasa  || 'Belum dipilih';
+  document.getElementById('sumSayur').textContent = sayur || 'Belum dipilih';
+  document.getElementById('sumPedas').textContent = pedas ? pedas.value : 'Belum dipilih';
+  document.getElementById('sumRasa').style.color  = rasa  ? '#1a1a1a':'#aaa';
+  document.getElementById('sumSayur').style.color = sayur ? '#1a1a1a':'#aaa';
+  document.getElementById('sumPedas').style.color = pedas ? '#1a1a1a':'#aaa';
+  hitungTotal();
+}
+
+function hitungTotal() {
+  let toppingTotal = 0;
+  document.querySelectorAll('input[type="checkbox"][name$="[included]"]:checked').forEach(cb => {
+    const id = cb.id.replace('top_','');
+    const harga = parseInt(document.querySelector('input[name="toppings['+id+'][harga]"]').value) || 0;
+    const qtyT  = parseInt(document.getElementById('topQty_'+id)?.value || 1);
+    toppingTotal += harga * qtyT;
   });
+  const total = (hargaDasar * qty) + toppingTotal;
+  document.getElementById('sumHargaDasar').textContent = 'Rp ' + (hargaDasar * qty).toLocaleString('id-ID');
+  document.getElementById('sumTopping').textContent = 'Rp ' + toppingTotal.toLocaleString('id-ID');
+  document.getElementById('sumTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
+}
+
+document.querySelectorAll('input[name="level_pedas"]').forEach(r => r.addEventListener('change', updateSummary));
+document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', hitungTotal));
+document.querySelectorAll('input[type="number"]').forEach(n => n.addEventListener('input', hitungTotal));
 </script>
-@endsection
+</body>
+</html>

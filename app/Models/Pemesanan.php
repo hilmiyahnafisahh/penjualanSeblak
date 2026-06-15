@@ -92,11 +92,6 @@ class Pemesanan extends Model
         return $this->hasOne(Pembayaran::class, 'id_pemesanan');
     }
 
-    public function menu()
-    {
-        return $this->hasMany(Pemesanan::class, 'id_pemesanan');
-    }
-
     /**
      * Accessor subtotal — ikut hitung topping.
      */

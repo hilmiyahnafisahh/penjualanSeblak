@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+<<<<<<< HEAD
 use App\Models\Menu;
 use App\Models\Pembayaran;
 use App\Models\Pemesanan;
@@ -41,10 +42,25 @@ class KasirController extends Controller
         }
 
         return view('kasir.login');
+=======
+use Illuminate\Http\Request;
+
+class KasirController extends Controller
+{
+    public function index()
+    {
+        return redirect()->route('kasir.login');
+    }
+
+    public function showLogin()
+    {
+        return abort(404, 'Kasir login not implemented yet.');
+>>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b
     }
 
     public function login(Request $request)
     {
+<<<<<<< HEAD
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
@@ -66,10 +82,14 @@ class KasirController extends Controller
         $request->session()->put('kasir_user_name', $user->name);
 
         return redirect()->route('kasir.dashboard');
+=======
+        return abort(404, 'Kasir login not implemented yet.');
+>>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b
     }
 
     public function logout(Request $request)
     {
+<<<<<<< HEAD
         $request->session()->forget([
             'kasir_user_id',
             'kasir_user_name'
@@ -170,3 +190,28 @@ class KasirController extends Controller
         ));
     }
 }
+=======
+        return abort(404, 'Kasir logout not implemented yet.');
+    }
+
+    public function dashboard()
+    {
+        return abort(404, 'Kasir dashboard not implemented yet.');
+    }
+
+    public function pesanan()
+    {
+        return abort(404, 'Kasir pesanan not implemented yet.');
+    }
+
+    public function pembayaran()
+    {
+        return abort(404, 'Kasir pembayaran not implemented yet.');
+    }
+
+    public function stokMenu()
+    {
+        return abort(404, 'Kasir stokMenu not implemented yet.');
+    }
+}
+>>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b

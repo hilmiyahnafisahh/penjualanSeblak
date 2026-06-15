@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // forceScheme hanya diaktifkan saat production/ngrok, tidak untuk local
+        // \URL::forceScheme('https');
     }
 }

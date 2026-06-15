@@ -15,7 +15,11 @@ class Pembayaran extends Model
         'id_pembayaran',
         'order_id',
         'id_pemesanan',
+<<<<<<< HEAD
         'id_karyawan',
+=======
+        'midtrans_order_id',
+>>>>>>> 53a5e1e62c8ff8c772e189f92a427085353cdc4b
         'metode_pembayaran',
         'tanggal_pembayaran',
         'total_pembayaran',

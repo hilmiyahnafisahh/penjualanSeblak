@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
+use Midtrans\Config as MidtransConfig;
+use Midtrans\Snap;
 
 class PelangganController extends Controller
 {
@@ -125,14 +127,24 @@ class PelangganController extends Controller
             ->get();
 
         $kategoriParam = $request->query('kategori', 'Semua');
+        $searchQuery   = $request->query('q', '');
+
         $kategoriList = Menu::select('kategori_menu')
             ->distinct()
             ->pluck('kategori_menu')
             ->toArray();
 
         $produkQuery = Menu::query();
+
+        // Filter kategori
         if ($kategoriParam !== 'Semua' && in_array($kategoriParam, $kategoriList)) {
             $produkQuery->where('kategori_menu', $kategoriParam);
+        }
+
+        // Filter pencarian nama menu
+        if (!empty($searchQuery)) {
+            $produkQuery->where('nama_menu', 'like', '%' . $searchQuery . '%');
+            $kategoriParam = 'Semua'; // reset kategori saat search
         }
 
         $produk = $produkQuery->orderBy('nama_menu')->get();
@@ -148,6 +160,7 @@ class PelangganController extends Controller
             'riwayatPesanan',
             'kategoriList',
             'kategoriParam',
+            'searchQuery',
             'produk',
             'menu',
             'barang',
@@ -195,16 +208,16 @@ class PelangganController extends Controller
         $levelPedasOptions = ['Level 0', 'Level 1', 'Level 2', 'Level 3'];
 
         $data = $request->validate([
-            'id_produk' => ['required', 'string'],
-            'qty' => ['required', 'integer', 'min:1'],
-            'rasa' => ['required', 'string', Rule::in($rasaOptions)],
-            'sayur_sawi' => ['required', 'string', Rule::in($sayurOptions)],
-            'level_pedas' => ['required', 'string', Rule::in($levelPedasOptions)],
-            'catatan' => ['nullable', 'string', 'max:200'],
-            'toppings' => ['sometimes', 'array'],
-            'toppings.*.included' => ['sometimes'],
-            'toppings.*.qty' => ['sometimes', 'integer', 'min:1'],
-            'toppings.*.harga' => ['sometimes', 'numeric', 'min:0'],
+            'id_produk'   => ['required', 'string'],
+            'qty'         => ['required', 'integer', 'min:1'],
+            'rasa'        => ['nullable', 'string', Rule::in($rasaOptions)],
+            'sayur_sawi'  => ['nullable', 'string', Rule::in($sayurOptions)],
+            'level_pedas' => ['nullable', 'string', Rule::in($levelPedasOptions)],
+            'catatan'     => ['nullable', 'string', 'max:200'],
+            'toppings'               => ['sometimes', 'array'],
+            'toppings.*.included'    => ['sometimes'],
+            'toppings.*.qty'         => ['sometimes', 'integer', 'min:1'],
+            'toppings.*.harga'       => ['sometimes', 'numeric', 'min:0'],
         ]);
 
         $menuItem = Menu::where('id_menu', $data['id_produk'])->first();
@@ -238,10 +251,10 @@ class PelangganController extends Controller
         $selectedToppings = collect($selectedToppings)->sortBy('id_barang')->values()->all();
 
         $selectedOptions = [
-            'rasa' => $data['rasa'],
-            'sayur_sawi' => $data['sayur_sawi'],
-            'level_pedas' => $data['level_pedas'],
-            'catatan' => $data['catatan'] ?? null,
+            'rasa'        => $data['rasa'] ?? null,
+            'sayur_sawi'  => $data['sayur_sawi'] ?? null,
+            'level_pedas' => $data['level_pedas'] ?? null,
+            'catatan'     => $data['catatan'] ?? null,
         ];
 
         $optionKey = md5(json_encode([
@@ -273,11 +286,16 @@ class PelangganController extends Controller
             }
         } else {
             $cart[$itemKey] = [
-                'id' => $menuItem->id_menu,
-                'nama' => $menuItem->nama_menu,
-                'qty' => $data['qty'],
-                'harga' => $menuItem->harga_menu,
-                'toppings' => $selectedToppings,
+                'id'          => $menuItem->id,
+                'id_menu'     => $menuItem->id_menu,
+                'nama'        => $menuItem->nama_menu,
+                'qty'         => $data['qty'],
+                'harga'       => $menuItem->harga_menu,
+                'rasa'        => $selectedOptions['rasa'],
+                'sayur_sawi'  => $selectedOptions['sayur_sawi'],
+                'level_pedas' => $selectedOptions['level_pedas'],
+                'catatan'     => $selectedOptions['catatan'],
+                'toppings'    => $selectedToppings,
             ];
         }
 
@@ -396,7 +414,6 @@ class PelangganController extends Controller
                 ->with('error', 'Keranjang Anda masih kosong.');
         }
 
-        // Validasi metode pembayaran
         $request->validate([
             'metode_pembayaran' => ['required', 'in:qris,tunai'],
         ], [
@@ -406,14 +423,31 @@ class PelangganController extends Controller
 
         $metodePembayaran = $request->input('metode_pembayaran');
 
-        // Cari data pelanggan dari tabel pelanggan berdasarkan email user
+        // Cari data pelanggan berdasarkan email, lalu fallback ke nama
         $pelanggan = Pelanggan::where('email', $user->email)->first();
+
+        // Jika tidak ditemukan by email, coba by nama (case-insensitive)
         if (!$pelanggan) {
-            return redirect()->route('pelanggan.keranjang')
-                ->with('error', 'Data pelanggan tidak ditemukan. Hubungi admin.');
+            $pelanggan = Pelanggan::whereRaw('LOWER(nama_pelanggan) = ?', [strtolower($user->name)])->first();
         }
 
-        // Ambil layanan pertama (default: Dine In / LYN001)
+        // Jika masih tidak ditemukan, buat otomatis dari data user
+        if (!$pelanggan) {
+            // Generate id_pelanggan berikutnya
+            $lastId   = Pelanggan::orderBy('id', 'desc')->value('id_pelanggan') ?? 'PLG000';
+            $num      = (int) substr($lastId, 3) + 1;
+            $newKode  = 'PLG' . str_pad($num, 3, '0', STR_PAD_LEFT);
+
+            $pelanggan = Pelanggan::create([
+                'id_pelanggan'   => $newKode,
+                'nama_pelanggan' => $user->name,
+                'email'          => $user->email,
+                'jenis_kelamin'  => '-',
+                'alamat'         => '-',
+                'no_telp'        => '-',
+            ]);
+        }
+
         $layanan = Layanan::first();
         if (!$layanan) {
             return redirect()->route('pelanggan.keranjang')
@@ -422,7 +456,6 @@ class PelangganController extends Controller
 
         DB::beginTransaction();
         try {
-            // Buat record pemesanan baru
             $pemesanan = Pemesanan::create([
                 'id_pelanggan'      => $pelanggan->id,
                 'id_layanan'        => $layanan->id,
@@ -436,9 +469,24 @@ class PelangganController extends Controller
 
             foreach ($keranjang as $item) {
                 $subtotalItem = (int) $item['harga'] * (int) $item['qty'];
-
                 $toppingTotal = 0;
                 $toppingData  = [];
+
+                // Resolve id_menu: jika 'id' bukan integer valid, cari dari DB via 'id_menu' string
+                $menuId = isset($item['id']) ? (int) $item['id'] : 0;
+                if ($menuId <= 0 && isset($item['id_menu'])) {
+                    $menuRecord = Menu::where('id_menu', $item['id_menu'])->first();
+                    $menuId = $menuRecord ? (int) $menuRecord->id : 0;
+                }
+                if ($menuId <= 0) {
+                    // Fallback: cari dari nama
+                    $menuRecord = Menu::where('nama_menu', $item['nama'] ?? '')->first();
+                    $menuId = $menuRecord ? (int) $menuRecord->id : 0;
+                }
+                if ($menuId <= 0) {
+                    throw new \Exception('Menu tidak ditemukan untuk item: ' . ($item['nama'] ?? 'unknown'));
+                }
+
                 foreach ($item['toppings'] ?? [] as $topping) {
                     $toppingSubtotal = (int) $topping['qty'] * (float) $topping['harga'];
                     $toppingTotal   += $toppingSubtotal;
@@ -456,7 +504,7 @@ class PelangganController extends Controller
 
                 DetailPesanan::create([
                     'id_pemesanan' => $pemesanan->id,
-                    'id_menu'      => $item['id'],
+                    'id_menu'      => $menuId,
                     'jumlah'       => $item['qty'],
                     'harga_menu'   => $item['harga'],
                     'harga_jual'   => $item['harga'],
@@ -466,32 +514,204 @@ class PelangganController extends Controller
                 ]);
             }
 
-            // Update subtotal pemesanan
             DB::table('pemesanan')
                 ->where('id', $pemesanan->id)
                 ->update(['subtotal' => $grandTotal]);
 
-            // Buat record pembayaran dengan metode yang dipilih
-            Pembayaran::create([
-                'id_pemesanan'      => $pemesanan->id,
-                'metode_pembayaran' => $metodePembayaran,
-                'tanggal_pembayaran'=> now(),
-                'total_pembayaran'  => $grandTotal,
-                'status_pembayaran' => 'pending',
+            // Buat record pembayaran
+            $pembayaran = Pembayaran::create([
+                'id_pemesanan'       => $pemesanan->id,
+                'metode_pembayaran'  => $metodePembayaran,
+                'tanggal_pembayaran' => now(),
+                'total_pembayaran'   => $grandTotal,
+                'status_pembayaran'  => 'pending',
             ]);
 
             DB::commit();
-
-            // Kosongkan keranjang
             Session::forget('keranjang');
 
-            return redirect()->route('pelanggan.pesanan')
-                ->with('success', 'Pesanan berhasil dibuat! No. Pesanan: ' . $pemesanan->id_pesanan . ' | Metode: ' . strtoupper($metodePembayaran));
+            // ── TUNAI: tampilkan halaman info kasir ──
+            if ($metodePembayaran === 'tunai') {
+                return view('pelanggan.checkout_tunai', compact('pemesanan'));
+            }
+
+            // ── QRIS: buat Snap Token Midtrans ──
+            MidtransConfig::$serverKey    = config('services.midtrans.server_key');
+            MidtransConfig::$isProduction = filter_var(config('services.midtrans.is_production', false), FILTER_VALIDATE_BOOLEAN);
+            MidtransConfig::$isSanitized  = true;
+            MidtransConfig::$is3ds        = true;
+
+            // Bangun item_details dari keranjang yang sudah disimpan sebelumnya
+            $itemDetails = [];
+            foreach ($keranjang as $item) {
+                // Resolve id integer sama seperti di atas
+                $mId = isset($item['id']) ? (int) $item['id'] : 0;
+                if ($mId <= 0 && isset($item['id_menu'])) {
+                    $mr = Menu::where('id_menu', $item['id_menu'])->first();
+                    $mId = $mr ? (int) $mr->id : 1;
+                }
+                $itemDetails[] = [
+                    'id'       => (string) $mId,
+                    'price'    => (int) $item['harga'],
+                    'quantity' => (int) $item['qty'],
+                    'name'     => mb_substr($item['nama'], 0, 50),
+                ];
+                // Tambahkan topping sebagai item terpisah
+                foreach ($item['toppings'] ?? [] as $topping) {
+                    $itemDetails[] = [
+                        'id'       => 'TOP-' . $topping['id_barang'],
+                        'price'    => (int) $topping['harga'],
+                        'quantity' => (int) $topping['qty'],
+                        'name'     => mb_substr('Topping: ' . $topping['nama_barang'], 0, 50),
+                    ];
+                }
+            }
+
+            $midtransOrderId = 'PLG-' . $pembayaran->id . '-' . time();
+
+            $snapParams = [
+                'transaction_details' => [
+                    'order_id'     => $midtransOrderId,
+                    'gross_amount' => (int) $grandTotal,
+                ],
+                'item_details'     => $itemDetails,
+                'customer_details' => [
+                    'first_name' => $pelanggan->nama_pelanggan ?? $user->name,
+                    'email'      => $pelanggan->email,
+                ],
+            ];
+
+            // Simpan order_id Midtrans ke pembayaran
+            DB::table('pembayaran')
+                ->where('id', $pembayaran->id)
+                ->update(['midtrans_order_id' => $midtransOrderId]);
+
+            $snapToken = Snap::getSnapToken($snapParams);
+
+            return view('pelanggan.checkout_qris', compact('snapToken', 'pemesanan', 'pembayaran'));
 
         } catch (\Throwable $e) {
             DB::rollBack();
+            // Tampilkan error detail saat development
+            if (config('app.debug')) {
+                throw $e;
+            }
             return redirect()->route('pelanggan.keranjang')
                 ->with('error', 'Gagal membuat pesanan: ' . $e->getMessage());
+        }
+    }
+
+    public function checkoutQrisSuccess(Request $request)
+    {
+        if (!$this->guardPelanggan($request)) {
+            return redirect()->route('pelanggan.login');
+        }
+
+        // Update status pembayaran jika order_id dikirim dari Midtrans callback JS
+        $orderId = $request->query('order_id');
+        if ($orderId) {
+            $pembayaran = Pembayaran::where('midtrans_order_id', $orderId)->first();
+            if ($pembayaran) {
+                $pembayaran->update(['status_pembayaran' => 'lunas']);
+                if ($pembayaran->pemesanan) {
+                    $pembayaran->pemesanan->update(['status_pemesanan' => 'diproses']);
+                }
+            }
+        }
+
+        return redirect()->route('pelanggan.riwayat')
+            ->with('success', 'Pembayaran berhasil! Pesanan sedang diproses.');
+    }
+
+    /**
+     * Buat ulang Snap Token untuk pesanan QRIS yang belum dibayar
+     * Dipanggil via AJAX dari halaman pesanan
+     */
+    public function bayarQris(Request $request, $id)
+    {
+        if (!$this->guardPelanggan($request)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $user      = $this->pelangganUser($request);
+        $pelanggan = Pelanggan::where('email', $user->email)->first();
+
+        $pemesanan = Pemesanan::with(['DetailPesanan.menu', 'pembayaran'])
+            ->where('id_pesanan', $id)
+            ->first();
+
+        if (!$pemesanan || !$pelanggan) {
+            return response()->json(['error' => 'Pesanan tidak ditemukan'], 404);
+        }
+
+        // Pastikan pesanan milik pelanggan ini
+        if ($pemesanan->id_pelanggan !== $pelanggan->id) {
+            return response()->json(['error' => 'Akses ditolak'], 403);
+        }
+
+        $pembayaran = $pemesanan->pembayaran;
+        if (!$pembayaran || strtolower($pembayaran->metode_pembayaran) !== 'qris') {
+            return response()->json(['error' => 'Bukan pesanan QRIS'], 400);
+        }
+
+        // Cek apakah sudah lunas
+        $sudahBayar = in_array(strtolower($pembayaran->status_pembayaran), ['lunas', 'settlement', 'capture']);
+        if ($sudahBayar) {
+            return response()->json(['error' => 'Pesanan sudah lunas'], 400);
+        }
+
+        try {
+            MidtransConfig::$serverKey    = config('services.midtrans.server_key');
+            MidtransConfig::$isProduction = filter_var(config('services.midtrans.is_production', false), FILTER_VALIDATE_BOOLEAN);
+            MidtransConfig::$isSanitized  = true;
+            MidtransConfig::$is3ds        = true;
+
+            $midtransOrderId = 'PLG-' . $pembayaran->id . '-' . time();
+
+            // Build item details
+            $itemDetails = [];
+            foreach ($pemesanan->DetailPesanan as $detail) {
+                $itemDetails[] = [
+                    'id'       => (string) $detail->id_menu,
+                    'price'    => (int) $detail->harga_menu,
+                    'quantity' => (int) $detail->jumlah,
+                    'name'     => mb_substr($detail->menu->nama_menu ?? 'Menu', 0, 50),
+                ];
+                foreach ($detail->topping ?? [] as $top) {
+                    $itemDetails[] = [
+                        'id'       => 'TOP-' . ($top['id_barang'] ?? 'x'),
+                        'price'    => (int) ($top['harga'] ?? 0),
+                        'quantity' => (int) ($top['qty'] ?? 1),
+                        'name'     => mb_substr('Topping: ' . ($top['nama_barang'] ?? '-'), 0, 50),
+                    ];
+                }
+            }
+
+            $snapToken = Snap::getSnapToken([
+                'transaction_details' => [
+                    'order_id'     => $midtransOrderId,
+                    'gross_amount' => (int) $pembayaran->total_pembayaran,
+                ],
+                'item_details'     => $itemDetails,
+                'customer_details' => [
+                    'first_name' => $pelanggan->nama_pelanggan ?? $user->name,
+                    'email'      => $pelanggan->email,
+                ],
+            ]);
+
+            // Update midtrans_order_id
+            DB::table('pembayaran')->where('id', $pembayaran->id)
+                ->update(['midtrans_order_id' => $midtransOrderId]);
+
+            return response()->json([
+                'snap_token'  => $snapToken,
+                'order_id'    => $midtransOrderId,
+                'total'       => $pembayaran->total_pembayaran,
+                'id_pesanan'  => $pemesanan->id_pesanan,
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Gagal membuat token: ' . $e->getMessage()], 500);
         }
     }
 
@@ -501,10 +721,15 @@ class PelangganController extends Controller
             return redirect()->route('pelanggan.login');
         }
 
-        $user = $this->pelangganUser($request);
+        $user        = $this->pelangganUser($request);
         $statusParam = $request->query('status', 'belumdibayar');
 
-        $query = Pemesanan::where('id_pelanggan', $user->id)
+        // Ambil id dari tabel pelanggan (bukan tabel users)
+        $pelanggan = Pelanggan::where('email', $user->email)->first();
+        $pelangganId = $pelanggan?->id ?? 0;
+
+        $query = Pemesanan::where('id_pelanggan', $pelangganId)
+            ->with(['DetailPesanan.menu', 'pembayaran'])
             ->orderBy('tanggal_pemesanan', 'desc');
 
         if ($statusParam !== 'semua') {
@@ -522,21 +747,24 @@ class PelangganController extends Controller
             return redirect()->route('pelanggan.login');
         }
 
-        $user = $this->pelangganUser($request);
-        $statusParam = $request->query('status', 'belum_bayar');
+        $user        = $this->pelangganUser($request);
+        $statusParam = $request->query('status', 'semua');
 
-        $query = Pembayaran::whereHas('pemesanan', fn($q) => $q->where('id_pelanggan', $user->id))
-            ->with('pemesanan')
-            ->orderBy('tanggal_pembayaran', 'desc');
+        $query = Pemesanan::where('id_pelanggan', function ($q) use ($user) {
+                    $q->select('id')
+                      ->from('pelanggan')
+                      ->where('email', $user->email)
+                      ->limit(1);
+                })
+                ->with(['DetailPesanan.menu', 'pembayaran'])
+                ->orderBy('tanggal_pemesanan', 'desc');
 
-        if ($statusParam === 'belum_bayar') {
-            $query->where('status_pembayaran', 'pending');
-        } elseif ($statusParam === 'lunas') {
-            $query->where('status_pembayaran', 'lunas');
+        if ($statusParam !== 'semua') {
+            $query->where('status_pemesanan', $statusParam);
         }
 
-        $pembayaran = $query->get();
+        $pesanan = $query->get();
 
-        return view('pelanggan.riwayat', compact('pembayaran', 'statusParam'));
+        return view('pelanggan.riwayat', compact('pesanan', 'statusParam'));
     }
 }
