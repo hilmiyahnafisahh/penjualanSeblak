@@ -19,9 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //ini seharusnya kosong, kalau dipanggil dari ngrok maka seperti ini
-        if (config('app.env') === 'local') {
-            \URL::forceScheme('https');
-        }
+        // forceScheme hanya diaktifkan saat production/ngrok, tidak untuk local
+        // \URL::forceScheme('https');
     }
 }
