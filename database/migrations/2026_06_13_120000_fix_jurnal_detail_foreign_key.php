@@ -6,41 +6,37 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('jurnal_detail', function (Blueprint $table) {
-            // Drop the incorrect foreign key
-            $table->dropForeign(['kode_akun']);
-            
-            // Drop the kode_akun column
-            $table->dropColumn('kode_akun');
-        });
+            // Drop kolom coa_id kalau ada (tanpa drop foreign key)
+            if (Schema::hasColumn('jurnal_detail', 'coa_id')) {
+                $table->dropColumn('coa_id');
+            }
 
-        Schema::table('jurnal_detail', function (Blueprint $table) {
-            // Add proper foreign key to akun.id
-            $table->foreignId('akun_id')
-                ->after('jurnal_id')
-                ->constrained('akun')
-                ->cascadeOnDelete();
+            // Drop kolom kode_akun kalau ada
+            if (Schema::hasColumn('jurnal_detail', 'kode_akun')) {
+                $table->dropColumn('kode_akun');
+            }
+
+            // Tambah akun_id yang benar
+            if (!Schema::hasColumn('jurnal_detail', 'akun_id')) {
+                $table->foreignId('akun_id')
+                    ->after('jurnal_id')
+                    ->constrained('akun')
+                    ->cascadeOnDelete();
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('jurnal_detail', function (Blueprint $table) {
-            $table->dropForeign(['akun_id']);
-            $table->dropColumn('akun_id');
-        });
-
-        Schema::table('jurnal_detail', function (Blueprint $table) {
+            if (Schema::hasColumn('jurnal_detail', 'akun_id')) {
+                $table->dropForeign(['akun_id']);
+                $table->dropColumn('akun_id');
+            }
             $table->unsignedBigInteger('kode_akun');
-            $table->foreign('kode_akun')->references('id')->on('akun')->cascadeOnDelete();
         });
     }
 };
