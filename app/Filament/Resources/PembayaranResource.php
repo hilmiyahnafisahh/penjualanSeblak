@@ -91,27 +91,29 @@ class PembayaranResource extends Resource
                                         }),
 
                                     Select::make('id_pemesanan')
-                                        ->label('Pilih Pesanan')
-                                        ->default(fn () => request()->query('id_pemesanan'))
-                                        ->options(
-                                            Pemesanan::whereDoesntHave('pembayaran')
-                                                ->where('status_pemesanan', 'diproses')
-                                                ->pluck('id_pesanan', 'id')
-                                        )
-                                        ->getOptionLabelUsing(fn ($value) => Pemesanan::find($value)?->id_pesanan)
-                                        ->searchable()
-                                        ->required()
-                                        ->reactive()
+    ->label('Pilih Pesanan')
+    ->default(fn () => request()->query('id_pemesanan'))
+    ->options(
+    Pemesanan::whereDoesntHave('pembayaran')
+        ->orderByDesc('tanggal_pemesanan')
+        ->pluck('id_pesanan', 'id')
+)
+    ->getOptionLabelUsing(fn ($value) => Pemesanan::find($value)?->id_pesanan)
+    ->searchable()
+    ->required()
+    ->reactive()
 
-                                        ->afterStateUpdated(function ($state, Set $set) {
+    ->afterStateUpdated(function ($state, Set $set) {
 
-                                            $pesanan = Pemesanan::find($state);
+        $pesanan = Pemesanan::find($state);
 
-                                            if ($pesanan) {
+        if ($pesanan) {
 
-                                                $set('total_pembayaran', $pesanan->subtotal);
-                                            }
-                                        }),
+            $set('total_pembayaran', $pesanan->subtotal);
+        }
+    }),
+
+                                       
 
                                     TextInput::make('total_pembayaran')
                                         ->label('Total Pembayaran')
