@@ -82,6 +82,8 @@ Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.p
 Route::get('/kasir/pembayaran', [KasirController::class, 'pembayaran'])->name('kasir.pembayaran');
 Route::post('/kasir/pembayaran/{id}/bayar', [KasirController::class, 'bayarPembayaran'])->name('kasir.pembayaran.bayar');
 Route::get('/kasir/stok-menu', [KasirController::class, 'stokMenu'])->name('kasir.stok_menu');
+Route::get('/kasir/laporan-penjualan', [\App\Http\Controllers\LaporanPenjualanController::class, 'index'])->name('kasir.laporan_penjualan');
+Route::get('/kasir/laporan-penjualan/pdf', [\App\Http\Controllers\LaporanPenjualanController::class, 'pdf'])->name('kasir.laporan_penjualan.pdf');
 
 // ============================================================
 // Midtrans & Pembayaran
@@ -184,3 +186,4 @@ Route::delete('/pengiriman-email/{id}', [PengirimanEmailController::class, 'dest
 Route::get('/laporan/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laporan.laba-rugi');
 Route::get('/laporan/laba-rugi/pdf', [LaporanController::class, 'pdf'])->name('laporan.laba-rugi.pdf');
 Route::get('/laporan/jurnal-umum/pdf', [LaporanController::class, 'jurnalPdf'])->name('laporan.jurnal-umum.pdf');
+Route::get('/laporan/penjualan/pdf', [LaporanController::class, 'penjualanPdf'])->name('laporan.penjualan.pdf');
