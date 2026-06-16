@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Pelanggan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -49,7 +50,20 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
-
+        
+        // Jika pendaftaran adalah pelanggan, buat juga record di tabel pelanggan
+        try {
+            Pelanggan::create([
+                'id_pelanggan'  => Pelanggan::getIDPelanggan(),
+                'nama_pelanggan'=> $validated['name'],
+                'jenis_kelamin' => 'Laki-laki',
+                'alamat'        => '',
+                'no_telp'       => '',
+                'email'         => $validated['email'],
+            ]);
+        } catch (\Throwable $e) {
+            // jangan gagalkan registrasi user jika pembuatan pelanggan gagal
+        }
         Auth::login($user);
 
         return redirect()->route('depan');

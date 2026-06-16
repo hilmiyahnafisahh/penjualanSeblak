@@ -85,9 +85,12 @@ class PelangganController extends Controller
         }
 
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'confirmed', 'min:8'],
+            'name'          => ['required', 'string', 'max:255'],
+            'email'         => ['required', 'email', 'unique:users,email'],
+            'no_telp'       => ['required', 'string', 'max:20'],
+            'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
+            'alamat'        => ['required', 'string', 'max:500'],
+            'password'      => ['required', 'confirmed', 'min:8'],
         ]);
 
         $user = User::create([
@@ -96,6 +99,20 @@ class PelangganController extends Controller
             'password'   => Hash::make($validated['password']),
             'user_group' => 'pelanggan',
         ]);
+
+        // Buat record pelanggan di tabel pelanggan agar data tersedia untuk proses checkout
+        try {
+            Pelanggan::create([
+                'id_pelanggan'   => Pelanggan::getIDPelanggan(),
+                'nama_pelanggan' => $validated['name'],
+                'jenis_kelamin'  => $validated['jenis_kelamin'],
+                'alamat'         => $validated['alamat'],
+                'no_telp'        => $validated['no_telp'],
+                'email'          => $validated['email'],
+            ]);
+        } catch (\Throwable $e) {
+            // jika gagal membuat pelanggan, lanjutkan saja (user masih bisa login)
+        }
 
         $request->session()->put('pelanggan_user_id', $user->id);
         $request->session()->put('pelanggan_user_name', $user->name);

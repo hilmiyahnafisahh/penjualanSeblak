@@ -12,6 +12,8 @@ use App\Http\Controllers\PengirimanEmailController;
 use App\Http\Controllers\KasirController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\LaporanController;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PembayaranInvoiceMail;
@@ -26,6 +28,7 @@ Route::get('/', function () {
 // // Untuk membuka halaman pembayaran beban
 // Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
 //     ->name('beban.bayar');
+
 // ============================================================
 // Customer Auth (Login & Register)
 // ============================================================
@@ -203,3 +206,8 @@ Route::get('/pengiriman-email/kirim/{id}', [PengirimanEmailController::class, 'k
 // Hapus riwayat
 Route::delete('/pengiriman-email/{id}', [PengirimanEmailController::class, 'destroy'])
     ->name('pengiriman-email.destroy');
+
+// Laporan: Laba Rugi (auto-generate untuk periode berjalan)
+Route::get('/laporan/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laporan.laba-rugi');
+Route::get('/laporan/laba-rugi/pdf', [LaporanController::class, 'pdf'])->name('laporan.laba-rugi.pdf');
+Route::get('/laporan/jurnal-umum/pdf', [LaporanController::class, 'jurnalPdf'])->name('laporan.jurnal-umum.pdf');
