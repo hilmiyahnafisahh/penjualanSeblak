@@ -13,6 +13,8 @@ use App\Http\Controllers\KasirController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\LaporanController;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PembayaranInvoiceMail;
 use App\Models\Pembayaran;
@@ -159,7 +161,26 @@ Route::get('/pembelian/pdf', [PembelianPdfController::class, 'pembelian'])->name
 // Pengiriman Email
 // ============================================================
 
-Route::get('/proses_pengiriman_email_pembayaran', [PengirimanEmailController::class, 'kirimSemua'])->name('pengiriman-email.proses');
-Route::get('/pengiriman-email', [PengirimanEmailController::class, 'index'])->name('pengiriman-email.index');
-Route::get('/pengiriman-email/kirim/{id}', [PengirimanEmailController::class, 'kirim'])->name('pengiriman-email.kirim');
-Route::delete('/pengiriman-email/{id}', [PengirimanEmailController::class, 'destroy'])->name('pengiriman-email.destroy');
+// Route autorefresh — dipanggil dari browser sesuai modul
+Route::get('/proses_pengiriman_email_pembayaran', [PengirimanEmailController::class, 'kirimSemua'])
+    ->name('pengiriman-email.proses');
+
+// Daftar riwayat pengiriman email
+Route::get('/pengiriman-email', [PengirimanEmailController::class, 'index'])
+    ->name('pengiriman-email.index');
+
+// Kirim invoice per pesanan dari tombol
+Route::get('/pengiriman-email/kirim/{id}', [PengirimanEmailController::class, 'kirim'])
+    ->name('pengiriman-email.kirim');
+
+// Hapus riwayat
+Route::delete('/pengiriman-email/{id}', [PengirimanEmailController::class, 'destroy'])
+    ->name('pengiriman-email.destroy');
+
+// ============================================================
+// Laporan
+// ============================================================
+
+Route::get('/laporan/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laporan.laba-rugi');
+Route::get('/laporan/laba-rugi/pdf', [LaporanController::class, 'pdf'])->name('laporan.laba-rugi.pdf');
+Route::get('/laporan/jurnal-umum/pdf', [LaporanController::class, 'jurnalPdf'])->name('laporan.jurnal-umum.pdf');

@@ -7,6 +7,9 @@ use App\Models\CatatBeban;
 use App\Models\Pembayaran;
 use App\Models\Pemesanan;
 use App\Models\Penggajian;
+use App\Models\Jurnal;
+use App\Models\JurnalDetail;
+use App\Models\Akun;
 use App\Mail\PenggajianDibayarkan;
 use Illuminate\Support\Facades\Mail;
 use Midtrans\Config;
@@ -276,140 +279,142 @@ class MidtransController extends Controller
         $transaction_status = $payload['transaction_status'] ?? null;
         $fraud_status = $payload['fraud_status'] ?? null;
 
-        // format:
-        // BEBAN-1-123456
-        // PAY-123-123456
-        $explode = explode('-', $order_id);
+        // format order_id examples: BEBAN-1-..., PAY-123-..., PLG-123-..., PGJ-1-...
+        $explode = explode('-', $order_id ?: '');
         $type = $explode[0] ?? null;
 
         if ($type === 'BEBAN') {
             $id_beban = $explode[1] ?? null;
             $beban = CatatBeban::find($id_beban);
 
-            if (!$beban) {
-                return response()->json([
-                    'message' => 'Data tidak ditemukan'
-                ], 404);
+            if (! $beban) {
+                return response()->json(['message' => 'Data tidak ditemukan'], 404);
             }
 
-            // ======================================================
-            // HANDLE STATUS PEMBAYARAN BEBAN
-            // ======================================================
-
-            if ($transaction_status == 'capture') {
-
-                if ($fraud_status == 'accept') {
-
-                    $beban->status = 'lunas';
-                }
-
-            } elseif ($transaction_status == 'settlement') {
-
+            if ($transaction_status === 'capture') {
+                if ($fraud_status === 'accept') { $beban->status = 'lunas'; }
+            } elseif ($transaction_status === 'settlement') {
                 $beban->status = 'lunas';
-
-            } elseif (
-                $transaction_status == 'pending' ||
-                $transaction_status == 'deny' ||
-                $transaction_status == 'expire' ||
-                $transaction_status == 'cancel'
-            ) {
-
+            } elseif (in_array($transaction_status, ['pending','deny','expire','cancel'])) {
                 $beban->status = 'belum lunas';
             }
 
             $beban->save();
 
-            return response()->json([
-                'message' => 'Callback berhasil'
-            ]);
-        }
-
-        if ($type === 'PAY') {
-            $id_pembayaran = $explode[1] ?? null;
-            $pembayaran = Pembayaran::find($id_pembayaran);
-
-            if (!$pembayaran) {
-                return response()->json(['message' => 'Data tidak ditemukan'], 404);
-            }
-
-            if ($transaction_status == 'capture') {
-                if ($fraud_status == 'accept') { $pembayaran->status_pembayaran = 'lunas'; }
-            } elseif ($transaction_status == 'settlement') {
-                $pembayaran->status_pembayaran = 'lunas';
-            } elseif ($transaction_status == 'pending') {
-                $pembayaran->status_pembayaran = 'pending';
-            } elseif (in_array($transaction_status, ['deny','expire','cancel'])) {
-                $pembayaran->status_pembayaran = 'batal';
-            }
-
-            if ($pembayaran->status_pembayaran === 'lunas' && $pembayaran->pemesanan) {
-                $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
-            }
-            $pembayaran->save();
             return response()->json(['message' => 'Callback berhasil']);
         }
 
-        // PLG = pembayaran QRIS dari pelanggan
-        if ($type === 'PLG') {
+        if (in_array($type, ['PAY', 'PLG'])) {
             $id_pembayaran = $explode[1] ?? null;
             $pembayaran = Pembayaran::with('pemesanan')->find($id_pembayaran);
 
-            if (!$pembayaran) {
+            if (! $pembayaran) {
                 return response()->json(['message' => 'Data tidak ditemukan'], 404);
             }
 
-            if ($transaction_status == 'capture') {
-                if ($fraud_status == 'accept') { $pembayaran->status_pembayaran = 'lunas'; }
-            } elseif ($transaction_status == 'settlement') {
+            if ($transaction_status === 'capture') {
+                if ($fraud_status === 'accept') { $pembayaran->status_pembayaran = 'lunas'; }
+            } elseif ($transaction_status === 'settlement') {
                 $pembayaran->status_pembayaran = 'lunas';
-            } elseif ($transaction_status == 'pending') {
+            } elseif ($transaction_status === 'pending') {
                 $pembayaran->status_pembayaran = 'pending';
             } elseif (in_array($transaction_status, ['deny','expire','cancel'])) {
                 $pembayaran->status_pembayaran = 'batal';
             }
 
-            if ($pembayaran->status_pembayaran === 'lunas' && $pembayaran->pemesanan) {
-                $pembayaran->pemesanan->update(['status_pemesanan' => 'diproses']);
+            $becameLunas = ($pembayaran->status_pembayaran === 'lunas');
+
+            if ($becameLunas && $pembayaran->pemesanan) {
+                // For PAY mark finished, for PLG mark processed
+                if ($type === 'PAY') {
+                    $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
+                } else {
+                    $pembayaran->pemesanan->update(['status_pemesanan' => 'diproses']);
+                }
             }
+
             $pembayaran->save();
-            return response()->json(['message' => 'Callback QRIS berhasil']);
+
+            if ($becameLunas) {
+                try {
+                    $this->createJurnalForPembayaran($pembayaran);
+                } catch (\Throwable $e) {
+                    \Log::error('Gagal membuat jurnal untuk pembayaran: ' . $e->getMessage());
+                }
+            }
+
+            return response()->json(['message' => 'Callback berhasil']);
         }
 
         if ($type === 'PGJ') {
             $id_penggajian = $explode[1] ?? null;
             $penggajian = Penggajian::find($id_penggajian);
 
-            if (!$penggajian) {
-                return response()->json([
-                    'message' => 'Data tidak ditemukan'
-                ], 404);
+            if (! $penggajian) {
+                return response()->json(['message' => 'Data tidak ditemukan'], 404);
             }
 
-            if ($transaction_status == 'capture') {
-                if ($fraud_status == 'accept') {
-                    $penggajian->status = 'Dibayarkan';
-                }
-            } elseif ($transaction_status == 'settlement') {
+            if ($transaction_status === 'capture') {
+                if ($fraud_status === 'accept') { $penggajian->status = 'Dibayarkan'; }
+            } elseif ($transaction_status === 'settlement') {
                 $penggajian->status = 'Dibayarkan';
-            } elseif ($transaction_status == 'pending') {
+            } elseif ($transaction_status === 'pending') {
                 $penggajian->status = 'Ditangguhkan';
-            } elseif (
-                $transaction_status == 'deny' ||
-                $transaction_status == 'expire' ||
-                $transaction_status == 'cancel'
-            ) {
+            } elseif (in_array($transaction_status, ['deny','expire','cancel'])) {
                 $penggajian->status = 'Ditangguhkan';
             }
 
             $penggajian->save();
 
-            return response()->json([
-                'message' => 'Callback berhasil'
-            ]);
+            if ($penggajian->status === 'Dibayarkan') {
+                Mail::to(config('mail.from.address'))->send(new PenggajianDibayarkan($penggajian));
+            }
+
+            return response()->json(['message' => 'Callback berhasil']);
         }
 
-        return response()->json([
-            'message' => 'Order ID format tidak dikenali'
-        ], 400);
+        return response()->json(['message' => 'Order ID format tidak dikenali'], 400);
+    }
+
+    private function createJurnalForPembayaran(Pembayaran $pembayaran)
+    {
+        $amount = (float) ($pembayaran->total_pembayaran ?? 0);
+        if ($amount <= 0) {
+            return;
+        }
+
+        // Cari akun kas (Asset) dan akun pendapatan
+        $akunKas = Akun::where('jenis_akun', 'Asset')->first();
+        $akunPendapatan = Akun::where('jenis_akun', 'Pendapatan')->first();
+
+        // Fallback jika tidak ditemukan
+        if (! $akunKas) { $akunKas = Akun::first(); }
+        if (! $akunPendapatan) { $akunPendapatan = Akun::first(); }
+
+        if (! $akunKas || ! $akunPendapatan) {
+            return; // tidak ada akun untuk jurnal
+        }
+
+        $jurnal = Jurnal::create([
+            'tgl' => now()->toDateString(),
+            'no_referensi' => $pembayaran->id_pembayaran ?? $pembayaran->id,
+            'deskripsi' => 'Pembayaran untuk pesanan ' . ($pembayaran->id_pemesanan ?? ($pembayaran->pemesanan->id_pesanan ?? $pembayaran->id)),
+        ]);
+
+        // Debit: Kas/Asset
+        $jurnal->jurnaldetail()->create([
+            'akun_id' => $akunKas->id,
+            'deskripsi' => 'Setoran pembayaran',
+            'debit' => $amount,
+            'credit' => 0,
+        ]);
+
+        // Credit: Pendapatan
+        $jurnal->jurnaldetail()->create([
+            'akun_id' => $akunPendapatan->id,
+            'deskripsi' => 'Pendapatan penjualan',
+            'debit' => 0,
+            'credit' => $amount,
+        ]);
     }
 }

@@ -97,6 +97,20 @@ class PelangganController extends Controller
             'user_group' => 'pelanggan',
         ]);
 
+        // Buat record pelanggan di tabel pelanggan agar data tersedia untuk proses checkout
+        try {
+            Pelanggan::create([
+                'id_pelanggan'  => Pelanggan::getIDPelanggan(),
+                'nama_pelanggan'=> $validated['name'],
+                'jenis_kelamin' => 'Laki-laki',
+                'alamat'        => '',
+                'no_telp'       => '',
+                'email'         => $validated['email'],
+            ]);
+        } catch (\Throwable $e) {
+            // jika gagal membuat pelanggan, lanjutkan saja (user masih bisa login)
+        }
+
         $request->session()->put('pelanggan_user_id', $user->id);
         $request->session()->put('pelanggan_user_name', $user->name);
 
