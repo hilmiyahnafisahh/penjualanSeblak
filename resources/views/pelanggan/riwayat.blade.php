@@ -8,6 +8,7 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
     <title>Riwayat Pemesanan | Seblak Sangkuriang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
     <style>
         :root{--merah:#8b1a1a;--merah-gelap:#600e0e;--bg:#fdf0f0;}
         body{background:var(--bg);font-family:'Segoe UI',sans-serif;}
@@ -50,12 +51,33 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
         .pay-status-lunas{background:#d1e7dd;color:#0f5132;}
         .pay-status-pending{background:#fff3cd;color:#856404;}
         .pay-status-batal{background:#f8d7da;color:#842029;}
+
+        /* Pay info box */
+        .pay-box{border-radius:.85rem;padding:.85rem 1rem;display:flex;align-items:flex-start;gap:.75rem;margin-top:.75rem;}
+        .pay-box-warning{background:#fff3cd;border:1px solid #ffe69c;}
+        .pay-box-info{background:#e8f4fd;border:1px solid #bee5fd;}
+        .pay-box-success{background:#d1e7dd;border:1px solid #a3cfbb;}
+        .pay-icon{font-size:1.4rem;flex-shrink:0;}
+        .pay-title{font-weight:700;font-size:.85rem;margin-bottom:.25rem;}
+        .pay-desc{font-size:.78rem;color:#555;line-height:1.5;}
+
+        /* Snap loading overlay */
+        #snapOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;flex-direction:column;color:white;}
+        #snapOverlay.show{display:flex;}
+        .snap-spinner{width:46px;height:46px;border:4px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:1rem;}
+        @keyframes spin{to{transform:rotate(360deg)}}
     </style>
 </head>
 <body>
 <svg style="display:none;"><defs>
   <symbol id="ic-user" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/></symbol>
 </defs></svg>
+
+<!-- Loading Snap overlay -->
+<div id="snapOverlay">
+  <div class="snap-spinner"></div>
+  <div>Memuat halaman pembayaran...</div>
+</div>
 
 {{-- Offcanvas --}}
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu">
