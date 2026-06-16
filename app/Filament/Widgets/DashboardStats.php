@@ -17,43 +17,7 @@ class DashboardStats extends StatsOverviewWidget
     {
         return [
 
-            Stat::make(
-                'Total Barang',
-                Barang::count()
-            )
-                ->description('Barang tersedia')
-                ->descriptionIcon('heroicon-m-cube')
-                ->color('success')
-                ->chart([3, 5, 7, 6, 8, 10, 12]),
-
-            Stat::make(
-                'Total Pelanggan',
-                Pelanggan::count()
-            )
-                ->description('Pelanggan terdaftar')
-                ->descriptionIcon('heroicon-m-users')
-                ->color('info')
-                ->chart([2, 4, 6, 5, 7, 9, 11]),
-
-            Stat::make(
-                'Total Pemesanan',
-                Pemesanan::count()
-            )
-                ->description('Transaksi masuk')
-                ->descriptionIcon('heroicon-m-shopping-bag')
-                ->color('warning')
-                ->chart([1, 3, 2, 4, 6, 5, 7]),
-
-            Stat::make(
-                'Total Beban',
-                CatatBeban::count()
-            )
-                ->description('Catatan pengeluaran')
-                ->descriptionIcon('heroicon-m-banknotes')
-                ->color('danger')
-                ->chart([1, 2, 3, 2, 4, 5, 6]),
-
-            // 💰 TOTAL PENDAPATAN (SUDAH BENAR SESUAI DATABASE KAMU)
+            // TOTAL PENDAPATAN
             Stat::make(
                 'Total Pendapatan',
                 'Rp ' . number_format(
@@ -63,10 +27,50 @@ class DashboardStats extends StatsOverviewWidget
                     '.'
                 )
             )
-                ->description('Total dari pembayaran berhasil')
+                ->description('Total pembayaran berhasil')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('success')
                 ->chart([5, 10, 8, 12, 15, 18, 20]),
+
+            // TOTAL BARANG HAMPIR HABIS
+            Stat::make(
+                'Barang Hampir Habis',
+                Barang::where('stok', '<=', 5)->count()
+            )
+                ->description('Stok kurang dari atau sama dengan 5')
+                ->descriptionIcon('heroicon-m-exclamation-triangle')
+                ->color('danger')
+                ->chart([12, 10, 8, 7, 6, 4, 3]),
+
+            // TOTAL PELANGGAN
+            Stat::make(
+                'Total Pelanggan',
+                Pelanggan::count()
+            )
+                ->description('Pelanggan terdaftar')
+                ->descriptionIcon('heroicon-m-users')
+                ->color('info')
+                ->chart([2, 4, 6, 5, 7, 9, 11]),
+
+            // TOTAL PEMESANAN
+            Stat::make(
+                'Total Pemesanan',
+                Pemesanan::count()
+            )
+                ->description('Transaksi masuk')
+                ->descriptionIcon('heroicon-m-shopping-bag')
+                ->color('warning')
+                ->chart([1, 3, 2, 4, 6, 5, 7]),
+
+            // TOTAL BEBAN
+            Stat::make(
+                'Total Beban',
+                CatatBeban::count()
+            )
+                ->description('Catatan pengeluaran')
+                ->descriptionIcon('heroicon-m-banknotes')
+                ->color('gray')
+                ->chart([1, 2, 3, 2, 4, 5, 6]),
         ];
     }
 }

@@ -61,6 +61,8 @@ Route::get('/pelanggan/checkout', [PelangganController::class, 'checkout'])->nam
 Route::post('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout.post');
 Route::get('/pelanggan/checkout/qris/success', [PelangganController::class, 'checkoutQrisSuccess'])->name('pelanggan.checkout.qris.success');
 Route::get('/pelanggan/bayar-qris/{id}', [PelangganController::class, 'bayarQris'])->name('pelanggan.bayar.qris');
+Route::get('/pelanggan/bayar-transfer/{id}', [PelangganController::class, 'bayarTransfer'])->name('pelanggan.bayar.transfer');
+Route::get('/pelanggan/cek-status/{id}', [PelangganController::class, 'cekStatusPembayaran'])->name('pelanggan.cek.status');
 Route::get('/pelanggan/pesanan', [PelangganController::class, 'pesanan'])->name('pelanggan.pesanan');
 Route::get('/pelanggan/riwayat', [PelangganController::class, 'riwayat'])->name('pelanggan.riwayat');
 
