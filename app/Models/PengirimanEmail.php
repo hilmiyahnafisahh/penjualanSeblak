@@ -2,18 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PengirimanEmail extends Model
 {
-    use HasFactory;
+    protected $table = 'pengiriman_email';
 
-    protected $table = 'pengiriman_email'; // Nama tabel eksplisit
+    protected $fillable = [
+        'pemesanan_id',
+        'status',
+        'tgl_pengiriman_pesan',
+    ];
 
-    protected $guarded = []; //semua kolom boleh di isi
+    protected $casts = [
+        'tgl_pengiriman_pesan' => 'datetime',
+    ];
 
-    // relasi ke tabel penjualan
     public function pemesanan()
     {
         return $this->belongsTo(Pemesanan::class, 'pemesanan_id');

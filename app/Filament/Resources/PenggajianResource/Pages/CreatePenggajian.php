@@ -3,36 +3,37 @@
 namespace App\Filament\Resources\PenggajianResource\Pages;
 
 use App\Filament\Resources\PenggajianResource;
+use App\Models\Penggajian;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePenggajian extends CreateRecord
 {
     protected static string $resource = PenggajianResource::class;
 
-    protected ?string $redirectUrl = null;
-
-    protected function afterCreate(): void
+    /**
+     * Validasi sebelum record disimpan:
+     * 1 karyawan hanya boleh 1x penggajian per periode.
+     */
+    protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $penggajian = $this->record;
+        if (Penggajian::sudahDigaji($data['id_karyawan'], $data['periode'])) {
+            Notification::make()
+                ->title('Penggajian sudah ada')
+                ->body("Karyawan ini sudah memiliki data penggajian untuk periode {$data['periode']}.")
+                ->danger()
+                ->persistent()
+                ->send();
 
-        if ($penggajian->status === 'Dibayarkan') {
-            $penggajian->status = 'Ditangguhkan';
-            $penggajian->save();
-
-            if (config('services.midtrans.server_key')) {
-                $this->redirectUrl = route('penggajian.midtrans', ['id' => $penggajian->id]);
-
-                return;
-            }
-
-            session()->flash('warning', 'Midtrans belum dikonfigurasi. Data penggajian tersimpan sebagai pending.');
-            return;
+            $this->halt(); // hentikan proses simpan
         }
+
+        return $data;
     }
 
     protected function getRedirectUrl(): string
     {
-        return $this->redirectUrl ?? $this->getResource()::getUrl('index');
+        return $this->getResource()::getUrl('index');
     }
 }

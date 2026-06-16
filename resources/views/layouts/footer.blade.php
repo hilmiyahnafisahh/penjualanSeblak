@@ -4,7 +4,7 @@
 
           <div class="col-lg-3 col-md-6">
             <div class="footer-menu">
-              <h5 class="widget-title">🌶️ Seblak Nusantara</h5>
+              <h5 class="widget-title">🌶️ Seblak Sangkuriang</h5>
               <p class="text-muted small">Nikmati cita rasa seblak autentik dengan berbagai pilihan topping dan level kepedasan.</p>
               <div class="social-links mt-3">
                 <ul class="d-flex list-unstyled gap-2">
@@ -97,6 +97,7 @@
       }
     </script>
 
+    </main>
     @stack('scripts')
   </body>
 </html>
