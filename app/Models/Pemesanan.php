@@ -21,6 +21,11 @@ class Pemesanan extends Model
         'subtotal',
     ];
 
+    protected $casts = [
+        'tanggal_pemesanan' => 'datetime',
+        'subtotal'          => 'integer',
+    ];
+
     protected static function boot()
     {
         parent::boot();

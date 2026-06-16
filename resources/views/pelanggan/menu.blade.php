@@ -92,19 +92,6 @@
           </select>
         </div>
 
-        {{-- Level Pedas --}}
-        <div class="mb-3">
-          <label class="fw-semibold mb-2 d-block">Level Pedas <span class="text-danger">*</span></label>
-          <div class="d-flex gap-2 flex-wrap">
-            @foreach($levelPedasOptions as $lv)
-            <div>
-              <input type="radio" class="d-none" name="level_pedas" id="lv_{{ $loop->index }}" value="{{ $lv }}" required onchange="updateSummary()">
-              <label for="lv_{{ $loop->index }}" class="btn btn-outline-secondary btn-sm" style="border-radius:2rem;">{{ $lv }}</label>
-            </div>
-            @endforeach
-          </div>
-        </div>
-
         {{-- Catatan --}}
         <div class="mb-4">
           <label class="fw-semibold mb-2 d-block">Catatan (opsional)</label>
@@ -146,7 +133,6 @@
         <div class="summary-row"><span class="text-muted">Menu</span><span class="fw-semibold">{{ $menu->nama_menu }}</span></div>
         <div class="summary-row"><span class="text-muted">Rasa</span><span id="sumRasa" class="fw-semibold text-muted">Belum dipilih</span></div>
         <div class="summary-row"><span class="text-muted">Sayur</span><span id="sumSayur" class="fw-semibold text-muted">Belum dipilih</span></div>
-        <div class="summary-row"><span class="text-muted">Level Pedas</span><span id="sumPedas" class="fw-semibold text-muted">Belum dipilih</span></div>
         <div class="summary-row"><span class="text-muted">Jumlah</span><span id="sumQty" class="fw-semibold">1</span></div>
         <div class="summary-row"><span class="text-muted">Harga Dasar</span><span id="sumHargaDasar" class="fw-semibold">Rp {{ number_format($menu->harga_menu,0,',','.') }}</span></div>
         <div class="summary-row"><span class="text-muted">Topping</span><span id="sumTopping" class="fw-semibold">Rp 0</span></div>
@@ -180,13 +166,10 @@ function toggleTopping(id) {
 function updateSummary() {
   const rasa  = document.querySelector('[name="rasa"]').value;
   const sayur = document.querySelector('[name="sayur_sawi"]').value;
-  const pedas = document.querySelector('input[name="level_pedas"]:checked');
   document.getElementById('sumRasa').textContent  = rasa  || 'Belum dipilih';
   document.getElementById('sumSayur').textContent = sayur || 'Belum dipilih';
-  document.getElementById('sumPedas').textContent = pedas ? pedas.value : 'Belum dipilih';
   document.getElementById('sumRasa').style.color  = rasa  ? '#1a1a1a':'#aaa';
   document.getElementById('sumSayur').style.color = sayur ? '#1a1a1a':'#aaa';
-  document.getElementById('sumPedas').style.color = pedas ? '#1a1a1a':'#aaa';
   hitungTotal();
 }
 
@@ -204,7 +187,6 @@ function hitungTotal() {
   document.getElementById('sumTotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
 }
 
-document.querySelectorAll('input[name="level_pedas"]').forEach(r => r.addEventListener('change', updateSummary));
 document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', hitungTotal));
 document.querySelectorAll('input[type="number"]').forEach(n => n.addEventListener('input', hitungTotal));
 </script>

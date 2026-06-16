@@ -51,13 +51,7 @@ class BarangResource extends Resource
                     ->label('Stok')
                     ->placeholder('Masukkan jumlah stok')
                     ->required()
-                    ->numeric()
-                    ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                        if ($state > 0 && $get('harga_beli') > 0) {
-                            $set('harga_jual', hargajual($get('harga_beli'), $state));
-                        }
-                    }),
+                    ->numeric(),
                 TextInput::make('satuan')
                     ->label('Satuan')
                     ->default('pcs')
@@ -68,17 +62,17 @@ class BarangResource extends Resource
                     ->required()
                     ->numeric()
                     ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                        if ($state > 0 && $get('stok') > 0) {
-                            $set('harga_jual', hargajual($state, $get('stok')));
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state > 0) {
+                            $set('harga_jual', (int) round($state * 1.4, 0));
                         }
                     }),
                 TextInput::make('harga_jual')
-                    ->label('Harga Jual')
-                    ->placeholder('Harga jual otomatis')
+                    ->label('Harga Jual (otomatis, harga beli + 40%)')
+                    ->placeholder('Terisi otomatis')
                     ->disabled()
+                    ->dehydrated()
                     ->numeric()
-                    ->default(fn ($get) => ($get('harga_beli') > 0 && $get('stok') > 0) ? hargajual($get('harga_beli'), $get('stok')) : null)
                     ->required(),
                 FileUpload::make('gambar')
                     ->label('Gambar Barang')

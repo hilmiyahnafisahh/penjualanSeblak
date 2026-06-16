@@ -37,13 +37,18 @@
     </div>
 
     <script>
+        let paymentId = {{ $pembayaran->id }};
+        let isProcessing = false;
+
         document.getElementById('pay-button').addEventListener('click', function () {
             window.snap.pay('{{ $snapToken }}', {
                 onSuccess: function(result){
-                    window.location.href = '{{ url('/admin/pembayaran') }}';
+                    // Mulai polling status
+                    pollPaymentStatus();
                 },
                 onPending: function(result){
-                    window.location.href = '{{ url('/admin/pembayaran') }}';
+                    // Mulai polling status untuk pending
+                    pollPaymentStatus();
                 },
                 onError: function(result){
                     alert('Pembayaran gagal. Silakan coba lagi.');
@@ -53,6 +58,50 @@
                 }
             });
         });
+
+        // Polling untuk cek status pembayaran
+        function pollPaymentStatus() {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            const maxAttempts = 30; // 30 detik (dengan interval 1 detik)
+            let attempts = 0;
+
+            const pollInterval = setInterval(function() {
+                attempts++;
+
+                fetch(`/api/pembayaran/${paymentId}/status`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Status pembayaran:', data);
+
+                        // Jika status sudah lunas, redirect
+                        if (data.status === 'lunas') {
+                            clearInterval(pollInterval);
+                            alert('Pembayaran berhasil!');
+                            window.location.href = '{{ url('/admin/pembayaran') }}';
+                        }
+                        // Jika batal, redirect dengan pesan
+                        else if (data.status === 'batal') {
+                            clearInterval(pollInterval);
+                            alert('Pembayaran dibatalkan.');
+                            window.location.href = '{{ url('/admin/pembayaran') }}';
+                        }
+                        // Jika masih pending setelah max attempts, arahkan ke halaman pembayaran
+                        else if (attempts >= maxAttempts) {
+                            clearInterval(pollInterval);
+                            window.location.href = '{{ url('/admin/pembayaran') }}';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking payment status:', error);
+                        if (attempts >= maxAttempts) {
+                            clearInterval(pollInterval);
+                            window.location.href = '{{ url('/admin/pembayaran') }}';
+                        }
+                    });
+            }, 1000); // Polling setiap 1 detik
+        }
     </script>
 </body>
 </html>
