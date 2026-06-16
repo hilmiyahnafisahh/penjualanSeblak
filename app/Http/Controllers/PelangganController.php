@@ -525,6 +525,21 @@ class PelangganController extends Controller
                     'catatan'      => $item['catatan'] ?? null,
                     'topping'      => !empty($toppingData) ? $toppingData : null,
                 ]);
+
+                // ── Kurangi stok barang bahan menu (menubarang) ──
+                $bahanMenu = \App\Models\menubarang::where('id_menu', $menuId)->get();
+                foreach ($bahanMenu as $bahan) {
+                    \App\Models\Barang::where('id', $bahan->id_barang)
+                        ->where('stok', '>', 0)
+                        ->decrement('stok', $item['qty']);
+                }
+
+                // ── Kurangi stok topping (barang langsung) ──
+                foreach ($toppingData as $top) {
+                    \App\Models\Barang::where('id_barang', $top['id_barang'])
+                        ->where('stok', '>', 0)
+                        ->decrement('stok', $top['qty']);
+                }
             }
 
             DB::table('pemesanan')
