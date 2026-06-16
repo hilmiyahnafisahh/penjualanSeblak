@@ -47,6 +47,22 @@
                 <input type="email" name="email" value="{{ old('email') }}" class="form-control" required>
             </div>
             <div class="mb-3">
+                <label class="form-label">No. Telepon</label>
+                <input type="tel" name="no_telp" value="{{ old('no_telp') }}" class="form-control" placeholder="08xxxxxxxxxx" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Jenis Kelamin</label>
+                <select name="jenis_kelamin" class="form-select" required>
+                    <option value="" disabled {{ old('jenis_kelamin') ? '' : 'selected' }}>-- Pilih --</option>
+                    <option value="Laki-laki" {{ old('jenis_kelamin') === 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                    <option value="Perempuan" {{ old('jenis_kelamin') === 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Alamat</label>
+                <textarea name="alamat" class="form-control" rows="2" placeholder="Jl. ..." required>{{ old('alamat') }}</textarea>
+            </div>
+            <div class="mb-3">
                 <label class="form-label">Password</label>
                 <input type="password" name="password" class="form-control" required>
             </div>
