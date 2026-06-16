@@ -20,7 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // ------------------------------------------------------------------
+        // forceScheme hanya diaktifkan saat production / ngrok, tidak untuk local.
         // Kode ngrok bawaan kamu (hilangkan tanda // jika ingin diaktifkan kembali)
+        // ------------------------------------------------------------------
         // if (config('app.env') === 'local') {
         //     \URL::forceScheme('https');
         // }
@@ -32,29 +35,29 @@ class AppServiceProvider extends ServiceProvider
                 <style>
                     /* 1. Sidebar Mewah dengan Gradasi Gelap */
                     aside.fi-sidebar {
-                        background: linear-gradient(180deg, #3A1005 0%, #1A0702 100%) !important; 
+                        background: linear-gradient(180deg, #3A1005 0%, #1A0702 100%) !important;
                         border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
                     }
 
                     /* Warna teks menu belum aktif */
                     aside.fi-sidebar .fi-sidebar-item-label {
-                        color: #FFEDD5 !important; 
+                        color: #FFEDD5 !important;
                     }
 
                     /* Warna icon menu belum aktif */
                     aside.fi-sidebar .fi-sidebar-item-icon {
                         color: #FDBA74 !important;
                     }
-                    
+
                     /* Efek menu aktif yang lebih modern (Gradient & Glow effect) */
                     aside.fi-sidebar .fi-sidebar-item-active {
-                        background: linear-gradient(90deg, #EA580C 0%, #C2410C 100%) !important; 
+                        background: linear-gradient(90deg, #EA580C 0%, #C2410C 100%) !important;
                         box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4) !important;
                         border-radius: 0.75rem;
                     }
                     aside.fi-sidebar .fi-sidebar-item-active .fi-sidebar-item-label,
                     aside.fi-sidebar .fi-sidebar-item-active .fi-sidebar-item-icon {
-                        color: #FFFFFF !important; 
+                        color: #FFFFFF !important;
                     }
 
                     /* 2. Topbar Semi-Transparan (Glassmorphism) */
@@ -75,7 +78,7 @@ class AppServiceProvider extends ServiceProvider
                         box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3) !important;
                         transition: all 0.3s ease;
                     }
-                    
+
                     /* Efek hover pada baris tabel agar lebih interaktif */
                     .fi-ta-row:hover {
                         background-color: rgba(255, 255, 255, 0.03) !important;

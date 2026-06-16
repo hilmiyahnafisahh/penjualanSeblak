@@ -15,6 +15,9 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\LaporanController;
+
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use App\Mail\PembayaranInvoiceMail;
 use App\Models\Pembayaran;
@@ -25,17 +28,24 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// --------------------------
+// // Untuk membuka halaman pembayaran beban (versi lama)
+// Route::get('/bayar-beban/{id}', [MidtransController::class, 'bayar'])
+//     ->name('beban.bayar');
+
+// ============================================================
 // Customer Auth (Login & Register)
-// --------------------------
+// ============================================================
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
 
 // --------------------------
 // Pelanggan / Kasir / Frontend
@@ -60,6 +70,8 @@ Route::post('/pelanggan/keranjang/update', [PelangganController::class, 'updateC
 Route::post('/pelanggan/keranjang/remove', [PelangganController::class, 'removeCartItem'])->name('pelanggan.keranjang.remove');
 Route::get('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout');
 Route::post('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout.post');
+Route::get('/pelanggan/checkout/qris/success', [PelangganController::class, 'checkoutQrisSuccess'])->name('pelanggan.checkout.qris.success');
+Route::get('/pelanggan/bayar-qris/{id}', [PelangganController::class, 'bayarQris'])->name('pelanggan.bayar.qris');
 Route::get('/pelanggan/pesanan', [PelangganController::class, 'pesanan'])->name('pelanggan.pesanan');
 Route::get('/pelanggan/riwayat', [PelangganController::class, 'riwayat'])->name('pelanggan.riwayat');
 
@@ -101,13 +113,21 @@ Route::get('/pembelian/pdf', [PembelianPdfController::class, 'pembelian'])->name
 // --------------------------
 // Pengiriman Email
 // --------------------------
-// Proses pengiriman invoice (cron / manual trigger)
-Route::get('/proses_pengiriman_email_pembayaran', [PengirimanEmailController::class, 'kirimSemua'])->name('pengiriman-email.proses');
+// ✅ Route autorefresh — dipanggil dari browser sesuai modul (cron / manual trigger)
+Route::get('/proses_pengiriman_email_pembayaran', [PengirimanEmailController::class, 'kirimSemua'])
+    ->name('pengiriman-email.proses');
 
-// Daftar & aksi kirim invoice
-Route::get('/pengiriman-email', [PengirimanEmailController::class, 'index'])->name('pengiriman-email.index');
-Route::get('/pengiriman-email/kirim/{id}', [PengirimanEmailController::class, 'kirim'])->name('pengiriman-email.kirim');
-Route::delete('/pengiriman-email/{id}', [PengirimanEmailController::class, 'destroy'])->name('pengiriman-email.destroy');
+// Daftar riwayat pengiriman email
+Route::get('/pengiriman-email', [PengirimanEmailController::class, 'index'])
+    ->name('pengiriman-email.index');
+
+// Kirim invoice per pesanan dari tombol
+Route::get('/pengiriman-email/kirim/{id}', [PengirimanEmailController::class, 'kirim'])
+    ->name('pengiriman-email.kirim');
+
+// Hapus riwayat
+Route::delete('/pengiriman-email/{id}', [PengirimanEmailController::class, 'destroy'])
+    ->name('pengiriman-email.destroy');
 
 // Tes kirim email (keperluan dev)
 Route::get('/tesemail', function () {
@@ -120,21 +140,18 @@ Route::get('/tesemail', function () {
     ];
 
     Mail::to('you@example.com')->send(new PembayaranInvoiceMail($data));
-
     return 'Email test dikirim (cek log/mailtrap).';
 });
 
 // Kirim invoice ke email pelanggan berdasarkan id pembayaran (dev helper)
 Route::get('/tesemail/{id}', function ($id) {
     $pembayaran = Pembayaran::with('pemesanan.Pelanggan', 'pemesanan.DetailPesanan.menu')->find($id);
-
     if (! $pembayaran) {
         return "Pembayaran dengan id {$id} tidak ditemukan.";
     }
 
     $pelanggan = $pembayaran->pemesanan?->Pelanggan;
     $email = $pelanggan?->email;
-
     if (! $email) {
         return "Email pelanggan tidak tersedia untuk pembayaran id {$id}.";
     }
@@ -155,7 +172,6 @@ Route::get('/tesemail/{id}', function ($id) {
     ];
 
     Mail::to($email)->send(new PembayaranInvoiceMail($data));
-
     return "Invoice dikirim ke {$email} untuk pembayaran id {$id}.";
 });
 
@@ -169,3 +185,11 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 Route::get('/admin/seblak-login', [AdminAuthController::class, 'showLogin'])->name('filament.admin.auth.login');
 Route::post('/admin/seblak-login', [AdminAuthController::class, 'login'])->name('filament.admin.auth.login.post');
 Route::match(['get','post'], '/admin/seblak-logout', [AdminAuthController::class, 'logout'])->name('filament.admin.auth.logout');
+
+// --------------------------
+// Laporan
+// --------------------------
+// Laba Rugi (auto-generate untuk periode berjalan)
+Route::get('/laporan/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laporan.laba-rugi');
+Route::get('/laporan/laba-rugi/pdf', [LaporanController::class, 'pdf'])->name('laporan.laba-rugi.pdf');
+Route::get('/laporan/jurnal-umum/pdf', [LaporanController::class, 'jurnalPdf'])->name('laporan.jurnal-umum.pdf');
