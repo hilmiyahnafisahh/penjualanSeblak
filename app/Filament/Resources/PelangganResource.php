@@ -17,7 +17,6 @@ use Filament\Forms\Components\Textarea;
 
 // Table Columns
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 
 class PelangganResource extends Resource
 {
@@ -72,6 +71,10 @@ class PelangganResource extends Resource
         return $table
             ->columns([
 
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
+
                 TextColumn::make('id_pelanggan')
                     ->searchable(),
 
@@ -80,12 +83,14 @@ class PelangganResource extends Resource
                     ->searchable()
                     ->sortable(), 
 
-                BadgeColumn::make('jenis_kelamin')
+                TextColumn::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
-                    ->colors([
-                        'Laki-laki' => 'primary',
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Laki-laki' => 'info',
                         'Perempuan' => 'danger',
-                    ]),
+                        default     => 'gray',
+                    }),
 
                 TextColumn::make('alamat')
                     ->limit(30),
@@ -98,6 +103,10 @@ class PelangganResource extends Resource
 
                 TextColumn::make('created_at')
                     ->label('Dibuat')
+                    ->dateTime(),
+
+                TextColumn::make('updated_at')
+                    ->label('Diupdate')
                     ->dateTime(),
             ])
             ->filters([
