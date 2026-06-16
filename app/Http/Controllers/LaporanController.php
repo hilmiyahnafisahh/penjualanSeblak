@@ -148,57 +148,54 @@ class LaporanController extends Controller
             ->orderBy('tanggal_pemesanan')
             ->get();
 
-        $grouped = [];
+        // Sama persis dengan LaporanPenjualan::getViewData()
+        $detailRows = [];
         foreach ($orders as $order) {
-            $orderDate    = Carbon::parse($order->tanggal_pemesanan)->translatedFormat('d-m-Y');
-            $customerName = $order->Pelanggan?->nama_pelanggan ?? 'Unknown';
+            $orderDate = Carbon::parse($order->tanggal_pemesanan)->translatedFormat('d-m-Y');
 
             foreach ($order->DetailPesanan as $detail) {
                 $menuName  = $detail->menu?->nama_menu ?? 'Unknown';
-
-                // Ambil harga satuan: prioritas harga_menu dari relasi,
-                // fallback kolom DB mentah, fallback hitung dari subtotal/qty
                 $unitPrice = (int) ($detail->menu?->harga_menu ?? 0);
-                if ($unitPrice <= 0) {
-                    $unitPrice = (int) ($detail->getRawOriginal('harga_menu') ?? 0);
-                }
-                if ($unitPrice <= 0) {
-                    $unitPrice = (int) ($detail->getRawOriginal('harga_jual') ?? 0);
-                }
-                if ($unitPrice <= 0 && (int) $detail->jumlah > 0) {
-                    $unitPrice = (int) round((int) $detail->subtotal / (int) $detail->jumlah);
-                }
+                if ($unitPrice <= 0) $unitPrice = (int) ($detail->getRawOriginal('harga_menu') ?? 0);
+                if ($unitPrice <= 0) $unitPrice = (int) ($detail->getRawOriginal('harga_jual') ?? 0);
+                $qty          = (int) $detail->jumlah;
+                $menuSubtotal = $unitPrice * $qty;
+                if ($menuSubtotal <= 0) $menuSubtotal = (int) $detail->subtotal;
+                if ($unitPrice <= 0 && $qty > 0) $unitPrice = (int) round($menuSubtotal / $qty);
 
-                $qty       = (int) $detail->jumlah;
-                $total     = (int) $detail->subtotal;
-                $key       = $orderDate . '|' . $customerName . '|' . $menuName . '|' . $unitPrice;
+                $detailRows[] = [
+                    'tanggal' => $orderDate,
+                    'nama'    => $menuName,
+                    'tipe'    => 'menu',
+                    'jumlah'  => $qty,
+                    'harga'   => $unitPrice,
+                    'total'   => $menuSubtotal,
+                ];
 
-                if (!isset($grouped[$key])) {
-                    $grouped[$key] = [
-                        'tanggal'   => $orderDate,
-                        'pelanggan' => $customerName,
-                        'nama'      => $menuName,
-                        'jumlah'    => 0,
-                        'harga'     => $unitPrice,
-                        'total'     => 0,
+                // Topping dari JSON
+                $toppingList = is_array($detail->topping)
+                    ? $detail->topping
+                    : json_decode($detail->topping ?? '[]', true);
+
+                foreach ($toppingList ?? [] as $top) {
+                    $topQty   = (int) ($top['qty'] ?? 0);
+                    $topHarga = (int) ($top['harga'] ?? 0);
+                    $topTotal = (int) ($top['subtotal'] ?? ($topQty * $topHarga));
+                    if ($topQty <= 0) continue;
+
+                    $detailRows[] = [
+                        'tanggal' => $orderDate,
+                        'nama'    => ($top['nama_barang'] ?? ($top['nama'] ?? 'Topping')) . ' (Topping)',
+                        'tipe'    => 'topping',
+                        'jumlah'  => $topQty,
+                        'harga'   => $topHarga,
+                        'total'   => $topTotal,
                     ];
                 }
-
-                $grouped[$key]['jumlah'] += $qty;
-                $grouped[$key]['total']  += $total;
             }
         }
 
-        $reportRows  = collect($grouped)->values()->sortBy([['tanggal', 'asc'], ['nama', 'asc']])->values();
-        $topProducts = $reportRows
-            ->groupBy('nama')
-            ->map(fn ($items, $name) => [
-                'nama'   => $name,
-                'jumlah' => $items->sum('jumlah'),
-                'total'  => $items->sum('total'),
-            ])
-            ->sortByDesc('jumlah')
-            ->values();
+        $reportRows = collect($detailRows);
 
         $rangeLabel = match ($periodeType) {
             'daily'   => 'Tanggal ' . Carbon::createFromFormat('Y-m-d', $periode)->translatedFormat('d F Y'),
@@ -208,15 +205,8 @@ class LaporanController extends Controller
         };
 
         $data = [
-            'rangeLabel'  => $rangeLabel,
-            'reportRows'  => $reportRows,
-            'topProducts' => $topProducts,
-            'topProduct'  => $topProducts->first(),
-            'summary'     => [
-                'total_orders'  => $orders->count(),
-                'total_qty'     => $reportRows->sum('jumlah'),
-                'total_revenue' => $reportRows->sum('total'),
-            ],
+            'rangeLabel' => $rangeLabel,
+            'reportRows' => $reportRows,
         ];
 
         $filename = 'laporan-penjualan-' . str_replace(['/', ' '], '-', $periode) . '.pdf';

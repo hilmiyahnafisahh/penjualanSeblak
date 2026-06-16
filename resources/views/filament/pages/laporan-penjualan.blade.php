@@ -97,52 +97,7 @@
             </table>
         </div>
 
-        {{-- TABEL PER ITEM (menu + topping dipisah) --}}
-        <div class="bg-white p-4 rounded shadow border overflow-x-auto">
-            <h2 class="text-lg font-semibold mb-1">Penjualan Per Item</h2>
-            <p class="text-sm text-gray-500 mb-3">Rekap total qty dan pendapatan per menu dan topping.</p>
-            <table class="min-w-full text-left text-sm border-collapse border">
-                <thead class="text-xs uppercase" style="background:#1e3a5f;">
-                    <tr>
-                        <th class="border px-3 py-2" style="color:#fff;">No</th>
-                        <th class="border px-3 py-2" style="color:#fff;">Nama</th>
-                        <th class="border px-3 py-2" style="color:#fff;">Tipe</th>
-                        <th class="border px-3 py-2 text-right" style="color:#fff;">Total Qty</th>
-                        <th class="border px-3 py-2 text-right" style="color:#fff;">Total Pendapatan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($perItemRows as $i => $row)
-                        <tr class="border-b hover:bg-blue-50">
-                            <td class="border px-3 py-2 text-center text-gray-500">{{ $i + 1 }}</td>
-                            <td class="border px-3 py-2 font-medium">{{ $row['nama'] }}</td>
-                            <td class="border px-3 py-2">
-                                @if($row['tipe'] === 'Topping')
-                                    <span style="background:#eff6ff;color:#1d4ed8;font-size:11px;padding:1px 7px;border-radius:10px;">Topping</span>
-                                @else
-                                    <span style="background:#f0fdf4;color:#15803d;font-size:11px;padding:1px 7px;border-radius:10px;">Menu</span>
-                                @endif
-                            </td>
-                            <td class="border px-3 py-2 text-right font-semibold">{{ $row['jumlah'] }}</td>
-                            <td class="border px-3 py-2 text-right font-semibold" style="color:#15803d;">{{ rupiah($row['total']) }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-3 py-4 text-center text-gray-500">Tidak ada data untuk periode ini.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-                @if($perItemRows->isNotEmpty())
-                <tfoot>
-                    <tr style="background:#eff6ff;font-weight:600;">
-                        <td colspan="3" class="border px-3 py-2 text-right">Total</td>
-                        <td class="border px-3 py-2 text-right">{{ $perItemRows->sum('jumlah') }}</td>
-                        <td class="border px-3 py-2 text-right" style="color:#15803d;">{{ rupiah($perItemRows->sum('total')) }}</td>
-                    </tr>
-                </tfoot>
-                @endif
-            </table>
-        </div>
+
 
 
     </x-filament::card>
