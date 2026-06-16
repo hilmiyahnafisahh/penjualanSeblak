@@ -81,8 +81,9 @@ class MenuResource extends Resource
                 ->disk('public')                    ->required(),
 
             TextInput::make('deskripsi')
-                ->label('Deskripsi')
-                ->nullable(),
+                ->label('Deskripsi (opsional)')
+                ->nullable()
+                ->maxLength(500),
 
             ]);
     }

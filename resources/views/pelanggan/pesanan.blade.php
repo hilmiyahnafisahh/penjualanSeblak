@@ -212,12 +212,20 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
             <div class="pay-icon">📱</div>
             <div class="flex-grow-1">
               <div class="pay-title">Pembayaran QRIS Belum Selesai</div>
-              <div class="pay-desc">Klik tombol di bawah untuk membuka QR pembayaran.</div>
-              <button class="btn btn-merah btn-sm mt-2 w-100"
-                      onclick="bayarQris('{{ $order->id_pesanan }}')"
-                      id="btnBayar-{{ $i }}">
-                <i class="bi bi-qr-code me-2"></i>Bayar Sekarang via QRIS
-              </button>
+              <div class="pay-desc mb-2">Sudah scan? Klik cek status, atau klik bayar untuk buka QR baru.</div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm flex-fill"
+                        onclick="cekStatus('{{ $order->id_pesanan }}', {{ $i }}, '{{ $bayar->midtrans_order_id ?? '' }}')"
+                        id="btnCek-{{ $i }}">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Cek Status
+                </button>
+                <button class="btn btn-merah btn-sm flex-fill"
+                        onclick="bayarQris('{{ $order->id_pesanan }}')"
+                        id="btnBayar-{{ $i }}">
+                  <i class="bi bi-qr-code me-1"></i>Bayar via QRIS
+                </button>
+              </div>
+              <div id="statusMsg-{{ $i }}" class="mt-2" style="display:none;font-size:.8rem;"></div>
             </div>
           </div>
           @elseif($metode === 'tunai')
@@ -226,6 +234,27 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
             <div>
               <div class="pay-title">Bayar Tunai di Kasir</div>
               <div class="pay-desc">Tunjukkan nomor <strong style="color:var(--merah);">{{ $order->id_pesanan }}</strong> ke kasir.</div>
+            </div>
+          </div>
+          @elseif($metode === 'transfer' || $metode === 'bank_transfer')
+          <div class="pay-box pay-box-warning mt-3">
+            <div class="pay-icon">🏦</div>
+            <div class="flex-grow-1">
+              <div class="pay-title">Pembayaran Transfer Belum Selesai</div>
+              <div class="pay-desc mb-2">Klik tombol di bawah untuk membuka halaman pembayaran Midtrans.</div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm flex-fill"
+                        onclick="cekStatus('{{ $order->id_pesanan }}', {{ $i }}, '{{ $bayar->midtrans_order_id ?? '' }}')"
+                        id="btnCekTransfer-{{ $i }}">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Cek Status
+                </button>
+                <button class="btn btn-merah btn-sm flex-fill"
+                        onclick="bayarTransfer('{{ $order->id_pesanan }}')"
+                        id="btnBayarTransfer-{{ $i }}">
+                  <i class="bi bi-credit-card me-1"></i>Bayar Sekarang
+                </button>
+              </div>
+              <div id="statusMsgTransfer-{{ $i }}" class="mt-2" style="display:none;font-size:.8rem;"></div>
             </div>
           </div>
           @endif
@@ -264,6 +293,56 @@ function toggleDetail(i) {
   }
 }
 
+// Cek status pembayaran ke Midtrans
+function cekStatus(idPesanan, i, dbOrderId) {
+  const btn = document.getElementById('btnCek-' + i);
+  const msg = document.getElementById('statusMsg-' + i);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Mengecek...';
+  msg.style.display = 'none';
+
+  // Prioritas: localStorage (dari bayar terbaru) → DB order_id (dari blade) → tanpa order_id
+  const latestOrderId = localStorage.getItem('midtrans_order_' + idPesanan) || dbOrderId || '';
+  const url = '/pelanggan/cek-status/' + idPesanan + (latestOrderId ? '?order_id=' + encodeURIComponent(latestOrderId) : '');
+
+  fetch(url, {
+    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Cek Status';
+
+    if (data.status === 'lunas') {
+      msg.style.display = 'block';
+      msg.style.color = '#0f5132';
+      msg.innerHTML = '✅ <strong>' + data.message + '</strong>';
+      localStorage.removeItem('midtrans_order_' + idPesanan);
+      setTimeout(() => window.location.reload(), 1500);
+    } else if (data.status === 'pending') {
+      msg.style.display = 'block';
+      msg.style.color = '#856404';
+      msg.innerHTML = '⏳ ' + data.message;
+    } else if (data.status === 'batal') {
+      msg.style.display = 'block';
+      msg.style.color = '#842029';
+      msg.innerHTML = '❌ ' + data.message;
+      setTimeout(() => window.location.reload(), 2000);
+    } else {
+      msg.style.display = 'block';
+      msg.style.color = '#555';
+      msg.innerHTML = 'ℹ️ ' + (data.message || data.error || 'Status tidak diketahui');
+    }
+  })
+  .catch(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Cek Status';
+    msg.style.display = 'block';
+    msg.style.color = '#842029';
+    msg.innerHTML = '❌ Gagal menghubungi server.';
+  });
+}
+
 // Bayar via QRIS — ambil token baru lalu buka Snap
 function bayarQris(idPesanan) {
   const overlay = document.getElementById('snapOverlay');
@@ -277,12 +356,54 @@ function bayarQris(idPesanan) {
     overlay.classList.remove('show');
     if (data.error) { alert('Error: ' + data.error); return; }
 
+    // Simpan order_id terbaru untuk dipakai saat cek status
+    localStorage.setItem('midtrans_order_' + idPesanan, data.order_id);
+
     window.snap.pay(data.snap_token, {
       onSuccess: function(result) {
-        // Update status via success route
+        localStorage.setItem('midtrans_order_' + idPesanan, result.order_id);
         window.location.href = '{{ route("pelanggan.checkout.qris.success") }}?order_id=' + result.order_id;
       },
-      onPending: function() { window.location.reload(); },
+      onPending: function(result) {
+        if (result.order_id) localStorage.setItem('midtrans_order_' + idPesanan, result.order_id);
+        window.location.reload();
+      },
+      onError:   function() { alert('Pembayaran gagal. Silakan coba lagi.'); },
+      onClose:   function() { /* user tutup popup */ }
+    });
+  })
+  .catch(err => {
+    overlay.classList.remove('show');
+    alert('Gagal memuat pembayaran. Coba lagi.');
+    console.error(err);
+  });
+}
+
+// Bayar via Transfer — ambil token baru lalu buka Snap
+function bayarTransfer(idPesanan) {
+  const overlay = document.getElementById('snapOverlay');
+  overlay.classList.add('show');
+
+  fetch('/pelanggan/bayar-transfer/' + idPesanan, {
+    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    overlay.classList.remove('show');
+    if (data.error) { alert('Error: ' + data.error); return; }
+
+    // Simpan order_id terbaru untuk dipakai saat cek status
+    localStorage.setItem('midtrans_order_' + idPesanan, data.order_id);
+
+    window.snap.pay(data.snap_token, {
+      onSuccess: function(result) {
+        localStorage.setItem('midtrans_order_' + idPesanan, result.order_id);
+        window.location.href = '{{ route("pelanggan.checkout.qris.success") }}?order_id=' + result.order_id;
+      },
+      onPending: function(result) {
+        if (result.order_id) localStorage.setItem('midtrans_order_' + idPesanan, result.order_id);
+        window.location.reload();
+      },
       onError:   function() { alert('Pembayaran gagal. Silakan coba lagi.'); },
       onClose:   function() { /* user tutup popup */ }
     });
