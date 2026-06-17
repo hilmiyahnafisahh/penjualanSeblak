@@ -5,22 +5,15 @@
     <title>Pesan {{ $menu->nama_menu }} | Seblak Sangkuriang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/pelanggan.css') }}">
     <style>
-        :root{--merah:#8b1a1a;--merah-gelap:#600e0e;--bg:#fdf0f0;}
-        body{background:var(--bg);font-family:'Segoe UI',sans-serif;}
-        .navbar-custom{background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:200;}
-        .btn-merah{background:var(--merah);color:white;border:none;}
-        .btn-merah:hover{background:var(--merah-gelap);color:white;}
-        .nav-tabs-custom{border-bottom:2px solid #f0d0d0;}
-        .nav-tabs-custom .nav-link{color:#555;border:none;padding:.6rem 1.2rem;font-size:.875rem;border-radius:0;}
-        .nav-tabs-custom .nav-link.active{color:var(--merah);font-weight:700;border-bottom:2px solid var(--merah);margin-bottom:-2px;}
-        .menu-img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:1rem;}
-        .topping-card{border:1.5px solid #e5e5e5;border-radius:.75rem;padding:.75rem;cursor:pointer;transition:all .15s;}
-        .topping-card:has(input:checked){border-color:var(--merah);background:#fff8f8;}
-        .qty-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid #ddd;background:white;font-size:1.2rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-        .qty-btn:hover{border-color:var(--merah);color:var(--merah);}
-        .summary-sticky{position:sticky;top:80px;}
-        .summary-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #f5f5f5;font-size:.875rem;}
+        /* menu.blade.php specific */
+        .menu-img    { width:100%; max-height:260px; object-fit:cover; border-radius:14px; }
+        .topping-card { border:1.5px solid #e5e5e5; border-radius:.7rem; padding:.7rem; cursor:pointer; transition:all .15s; }
+        .topping-card:has(input:checked) { border-color:var(--merah); background:#fff8f8; }
+        .qty-btn { width:34px; height:34px; border-radius:50%; border:1.5px solid #ddd; background:white; font-size:1.2rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:border-color .15s; }
+        .qty-btn:hover { border-color:var(--merah); color:var(--merah); }
+        .summary-row { display:flex; justify-content:space-between; align-items:center; padding:.45rem 0; border-bottom:1px solid #f5f5f5; font-size:.875rem; }
     </style>
 </head>
 <body>
