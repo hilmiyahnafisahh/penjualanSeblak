@@ -94,9 +94,6 @@ class KasirController extends Controller
 
         $request->session()->put('kasir_user_id', $user->id);
         $request->session()->put('kasir_user_name', $user->name);
-        
-        // Set Laravel Auth guard so Auth::user() works in views
-        \Illuminate\Support\Facades\Auth::login($user);
 
         return redirect()->route('kasir.dashboard');
     }
@@ -107,9 +104,6 @@ class KasirController extends Controller
             'kasir_user_id',
             'kasir_user_name'
         ]);
-        
-        // Clear Laravel Auth guard
-        \Illuminate\Support\Facades\Auth::logout();
 
         return redirect()->route('kasir.login');
     }
@@ -126,7 +120,7 @@ class KasirController extends Controller
         $todayRevenue = Pembayaran::whereDate('tanggal_pembayaran', now())->sum('total_pembayaran');
 
         $recentOrders = Pemesanan::with('Pelanggan')
-            ->orderBy('tanggal_pemesanan', 'desc')
+            ->orderBy('id', 'desc')
             ->take(5)
             ->get();
 

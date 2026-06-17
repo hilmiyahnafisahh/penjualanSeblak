@@ -8,7 +8,6 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Karyawan;
 
 class User extends Authenticatable
 {
@@ -53,13 +52,5 @@ class User extends Authenticatable
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
-    }
-
-    /**
-     * Relation to karyawan record (if any).
-     */
-    public function karyawan()
-    {
-        return $this->hasOne(Karyawan::class, 'user_id');
     }
 }
