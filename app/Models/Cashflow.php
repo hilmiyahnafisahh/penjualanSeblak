@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Cashflow extends Model
 {
-    use HasFactory;
-
-    protected $table = 'cashflow'; // Nama tabel eksplisit
+    protected $table = 'cashflows';
 
     protected $fillable = [
         'periode',
@@ -26,14 +23,8 @@ class Cashflow extends Model
         'raw_response',
     ];
 
-    // JSON otomatis jadi array saat diakses
     protected $casts = [
-        'rekomendasi'  => 'array',
-        'laporan'      => 'array',
-        'total_masuk'  => 'decimal:2',
-        'total_keluar' => 'decimal:2',
-        'arus_bersih'  => 'decimal:2',
-        'saldo_awal'   => 'decimal:2',
-        'saldo_akhir'  => 'decimal:2',
+        'laporan'     => 'array',
+        'rekomendasi' => 'array',
     ];
 }

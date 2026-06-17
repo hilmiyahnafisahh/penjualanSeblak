@@ -1,19 +1,11 @@
-@php
-    $statusLabels = [
-        'pending'  => 'Pending',
-        'diproses' => 'Diproses',
-        'selesai'  => 'Selesai',
-        'semua'    => 'Semua',
-    ];
-@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesanan Masuk — Seblak Sangkuriang</title>
-    <link rel="stylesheet" href="{{ asset('css/seblak-kasir.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesanan Masuk | Kasir</title>
+  <link rel="stylesheet" href="{{ asset('css/seblak-kasir.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
 <div class="kasir-shell">
@@ -26,43 +18,40 @@
                 <div class="k-sub">Panel Kasir</div>
             </div>
         </div>
-        <div class="k-nav-label">Operasional</div>
-        <a href="{{ route('kasir.dashboard') }}" class="k-nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
-        <a href="{{ route('kasir.pesanan') }}" class="k-nav-link active"><i class="bi bi-bag-check"></i> Pesanan Masuk</a>
-        <a href="{{ route('kasir.pembayaran') }}" class="k-nav-link"><i class="bi bi-credit-card-2-front"></i> Pembayaran</a>
-        <a href="{{ route('kasir.stok_menu') }}" class="k-nav-link"><i class="bi bi-box-seam"></i> Stok &amp; Menu</a>
-        <div class="k-sidebar-footer">
-            <div class="k-user-card">
-                <div class="k-user-avatar">{{ strtoupper(substr(session('kasir_user_name','K'),0,1)) }}</div>
-                <div class="k-user-meta">
-                    <div class="role">Kasir</div>
-                    <div class="name">{{ session('kasir_user_name','Kasir') }}</div>
-                </div>
-            </div>
-            <form action="{{ route('kasir.logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="k-logout-btn"><i class="bi bi-box-arrow-right me-1"></i> Logout</button>
-            </form>
+        <div class="mb-4">
+            <a href="{{ route('kasir.dashboard') }}" class="d-block p-3 rounded-3 mb-2">Dashboard</a>
+            <a href="{{ route('kasir.pesanan') }}" class="d-block p-3 rounded-3 mb-2 active">Pesanan Masuk</a>
+            <a href="{{ route('kasir.pembayaran') }}" class="d-block p-3 rounded-3 mb-2">Pembayaran</a>
+            <a href="{{ route('kasir.stok_menu') }}" class="d-block p-3 rounded-3 mb-2">Stok & Menu</a>
         </div>
-    </aside>
+      </div>
+      <form action="{{ route('kasir.logout') }}" method="POST">
+        @csrf
+        <button type="submit" class="k-logout-btn"><i class="bi bi-box-arrow-right"></i> Keluar</button>
+      </form>
+    </div>
+  </aside>
 
-    <main class="kasir-main">
-        <div class="k-pageheader">
-            <div>
-                <h1>Pesanan Masuk</h1>
-                <p class="subtitle">Kelola pesanan berdasarkan status.</p>
-            </div>
-        </div>
+  <main class="kasir-main">
+    <div class="k-pageheader">
+      <div>
+        <h1>Pesanan Masuk</h1>
+        <p>Kelola pesanan berdasarkan status.</p>
+      </div>
+      <div class="k-timestamp">
+        <span class="k-status-dot"></span>
+        <span>{{ now()->translatedFormat('l, d M Y — H:i') }}</span>
+      </div>
+    </div>
 
-        {{-- Filter pills --}}
-        <div class="k-filter-bar">
-            @foreach($statusLabels as $key => $label)
-                <a href="{{ route('kasir.pesanan', ['status' => $key]) }}"
-                   class="k-filter-pill {{ $statusParam === $key ? 'active' : '' }}">
-                    {{ $label }}
-                </a>
-            @endforeach
-        </div>
+    <div class="k-filter-bar">
+      @foreach($statusLabels as $key => $label)
+        <a href="{{ route('kasir.pesanan', ['status' => $key]) }}"
+           class="k-filter-pill {{ ($status ?? 'pending') === $key ? 'active' : '' }}">
+          {{ $label }}
+        </a>
+      @endforeach
+    </div>
 
         {{-- Alerts --}}
         @if(session('success'))
@@ -146,5 +135,6 @@
         </div>
     </main>
 </div>
+
 </body>
 </html>

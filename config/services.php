@@ -41,9 +41,4 @@ return [
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     ],
 
-    'gemini' => [
-    'key'   => env('GEMINI_API_KEY'),
-    'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
-    ],
-
 ];
