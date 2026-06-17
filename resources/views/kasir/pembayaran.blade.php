@@ -8,53 +8,20 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
-@php
-  $statusLabels = [
-    'belum_bayar' => 'Belum Bayar',
-    'lunas'       => 'Lunas',
-    'semua'       => 'Semua',
-  ];
-  $payBadge = [
-    'Belum Bayar' => 'is-danger',
-    'Pending'     => 'is-warn',
-    'Lunas'       => 'is-success',
-    'Berhasil'    => 'is-success',
-    'Gagal'       => 'is-danger',
-  ];
-@endphp
-
-<div class="kasir-shell">
-  <aside class="kasir-sidebar">
-    <div class="k-brand">
-      <img src="{{ asset('logo_seblak.png') }}" alt="Seblak">
-      <div class="k-brand-text">
-        <div class="k-name">Seblak Sangkuriang</div>
-        <div class="k-sub">Panel Kasir</div>
-      </div>
-    </div>
-
-    <div class="k-nav-label">Operasional</div>
-    <nav>
-      <a href="{{ route('kasir.dashboard') }}" class="k-nav-link">
-        <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
-      </a>
-      <a href="{{ route('kasir.pesanan') }}" class="k-nav-link">
-        <i class="bi bi-receipt"></i><span>Pesanan Masuk</span>
-      </a>
-      <a href="{{ route('kasir.pembayaran') }}" class="k-nav-link active">
-        <i class="bi bi-credit-card-2-back"></i><span>Pembayaran</span>
-      </a>
-      <a href="{{ route('kasir.stok_menu') }}" class="k-nav-link">
-        <i class="bi bi-box-seam"></i><span>Stok & Menu</span>
-      </a>
-    </nav>
-
-    <div class="k-sidebar-footer">
-      <div class="k-user-card">
-        <div class="k-user-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'K', 0, 1)) }}</div>
-        <div class="k-user-meta">
-          <div class="role">Login sebagai</div>
-          <div class="name">{{ Auth::user()->name ?? 'Kasir' }}</div>
+<div class="d-flex">
+    <aside class="sidebar p-4 flex-shrink-0" style="width:280px;">
+        <div class="mb-5 d-flex align-items-center gap-2">
+            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:50%;padding:2px;">
+            <div>
+                <h3 class="fw-bold mb-0">Seblak Sangkuriang</h3>
+                <div style="color:#f5c6c6;font-size:.85rem;">Panel Kasir</div>
+            </div>
+        </div>
+        <div class="mb-4">
+            <a href="{{ route('kasir.dashboard') }}" class="d-block p-3 rounded-3 mb-2">Dashboard</a>
+            <a href="{{ route('kasir.pesanan') }}" class="d-block p-3 rounded-3 mb-2">Pesanan Masuk</a>
+            <a href="{{ route('kasir.pembayaran') }}" class="d-block p-3 rounded-3 mb-2 active">Pembayaran</a>
+            <a href="{{ route('kasir.stok_menu') }}" class="d-block p-3 rounded-3 mb-2">Stok & Menu</a>
         </div>
       </div>
       <form action="{{ route('kasir.logout') }}" method="POST">

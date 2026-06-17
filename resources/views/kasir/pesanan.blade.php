@@ -8,55 +8,20 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
-@php
-  $statusLabels = [
-    'pending'  => 'Pending',
-    'diproses' => 'Diproses',
-    'selesai'  => 'Selesai',
-    'semua'    => 'Semua',
-  ];
-  $statusBadge = [
-    'Pending'      => 'is-warn',
-    'Diproses'     => 'is-info',
-    'Selesai'      => 'is-success',
-    'Belumdibayar' => 'is-danger',
-    'Belum Bayar'  => 'is-danger',
-    'Lunas'        => 'is-success',
-  ];
-@endphp
-
-<div class="kasir-shell">
-  <aside class="kasir-sidebar">
-    <div class="k-brand">
-      <img src="{{ asset('logo_seblak.png') }}" alt="Seblak">
-      <div class="k-brand-text">
-        <div class="k-name">Seblak Sangkuriang</div>
-        <div class="k-sub">Panel Kasir</div>
-      </div>
-    </div>
-
-    <div class="k-nav-label">Operasional</div>
-    <nav>
-      <a href="{{ route('kasir.dashboard') }}" class="k-nav-link">
-        <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
-      </a>
-      <a href="{{ route('kasir.pesanan') }}" class="k-nav-link active">
-        <i class="bi bi-receipt"></i><span>Pesanan Masuk</span>
-      </a>
-      <a href="{{ route('kasir.pembayaran') }}" class="k-nav-link">
-        <i class="bi bi-credit-card-2-back"></i><span>Pembayaran</span>
-      </a>
-      <a href="{{ route('kasir.stok_menu') }}" class="k-nav-link">
-        <i class="bi bi-box-seam"></i><span>Stok & Menu</span>
-      </a>
-    </nav>
-
-    <div class="k-sidebar-footer">
-      <div class="k-user-card">
-        <div class="k-user-avatar">{{ strtoupper(substr(Auth::user()->name ?? 'K', 0, 1)) }}</div>
-        <div class="k-user-meta">
-          <div class="role">Login sebagai</div>
-          <div class="name">{{ Auth::user()->name ?? 'Kasir' }}</div>
+<div class="d-flex">
+    <aside class="sidebar p-4 flex-shrink-0" style="width:280px;">
+        <div class="mb-5 d-flex align-items-center gap-2">
+            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:50%;padding:2px;">
+            <div>
+                <h3 class="fw-bold mb-0">Seblak Sangkuriang</h3>
+                <div style="color:#f5c6c6;font-size:.85rem;">Panel Kasir</div>
+            </div>
+        </div>
+        <div class="mb-4">
+            <a href="{{ route('kasir.dashboard') }}" class="d-block p-3 rounded-3 mb-2">Dashboard</a>
+            <a href="{{ route('kasir.pesanan') }}" class="d-block p-3 rounded-3 mb-2 active">Pesanan Masuk</a>
+            <a href="{{ route('kasir.pembayaran') }}" class="d-block p-3 rounded-3 mb-2">Pembayaran</a>
+            <a href="{{ route('kasir.stok_menu') }}" class="d-block p-3 rounded-3 mb-2">Stok & Menu</a>
         </div>
       </div>
       <form action="{{ route('kasir.logout') }}" method="POST">
@@ -87,51 +52,70 @@
       @endforeach
     </div>
 
-    <section class="k-panel">
-      <div class="k-panel-head">
-        <h2>Daftar Pesanan</h2>
-        <span class="k-badge">{{ $pesanan->count() }} pesanan</span>
-      </div>
+        <div class="card shadow-sm p-4 table-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">Daftar Pesanan</h2>
+                <span class="badge bg-secondary">{{ $pesanan->count() }} pesanan</span>
+            </div>
 
-      @if($pesanan->isEmpty())
-        <div class="k-empty">
-          <i class="bi bi-inbox" style="font-size:2rem;opacity:.4;display:block;margin-bottom:.5rem;"></i>
-          Tidak ada pesanan dengan status ini.
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show py-2">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show py-2">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            @endif
+
+            @if($pesanan->isEmpty())
+                <div class="text-center py-5 text-muted">
+                    Tidak ada pesanan dengan status ini
+                </div>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr class="text-muted small text-uppercase">
+                                <th>No</th>
+                                <th>No Pesanan</th>
+                                <th>Pelanggan</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                                <th>Subtotal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($pesanan as $order)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $order->id_pesanan }}</td>
+                                    <td>{{ $order->Pelanggan->nama_pelanggan ?? '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ $order->status_pemesanan === 'selesai' ? 'success' : ($order->status_pemesanan === 'diproses' ? 'info' : 'warning') }} text-dark badge-status">
+                                            {{ ucfirst($order->status_pemesanan) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ optional($order->tanggal_pemesanan)->format('d M Y H:i') }}</td>
+                                    <td>Rp {{ number_format($order->subtotal, 0, ',', '.') }}</td>
+                                    <td>
+                                        @if($order->status_pemesanan === 'diproses' && $order->pembayaran && strtolower($order->pembayaran->metode_pembayaran) === 'qris' && in_array(strtolower($order->pembayaran->status_pembayaran), ['lunas','settlement','capture']))
+                                            <form action="{{ route('kasir.pesanan.selesaikan', $order->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    ✓ Selesaikan
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="text-muted small">—</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
-      @else
-        <div class="k-table-wrap">
-          <table class="k-table">
-            <thead>
-              <tr>
-                <th style="width:50px;">No</th>
-                <th>No Pesanan</th>
-                <th>Pelanggan</th>
-                <th>Status</th>
-                <th>Tanggal</th>
-                <th style="text-align:right;">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach($pesanan as $i => $order)
-                @php
-                  $statusText = ucfirst(str_replace('_',' ',$order->status_pesanan ?? 'pending'));
-                  $badgeClass = $statusBadge[$statusText] ?? 'is-info';
-                @endphp
-                <tr>
-                  <td>{{ $i + 1 }}</td>
-                  <td><span class="k-link">{{ $order->no_pesanan }}</span></td>
-                  <td>{{ $order->pelanggan->name ?? '-' }}</td>
-                  <td><span class="k-badge {{ $badgeClass }}">{{ $statusText }}</span></td>
-                  <td>{{ \Carbon\Carbon::parse($order->created_at)->translatedFormat('d M Y H:i') }}</td>
-                  <td class="k-num" style="text-align:right;">Rp {{ number_format($order->subtotal ?? 0, 0, ',', '.') }}</td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      @endif
-    </section>
-  </main>
+    </main>
 </div>
 
 </body>

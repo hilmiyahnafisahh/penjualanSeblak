@@ -154,8 +154,8 @@ class KasirController extends Controller
             'semua' => null,
         ];
 
-        $query = Pemesanan::with('Pelanggan')
-            ->orderBy('tanggal_pemesanan', 'desc');
+        $query = Pemesanan::with(['Pelanggan', 'pembayaran'])
+            ->orderBy('id', 'desc');
 
         if ($statusMap[$statusParam] ?? null) {
             $query->where('status_pemesanan', $statusMap[$statusParam]);
@@ -186,6 +186,66 @@ class KasirController extends Controller
         $pembayaran = $query->get();
 
         return view('kasir.pembayaran', compact('pembayaran', 'statusParam'));
+    }
+
+    public function bayarPembayaran(Request $request, $id)
+    {
+        if (!$this->guardKasir($request)) {
+            return redirect()->route('kasir.login');
+        }
+
+        $pembayaran = Pembayaran::with('pemesanan')->find($id);
+
+        if (!$pembayaran) {
+            abort(404);
+        }
+
+        if ($pembayaran->status_pembayaran !== 'pending' || strtolower($pembayaran->metode_pembayaran) !== 'tunai') {
+            return redirect()->route('kasir.pembayaran')
+                ->with('error', 'Hanya pembayaran tunai pending yang dapat dilunasi di kasir.');
+        }
+
+        $pembayaran->update([
+            'status_pembayaran' => 'lunas',
+            'tanggal_pembayaran' => $pembayaran->tanggal_pembayaran ?: now(),
+        ]);
+
+        if ($pembayaran->pemesanan) {
+            $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
+        }
+
+        return redirect()->route('kasir.pembayaran')
+            ->with('success', 'Pembayaran tunai berhasil diproses.');
+    }
+
+    public function selesaikanPesanan(Request $request, $id)
+    {
+        if (!$this->guardKasir($request)) {
+            return redirect()->route('kasir.login');
+        }
+
+        $pemesanan = Pemesanan::with('pembayaran')->find($id);
+
+        if (!$pemesanan) {
+            abort(404);
+        }
+
+        // Hanya pesanan berstatus diproses dengan pembayaran QRIS lunas
+        $pembayaran = $pemesanan->pembayaran;
+        $metode     = strtolower($pembayaran?->metode_pembayaran ?? '');
+        $status     = strtolower($pembayaran?->status_pembayaran ?? '');
+
+        if ($pemesanan->status_pemesanan !== 'diproses'
+            || $metode !== 'qris'
+            || !in_array($status, ['lunas', 'settlement', 'capture'])) {
+            return redirect()->route('kasir.pesanan', ['status' => 'diproses'])
+                ->with('error', 'Pesanan tidak dapat diselesaikan.');
+        }
+
+        $pemesanan->update(['status_pemesanan' => 'selesai']);
+
+        return redirect()->route('kasir.pesanan', ['status' => 'diproses'])
+            ->with('success', 'Pesanan ' . $pemesanan->id_pesanan . ' berhasil diselesaikan.');
     }
 
     public function stokMenu(Request $request)

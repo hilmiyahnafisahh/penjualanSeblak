@@ -7,15 +7,12 @@
     <link rel="stylesheet" href="{{ asset('css/seblak-kasir.css') }}">
 </head>
 <body>
-
-<div class="auth-wrap">
-    <div class="auth-card">
-        <div class="auth-brand">
-            <img src="{{ asset('logo_seblak.png') }}" alt="Seblak Sangkuriang">
-            <div class="auth-brand-text">
-                <div class="b-name">Seblak Sangkuriang</div>
-                <div class="b-sub">Panel Kasir</div>
-            </div>
+<div class="container">
+    <div class="card kasir-card p-4">
+        <div class="text-center mb-4">
+            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="width:72px;height:72px;object-fit:contain;margin-bottom:1rem;background:#fff;border-radius:50%;padding:3px;">
+            <h2 class="fw-bold">Seblak Sangkuriang</h2>
+            <p class="text-muted">Login Panel Kasir</p>
         </div>
 
         <h1 class="auth-title">Masuk ke Panel Kasir</h1>
