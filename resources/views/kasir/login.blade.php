@@ -31,8 +31,8 @@
         <form method="POST" action="{{ route('kasir.login.post') }}">
             @csrf
             <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" class="form-control" required autofocus>
+                <label class="form-label">Nama / Email</label>
+                <input type="text" name="email" value="{{ old('email') }}" class="form-control" required autofocus placeholder="Contoh: Galang atau galang@seblak.com">
             </div>
             <div class="mb-3">
                 <label class="form-label">Password</label>
