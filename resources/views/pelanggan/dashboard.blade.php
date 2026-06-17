@@ -219,18 +219,9 @@
             <div class="product-kategori">{{ $item->kategori_menu }}</div>
             <div class="product-name">{{ $item->nama_menu }}</div>
             <div class="product-price">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
-            @if(strtolower($item->kategori_menu) === 'makanan')
-              <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none">
-                Pilih & Pesan
-              </a>
-            @else
-              <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST" class="form-addcart">
-                @csrf
-                <input type="hidden" name="id_produk" value="{{ $item->id_menu }}">
-                <input type="hidden" name="qty" value="1">
-                <button type="submit" class="btn-order w-100">+ Keranjang</button>
-              </form>
-            @endif
+            <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none mt-2">
+              Pilih & Pesan
+            </a>
           </div>
         </div>
       </div>
