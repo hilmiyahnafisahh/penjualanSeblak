@@ -27,36 +27,52 @@
     </style>
 </head>
 <body>
-<div class="d-flex">
-    <aside class="sidebar p-4 flex-shrink-0" style="width:280px;">
-        <div class="mb-5 d-flex align-items-center gap-2">
-            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:50%;padding:2px;">
+<div class="kasir-shell">
+
+    {{-- SIDEBAR --}}
+    <aside class="kasir-sidebar">
+        <div class="k-brand">
+            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="border-radius:50%;">
             <div>
                 <h3 class="fw-bold mb-0">Seblak Sangkuriang</h3>
                 <div style="color:#f5c6c6;font-size:.85rem;">Panel Kasir</div>
             </div>
         </div>
-        <div class="mb-4">
-            <a href="{{ route('kasir.dashboard') }}" class="d-block p-3 rounded-3 mb-2 active">Dashboard</a>
-            <a href="{{ route('kasir.pesanan') }}" class="d-block p-3 rounded-3 mb-2">Pesanan Masuk</a>
-            <a href="{{ route('kasir.pembayaran') }}" class="d-block p-3 rounded-3 mb-2">Pembayaran</a>
-            <a href="{{ route('kasir.stok_menu') }}" class="d-block p-3 rounded-3 mb-2">Stok & Menu</a>
-        </div>
-        <div class="mt-auto pt-4 border-top" style="border-color:rgba(255,255,255,.15)!important;">
-            <div class="mb-2" style="color:#f5c6c6;font-size:.85rem;">Login sebagai</div>
-            <div class="fw-semibold text-white">{{ session('kasir_user_name', 'Kasir') }}</div>
-            <form action="{{ route('kasir.logout') }}" method="POST" class="mt-3">
+
+        <div class="k-nav-label">Operasional</div>
+        <a href="{{ route('kasir.dashboard') }}" class="k-nav-link active">
+            <i class="bi bi-grid-fill"></i> Dashboard
+        </a>
+        <a href="{{ route('kasir.pesanan') }}" class="k-nav-link">
+            <i class="bi bi-bag-check"></i> Pesanan Masuk
+        </a>
+        <a href="{{ route('kasir.pembayaran') }}" class="k-nav-link">
+            <i class="bi bi-credit-card-2-front"></i> Pembayaran
+        </a>
+        <a href="{{ route('kasir.stok_menu') }}" class="k-nav-link">
+            <i class="bi bi-box-seam"></i> Stok &amp; Menu
+        </a>
+
+        <div class="k-sidebar-footer">
+            <div class="k-user-card">
+                <div class="k-user-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
+                <div class="k-user-meta">
+                    <div class="role">Kasir</div>
+                    <div class="name">{{ Auth::user()->name }}</div>
+                </div>
+            </div>
+            <form action="{{ route('kasir.logout') }}" method="POST">
                 @csrf
                 <button type="submit" class="btn btn-outline-danger w-100">Keluar</button>
             </form>
         </div>
     </aside>
 
-    <main class="flex-grow-1 p-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+    <main class="kasir-main">
+        <div class="k-pageheader">
             <div>
-                <h1 class="h3">Dashboard</h1>
-                <p class="text-muted mb-0">Selamat datang di panel kasir.</p>
+                <h1>Dashboard</h1>
+                <p class="subtitle">Selamat datang kembali, {{ explode(' ', Auth::user()->name)[0] }}. Pantau pesanan masuk hari ini di sini.</p>
             </div>
             <div class="text-end">
                 <div class="small text-muted">{{ now()->translatedFormat('l, d F Y H:i') }}</div>
@@ -64,20 +80,14 @@
             </div>
         </div>
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="card card-status p-3 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <div class="text-muted">Pesanan Pending</div>
-                            <div class="h4 mb-0">{{ $pendingCount }}</div>
-                        </div>
-                        <div class="bg-warning rounded-circle p-2 text-white">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                    </div>
-                    <div class="text-muted">Menunggu konfirmasi</div>
+        <div class="k-stat-grid">
+            <div class="k-stat is-warn">
+                <div class="k-stat-top">
+                    <span class="k-stat-label">Pesanan Pending</span>
+                    <span class="k-stat-icon"><i class="bi bi-clock-history"></i></span>
                 </div>
+                <div class="k-stat-value">{{ $pendingCount ?? 0 }}</div>
+                <div class="k-stat-foot">Menunggu konfirmasi</div>
             </div>
             <div class="col-md-3">
                 <div class="card card-status p-3 shadow-sm">
@@ -92,6 +102,8 @@
                     </div>
                     <div class="text-muted">Pesanan diproses</div>
                 </div>
+                <div class="k-stat-value">{{ $prosesCount ?? 0 }}</div>
+                <div class="k-stat-foot">Sedang dimasak</div>
             </div>
             <div class="col-md-3">
                 <div class="card card-status p-3 shadow-sm">
@@ -106,6 +118,8 @@
                     </div>
                     <div class="text-muted">Menunggu pembayaran</div>
                 </div>
+                <div class="k-stat-value">{{ $belumBayarCount ?? 0 }}</div>
+                <div class="k-stat-foot">Menunggu pembayaran</div>
             </div>
             <div class="col-md-3">
                 <div class="card card-status p-3 shadow-sm">
@@ -120,11 +134,13 @@
                     </div>
                     <div class="text-muted">Pembayaran lunas</div>
                 </div>
+                <div class="k-stat-value">{{ format_idr($pendapatanHariIni ?? 0) }}</div>
+                <div class="k-stat-foot">Pembayaran lunas</div>
             </div>
         </div>
 
-        <div class="card shadow-sm p-4 table-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="k-panel">
+            <div class="k-panel-head">
                 <div>
                     <h2 class="h5 mb-1">Pesanan Masuk Terbaru</h2>
                     <p class="text-muted mb-0">Lihat pesanan terbaru dari pelanggan.</p>
@@ -137,38 +153,43 @@
                     Tidak ada pesanan
                 </div>
             @else
-                <div class="table-responsive">
-                    <table class="table table-borderless align-middle">
-                        <thead>
-                            <tr class="text-muted small text-uppercase">
-                                <th>No</th>
-                                <th>No Pesanan</th>
-                                <th>Pelanggan</th>
-                                <th>Status</th>
-                                <th>Tanggal</th>
+                <table class="k-table">
+                    <thead>
+                        <tr>
+                            <th style="width:48px;">#</th>
+                            <th>No Pesanan</th>
+                            <th>Pelanggan</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($recentOrders as $i => $order)
+                            <tr>
+                                <td style="color:var(--ink-400); font-weight:600;">{{ $i + 1 }}</td>
+                                <td style="font-weight:600; color:var(--ink-900);">{{ $order->no_pesanan }}</td>
+                                <td>{{ $order->pelanggan->name ?? '-' }}</td>
+                                <td>
+                                    @php
+                                        $st = strtolower($order->status ?? '');
+                                        $stCls = 'is-info';
+                                        if (in_array($st, ['pending','menunggu','belum bayar'])) $stCls = 'is-warn';
+                                        elseif (in_array($st, ['selesai','lunas','sukses'])) $stCls = 'is-success';
+                                        elseif (in_array($st, ['batal','gagal','ditolak'])) $stCls = 'is-danger';
+                                    @endphp
+                                    <span class="k-badge {{ $stCls }}">{{ $order->status }}</span>
+                                </td>
+                                <td style="text-align:right; color:var(--ink-500); font-size:0.82rem;">
+                                    {{ $order->created_at->translatedFormat('d M Y · H:i') }}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($recentOrders as $order)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $order->id_pesanan }}</td>
-                                    <td>{{ $order->Pelanggan->nama_pelanggan ?? '-' }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $order->status_pemesanan === 'selesai' ? 'success' : ($order->status_pemesanan === 'diproses' ? 'info' : 'warning') }} text-dark badge-status">
-                                            {{ ucfirst($order->status_pemesanan) }}
-                                        </span>
-                                    </td>
-                                    <td>{{ optional($order->tanggal_pemesanan)->format('d M Y H:i') }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                        @endforeach
+                    </tbody>
+                </table>
             @endif
         </div>
     </main>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
