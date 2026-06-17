@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Trust all proxies (needed for ngrok / reverse proxy)
         $middleware->trustProxies(at: '*');
+
+        // Alias untuk session timeout middleware
+        $middleware->alias([
+            'kasir.session'     => \App\Http\Middleware\KasirSessionMiddleware::class,
+            'pelanggan.session' => \App\Http\Middleware\PelangganSessionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

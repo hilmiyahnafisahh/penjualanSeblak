@@ -28,6 +28,12 @@
             </div>
         @endif
 
+        @if(session('info'))
+            <div class="alert alert-warning">
+                <i class="bi bi-clock me-1"></i>{{ session('info') }}
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('kasir.login.post') }}">
             @csrf
             <div class="mb-3">
