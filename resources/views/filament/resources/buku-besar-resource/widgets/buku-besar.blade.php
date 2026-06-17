@@ -1,38 +1,56 @@
 <x-filament-widgets::widget>
     <x-filament::section>
         <div class="overflow-x-auto">
-            <div class="mb-6 text-center">
-                <div class="text-lg font-semibold">Buku Besar</div>
-                <div class="text-sm text-gray-600">Laporan transaksi jurnal umum, dikelompokkan berdasarkan akun</div>
+
+            {{-- ── TOOLBAR ── --}}
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+
+                <div>
+                    <div style="font-size:18px; font-weight:700; color:#111827;">Buku Besar</div>
+                    <div style="font-size:12px; color:#6b7280; margin-top:2px;">Transaksi jurnal dikelompokkan per akun</div>
+                </div>
+
+                {{-- Unduh PDF --}}
+                <a href="{{ route('laporan.buku-besar.pdf') }}"
+                   style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; font-weight:600; font-size:13px; padding:8px 18px; border-radius:8px; text-decoration:none; box-shadow:0 2px 8px rgba(22,163,74,.35);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M21 12v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6"/>
+                    </svg>
+                    Unduh PDF
+                </a>
             </div>
 
-            @foreach($groupedDetails as $akunId => $details)
+            {{-- ── AKUN GROUPS ── --}}
+            @forelse($groupedDetails as $akunId => $details)
                 @php
                     $firstDetail = $details->first();
-                    $akun = $firstDetail->akun;
-                    $totalDebit = $details->sum('debit');
+                    $akun        = $firstDetail->akun;
+                    $totalDebit  = $details->sum('debit');
                     $totalCredit = $details->sum('credit');
                 @endphp
 
-                <div class="mb-4 bg-white border border-gray-200 shadow-sm">
-                    <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
-                        <div class="font-semibold">{{ $akun->kode_akun ?? 'Akun Tidak Diketahui' }} - {{ $akun->nama_akun ?? 'Tanpa Akun' }}</div>
+                <div style="margin-bottom:20px; border-radius:10px; overflow:hidden; border:1px solid #e5e7eb; box-shadow:0 1px 4px rgba(0,0,0,.06);">
+                    {{-- Akun header --}}
+                    <div style="background:linear-gradient(90deg,#1e40af,#2563eb); padding:10px 16px;">
+                        <span style="color:#fff; font-weight:700; font-size:13px;">
+                            {{ $akun->kode_akun ?? '-' }} — {{ $akun->nama_akun ?? 'Tanpa Akun' }}
+                        </span>
                     </div>
 
                     <table class="w-full text-sm text-left text-gray-700">
-                        <thead class="bg-gray-50 text-xs uppercase text-gray-600">
+                        <thead style="background:#f8fafc;">
                             <tr>
-                                <th class="px-3 py-2 border">Tanggal</th>
-                                <th class="px-3 py-2 border">ID Jurnal</th>
-                                <th class="px-3 py-2 border">Ref</th>
-                                <th class="px-3 py-2 border">Deskripsi</th>
-                                <th class="px-3 py-2 border text-right">Debet</th>
-                                <th class="px-3 py-2 border text-right">Kredit</th>
+                                <th class="px-3 py-2 border" style="font-size:11px; text-transform:uppercase; color:#6b7280;">Tanggal</th>
+                                <th class="px-3 py-2 border" style="font-size:11px; text-transform:uppercase; color:#6b7280;">ID Jurnal</th>
+                                <th class="px-3 py-2 border" style="font-size:11px; text-transform:uppercase; color:#6b7280;">Ref</th>
+                                <th class="px-3 py-2 border" style="font-size:11px; text-transform:uppercase; color:#6b7280;">Deskripsi</th>
+                                <th class="px-3 py-2 border text-right" style="font-size:11px; text-transform:uppercase; color:#6b7280;">Debet</th>
+                                <th class="px-3 py-2 border text-right" style="font-size:11px; text-transform:uppercase; color:#6b7280;">Kredit</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($details as $detail)
-                                <tr class="even:bg-gray-50">
+                                <tr style="{{ $loop->even ? 'background:#f9fafb;' : '' }}">
                                     <td class="px-3 py-2 border">{{ optional($detail->jurnal)->tgl ? \Carbon\Carbon::parse($detail->jurnal->tgl)->format('Y-m-d') : '-' }}</td>
                                     <td class="px-3 py-2 border">{{ optional($detail->jurnal)->id ?? '-' }}</td>
                                     <td class="px-3 py-2 border">{{ optional($detail->jurnal)->no_referensi ?? '-' }}</td>
@@ -42,20 +60,23 @@
                                 </tr>
                             @endforeach
                         </tbody>
-                        <tfoot class="bg-gray-100 font-semibold text-xs uppercase">
-                            <tr>
-                                <td colspan="4" class="px-3 py-2 border text-right">Total {{ $akun->kode_akun ?? '' }}</td>
-                                <td class="px-3 py-2 border text-right">{{ rupiah($totalDebit) }}</td>
-                                <td class="px-3 py-2 border text-right">{{ rupiah($totalCredit) }}</td>
+                        <tfoot>
+                            <tr style="background:#eff6ff; font-weight:700; font-size:12px;">
+                                <td colspan="4" class="px-3 py-2 border text-right" style="text-transform:uppercase; color:#1e40af;">
+                                    Total {{ $akun->kode_akun ?? '' }}
+                                </td>
+                                <td class="px-3 py-2 border text-right" style="color:#1e40af;">{{ rupiah($totalDebit) }}</td>
+                                <td class="px-3 py-2 border text-right" style="color:#1e40af;">{{ rupiah($totalCredit) }}</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-            @endforeach
+            @empty
+                <div style="padding:24px; text-align:center; color:#6b7280; font-size:14px;">
+                    Tidak ada transaksi jurnal untuk ditampilkan.
+                </div>
+            @endforelse
 
-            @if($groupedDetails->isEmpty())
-                <div class="p-4 text-sm text-gray-600">Tidak ada transaksi jurnal untuk ditampilkan.</div>
-            @endif
         </div>
     </x-filament::section>
 </x-filament-widgets::widget>

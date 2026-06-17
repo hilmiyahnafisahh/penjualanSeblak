@@ -317,6 +317,60 @@
   @endif
 </div>
 
+{{-- ── REKOMENDASI UNTUK ANDA ── --}}
+@if(isset($rekomendasiMenu) && $rekomendasiMenu->isNotEmpty())
+<div class="px-3 pb-2">
+  <hr style="border-color:#f0d0d0; margin:0 0 1.5rem;">
+  <div class="section-header mb-3">
+    <div style="display:flex; align-items:center; gap:.5rem;">
+      <span style="font-size:1.3rem;">✨</span>
+      <div>
+        <div class="section-title">Rekomendasi Untuk Anda</div>
+        <div class="section-sub">Menu yang sering dipesan pelanggan dengan selera mirip Anda</div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-3">
+    @foreach($rekomendasiMenu as $item)
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="product-card" style="border:2px solid #f9d4d4; position:relative;">
+          {{-- Badge rekomendasi --}}
+          <div style="position:absolute; top:.5rem; left:.5rem; z-index:1; background:var(--merah); color:white; font-size:.62rem; font-weight:700; padding:2px 8px; border-radius:2rem;">
+            ⭐ Rekomendasi
+          </div>
+          <div class="product-img-wrap">
+            @if($item->gambar_menu)
+              <img src="{{ asset('storage/'.$item->gambar_menu) }}" alt="{{ $item->nama_menu }}" loading="lazy">
+            @else
+              <div class="product-img-emoji">🍲</div>
+            @endif
+          </div>
+          <div class="product-body">
+            <div class="product-kategori">{{ $item->kategori_menu }}</div>
+            <div class="product-name">{{ $item->nama_menu }}</div>
+            <div class="product-price">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
+            @if(strtolower($item->kategori_menu) === 'makanan')
+              <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none">
+                Pilih & Pesan
+              </a>
+            @else
+              <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST" class="form-addcart">
+                @csrf
+                <input type="hidden" name="id_produk" value="{{ $item->id_menu }}">
+                <input type="hidden" name="qty" value="1">
+                <button type="submit" class="btn-order w-100">+ Keranjang</button>
+              </form>
+            @endif
+          </div>
+        </div>
+      </div>
+    @endforeach
+  </div>
+</div>
+@endif
+
+{{-- ── END REKOMENDASI ── --}}
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // Popup setelah add to cart

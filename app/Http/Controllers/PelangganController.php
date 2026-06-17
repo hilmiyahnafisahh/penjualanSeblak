@@ -172,6 +172,60 @@ class PelangganController extends Controller
             ->get();
         $keranjang = Session::get('keranjang', []);
 
+        // ── REKOMENDASI BERBASIS CLUSTERING ──
+        // Ambil menu yang pernah dipesan pelanggan ini
+        $pelanggan = Pelanggan::where('email', $user->email)->first();
+        $rekomendasiMenu = collect();
+
+        if ($pelanggan) {
+            // Menu yang sudah pernah dipesan pelanggan ini
+            $sudahDipesan = DB::table('detail_pemesanan')
+                ->join('pemesanan', 'pemesanan.id', '=', 'detail_pemesanan.id_pemesanan')
+                ->where('pemesanan.id_pelanggan', $pelanggan->id)
+                ->pluck('detail_pemesanan.id_menu')
+                ->unique()
+                ->toArray();
+
+            // Temukan pelanggan lain yang pernah pesan menu yang sama (cluster serupa)
+            $pelangganMirip = DB::table('detail_pemesanan')
+                ->join('pemesanan', 'pemesanan.id', '=', 'detail_pemesanan.id_pemesanan')
+                ->whereIn('detail_pemesanan.id_menu', $sudahDipesan)
+                ->where('pemesanan.id_pelanggan', '!=', $pelanggan->id)
+                ->pluck('pemesanan.id_pelanggan')
+                ->unique()
+                ->toArray();
+
+            if (!empty($pelangganMirip)) {
+                // Menu populer dari pelanggan mirip yang BELUM pernah dipesan pelanggan ini
+                $rekomendasiIds = DB::table('detail_pemesanan')
+                    ->join('pemesanan', 'pemesanan.id', '=', 'detail_pemesanan.id_pemesanan')
+                    ->whereIn('pemesanan.id_pelanggan', $pelangganMirip)
+                    ->whereNotIn('detail_pemesanan.id_menu', $sudahDipesan)
+                    ->select('detail_pemesanan.id_menu', DB::raw('COUNT(*) as freq'))
+                    ->groupBy('detail_pemesanan.id_menu')
+                    ->orderByDesc('freq')
+                    ->limit(4)
+                    ->pluck('detail_pemesanan.id_menu')
+                    ->toArray();
+
+                $rekomendasiMenu = Menu::whereIn('id', $rekomendasiIds)->get();
+            }
+
+            // Fallback: jika rekomendasi kosong, tampilkan menu terlaris secara global
+            if ($rekomendasiMenu->isEmpty()) {
+                $topMenuIds = DB::table('detail_pemesanan')
+                    ->select('id_menu', DB::raw('COUNT(*) as freq'))
+                    ->whereNotIn('id_menu', $sudahDipesan)
+                    ->groupBy('id_menu')
+                    ->orderByDesc('freq')
+                    ->limit(4)
+                    ->pluck('id_menu')
+                    ->toArray();
+
+                $rekomendasiMenu = Menu::whereIn('id', $topMenuIds)->get();
+            }
+        }
+
         return view('pelanggan.dashboard', compact(
             'user',
             'riwayatPesanan',
@@ -182,7 +236,8 @@ class PelangganController extends Controller
             'menu',
             'barang',
             'toppingBarang',
-            'keranjang'
+            'keranjang',
+            'rekomendasiMenu'
         ));
     }
 
