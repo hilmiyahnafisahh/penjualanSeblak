@@ -73,7 +73,7 @@ class PembelianResource extends Resource
 
                                 ])->columns(2),
 
-              x          ]),
+                        ]),
 
                     // STEP 2
                     Step::make('Item Barang')
@@ -311,7 +311,9 @@ class PembelianResource extends Resource
                     ->placeholder('Tidak ada karyawan')
                     ->searchable(),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
                     ->colors([
                         'success' => 'lunas',
                         'warning' => 'hutang',

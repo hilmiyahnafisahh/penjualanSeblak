@@ -62,6 +62,7 @@ Route::post('/pelanggan/logout', [PelangganController::class, 'logout'])->name('
 Route::get('/pelanggan/dashboard', [PelangganController::class, 'dashboard'])->name('pelanggan.dashboard');
 Route::post('/pelanggan/keranjang/tambah', [PelangganController::class, 'addToCart'])->name('pelanggan.keranjang.tambah');
 Route::get('/pelanggan/menu/{id}', [PelangganController::class, 'showMenu'])->name('pelanggan.menu.show');
+Route::get('/pelanggan/pilih-topping/{id}', [PelangganController::class, 'pilihTopping'])->name('pelanggan.pilihTopping');
 Route::get('/pelanggan/keranjang', [PelangganController::class, 'cart'])->name('pelanggan.keranjang');
 Route::post('/pelanggan/keranjang/update', [PelangganController::class, 'updateCart'])->name('pelanggan.keranjang.update');
 Route::post('/pelanggan/keranjang/remove', [PelangganController::class, 'removeCartItem'])->name('pelanggan.keranjang.remove');
@@ -80,12 +81,14 @@ Route::get('/pelanggan/riwayat', [PelangganController::class, 'riwayat'])->name(
 Route::get('/kasir', [KasirController::class, 'index'])->name('kasir.home');
 Route::get('/kasir/login', [KasirController::class, 'showLogin'])->name('kasir.login');
 Route::post('/kasir/login', [KasirController::class, 'login'])->name('kasir.login.post');
-Route::post('/kasir/logout', [KasirController::class, 'logout'])->name('kasir.logout');
-Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
-Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.pesanan');
-Route::get('/kasir/pembayaran', [KasirController::class, 'pembayaran'])->name('kasir.pembayaran');
-Route::post('/kasir/pembayaran/{id}/bayar', [KasirController::class, 'bayarPembayaran'])->name('kasir.pembayaran.bayar');
-Route::get('/kasir/stok-menu', [KasirController::class, 'stokMenu'])->name('kasir.stok_menu');
+Route::middleware('auth')->group(function () {
+    Route::post('/kasir/logout', [KasirController::class, 'logout'])->name('kasir.logout');
+    Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
+    Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.pesanan');
+    Route::get('/kasir/pembayaran', [KasirController::class, 'pembayaran'])->name('kasir.pembayaran');
+    Route::post('/kasir/pembayaran/{id}/bayar', [KasirController::class, 'bayarPembayaran'])->name('kasir.pembayaran.bayar');
+    Route::get('/kasir/stok-menu', [KasirController::class, 'stokMenu'])->name('kasir.stok_menu');
+});
 Route::get('/kasir/laporan-penjualan', [\App\Http\Controllers\LaporanPenjualanController::class, 'index'])->name('kasir.laporan_penjualan');
 Route::get('/kasir/laporan-penjualan/pdf', [\App\Http\Controllers\LaporanPenjualanController::class, 'pdf'])->name('kasir.laporan_penjualan.pdf');
 

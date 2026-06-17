@@ -3,7 +3,7 @@
 ])
 
 @php
-    $openSidebarClasses = 'fi-sidebar-open w-[--sidebar-width] translate-x-0 shadow-xl ring-1 ring-gray-950/5 dark:ring-white/10 rtl:-translate-x-0';
+    $openSidebarClasses = 'fi-sidebar-open w-[--sidebar-width] translate-x-0 shadow-xl ring-1 ring-gray-950/5 rtl:-translate-x-0';
     $isRtl = __('filament-panels::layout.direction') === 'rtl';
 @endphp
 
@@ -43,71 +43,46 @@
 >
     <div class="overflow-x-clip">
         <header
-            class="fi-sidebar-header flex h-16 items-center bg-white px-6 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 lg:shadow-sm"
+            class="fi-sidebar-header flex h-16 items-center bg-white px-4 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 lg:shadow-sm"
         >
-            <div
-                @if (filament()->isSidebarCollapsibleOnDesktop())
-                    x-show="$store.sidebar.isOpen"
-                    x-transition:enter="lg:transition lg:delay-100"
-                    x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100"
-                @endif
-            >
+            {{-- 1 blok logo: logo selalu tampil, teks nama hide saat collapsed --}}
+            <div class="flex items-center gap-x-2 min-w-0 flex-1 overflow-hidden">
                 @if ($homeUrl = filament()->getHomeUrl())
-                    <a {{ \Filament\Support\generate_href_html($homeUrl) }} class="flex items-center">
-                        <x-filament-panels::logo />
-                        <span class="fi-brand-name ms-3">SEBLAK SANGKURIANG</span>
+                    <a {{ \Filament\Support\generate_href_html($homeUrl) }} class="flex items-center gap-x-2 min-w-0">
+                        <x-filament-panels::logo class="fi-sidebar-logo-img flex-shrink-0" />
+                        <span
+                            class="fi-brand-name whitespace-nowrap"
+                            @if (filament()->isSidebarCollapsibleOnDesktop())
+                                x-cloak
+                                x-show="$store.sidebar.isOpen"
+                                x-transition:enter="transition-opacity duration-150 delay-100"
+                                x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
+                                x-transition:leave="transition-opacity duration-75"
+                                x-transition:leave-start="opacity-100"
+                                x-transition:leave-end="opacity-0"
+                            @endif
+                        >SEBLAK SANGKURIANG</span>
                     </a>
                 @else
-                    <div class="flex items-center">
-                        <x-filament-panels::logo />
-                        <span class="fi-brand-name ms-3">SEBLAK SANGKURIANG</span>
+                    <div class="flex items-center gap-x-2 min-w-0">
+                        <x-filament-panels::logo class="fi-sidebar-logo-img flex-shrink-0" />
+                        <span
+                            class="fi-brand-name whitespace-nowrap"
+                            @if (filament()->isSidebarCollapsibleOnDesktop())
+                                x-cloak
+                                x-show="$store.sidebar.isOpen"
+                                x-transition:enter="transition-opacity duration-150 delay-100"
+                                x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
+                                x-transition:leave="transition-opacity duration-75"
+                                x-transition:leave-start="opacity-100"
+                                x-transition:leave-end="opacity-0"
+                            @endif
+                        >SEBLAK SANGKURIANG</span>
                     </div>
                 @endif
             </div>
-
-            {{-- compact logo shown when sidebar is collapsed (desktop) --}}
-            <div class="fi-compact-logo ms-2" x-cloak x-show="! $store.sidebar.isOpen" style="display:none">
-                @if ($homeUrl = filament()->getHomeUrl())
-                    <a {{ \Filament\Support\generate_href_html($homeUrl) }}>
-                        <x-filament-panels::logo class="h-10 w-auto" />
-                    </a>
-                @else
-                    <x-filament-panels::logo class="h-10 w-auto" />
-                @endif
-            </div>
-
-            @if (filament()->isSidebarCollapsibleOnDesktop())
-                <x-filament::icon-button
-                    color="gray"
-                    :icon="$isRtl ? 'heroicon-o-chevron-left' : 'heroicon-o-chevron-right'"
-                    {{-- @deprecated Use `panels::sidebar.expand-button.rtl` instead of `panels::sidebar.expand-button` for RTL. --}}
-                    :icon-alias="$isRtl ? ['panels::sidebar.expand-button.rtl', 'panels::sidebar.expand-button'] : 'panels::sidebar.expand-button'"
-                    icon-size="lg"
-                    :label="__('filament-panels::layout.actions.sidebar.expand.label')"
-                    x-cloak
-                    x-data="{}"
-                    x-on:click="$store.sidebar.open()"
-                    x-show="! $store.sidebar.isOpen"
-                    class="mx-auto"
-                />
-            @endif
-
-            @if (filament()->isSidebarCollapsibleOnDesktop() || filament()->isSidebarFullyCollapsibleOnDesktop())
-                <x-filament::icon-button
-                    color="gray"
-                    :icon="$isRtl ? 'heroicon-o-chevron-right' : 'heroicon-o-chevron-left'"
-                    {{-- @deprecated Use `panels::sidebar.collapse-button.rtl` instead of `panels::sidebar.collapse-button` for RTL. --}}
-                    :icon-alias="$isRtl ? ['panels::sidebar.collapse-button.rtl', 'panels::sidebar.collapse-button'] : 'panels::sidebar.collapse-button'"
-                    icon-size="lg"
-                    :label="__('filament-panels::layout.actions.sidebar.collapse.label')"
-                    x-cloak
-                    x-data="{}"
-                    x-on:click="$store.sidebar.close()"
-                    x-show="$store.sidebar.isOpen"
-                    class="ms-auto hidden lg:flex"
-                />
-            @endif
         </header>
     </div>
 
@@ -175,8 +150,6 @@
                         return
                     }
 
-                    // Alpine.js loads too slow, so attempt to hide a
-                    // collapsed sidebar group earlier.
                     group.querySelector(
                         '.fi-sidebar-group-items',
                     ).style.display = 'none'

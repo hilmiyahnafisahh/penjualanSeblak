@@ -64,6 +64,9 @@ class KasirController extends Controller
 
         $request->session()->put('kasir_user_id', $user->id);
         $request->session()->put('kasir_user_name', $user->name);
+        
+        // Set Laravel Auth guard so Auth::user() works in views
+        \Illuminate\Support\Facades\Auth::login($user);
 
         return redirect()->route('kasir.dashboard');
     }
@@ -74,6 +77,9 @@ class KasirController extends Controller
             'kasir_user_id',
             'kasir_user_name'
         ]);
+        
+        // Clear Laravel Auth guard
+        \Illuminate\Support\Facades\Auth::logout();
 
         return redirect()->route('kasir.login');
     }
@@ -90,7 +96,7 @@ class KasirController extends Controller
         $todayRevenue = Pembayaran::whereDate('tanggal_pembayaran', now())->sum('total_pembayaran');
 
         $recentOrders = Pemesanan::with('Pelanggan')
-            ->orderBy('id', 'desc')
+            ->orderBy('tanggal_pemesanan', 'desc')
             ->take(5)
             ->get();
 
@@ -119,7 +125,7 @@ class KasirController extends Controller
         ];
 
         $query = Pemesanan::with('Pelanggan')
-            ->orderBy('id', 'desc');
+            ->orderBy('tanggal_pemesanan', 'desc');
 
         if ($statusMap[$statusParam] ?? null) {
             $query->where('status_pemesanan', $statusMap[$statusParam]);
@@ -150,36 +156,6 @@ class KasirController extends Controller
         $pembayaran = $query->get();
 
         return view('kasir.pembayaran', compact('pembayaran', 'statusParam'));
-    }
-
-    public function bayarPembayaran(Request $request, $id)
-    {
-        if (!$this->guardKasir($request)) {
-            return redirect()->route('kasir.login');
-        }
-
-        $pembayaran = Pembayaran::with('pemesanan')->find($id);
-
-        if (!$pembayaran) {
-            abort(404);
-        }
-
-        if ($pembayaran->status_pembayaran !== 'pending' || strtolower($pembayaran->metode_pembayaran) !== 'tunai') {
-            return redirect()->route('kasir.pembayaran')
-                ->with('error', 'Hanya pembayaran tunai pending yang dapat dilunasi di kasir.');
-        }
-
-        $pembayaran->update([
-            'status_pembayaran' => 'lunas',
-            'tanggal_pembayaran' => $pembayaran->tanggal_pembayaran ?: now(),
-        ]);
-
-        if ($pembayaran->pemesanan) {
-            $pembayaran->pemesanan->update(['status_pemesanan' => 'selesai']);
-        }
-
-        return redirect()->route('kasir.pembayaran')
-            ->with('success', 'Pembayaran tunai berhasil diproses.');
     }
 
     public function stokMenu(Request $request)

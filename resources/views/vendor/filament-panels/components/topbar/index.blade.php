@@ -16,34 +16,23 @@
         {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::TOPBAR_START) }}
 
         @if (filament()->hasNavigation())
-            <x-filament::icon-button
-                color="gray"
-                icon="heroicon-o-bars-3"
-                icon-alias="panels::topbar.open-sidebar-button"
-                icon-size="lg"
-                :label="__('filament-panels::layout.actions.sidebar.expand.label')"
-                x-cloak
+            {{-- SATU tombol toggle: klik = buka kalau closed, tutup kalau open --}}
+            <button
+                type="button"
                 x-data="{}"
-                x-on:click="$store.sidebar.open()"
-                x-show="! $store.sidebar.isOpen"
-                @class([
-                    'fi-topbar-open-sidebar-btn',
-                    'lg:hidden' => (! filament()->isSidebarFullyCollapsibleOnDesktop()) || filament()->isSidebarCollapsibleOnDesktop(),
-                ])
-            />
-
-            <x-filament::icon-button
-                color="gray"
-                icon="heroicon-o-x-mark"
-                icon-alias="panels::topbar.close-sidebar-button"
-                icon-size="lg"
-                :label="__('filament-panels::layout.actions.sidebar.collapse.label')"
-                x-cloak
-                x-data="{}"
-                x-on:click="$store.sidebar.close()"
-                x-show="$store.sidebar.isOpen"
-                class="fi-topbar-close-sidebar-btn lg:hidden"
-            />
+                x-on:click="$store.sidebar.isOpen ? $store.sidebar.close() : $store.sidebar.open()"
+                class="fi-sidebar-toggle-btn flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200"
+                :aria-label="$store.sidebar.isOpen ? 'Tutup sidebar' : 'Buka sidebar'"
+            >
+                {{-- Icon bars saat closed --}}
+                <svg x-show="! $store.sidebar.isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+                {{-- Icon X saat open --}}
+                <svg x-show="$store.sidebar.isOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5" x-cloak>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </button>
         @endif
 
         @if (filament()->hasTopNavigation() || (! filament()->hasNavigation()))
