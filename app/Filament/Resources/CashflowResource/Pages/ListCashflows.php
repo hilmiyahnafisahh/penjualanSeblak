@@ -17,7 +17,7 @@ class ListCashflow extends ListRecords
     {
         return [
             Actions\Action::make('analisaAi')
-                ->label('Analisa Arus Kas AI')
+                ->label('Generate arus kas & analisa dengan AI')
                 ->icon('heroicon-m-sparkles')
                 ->color('warning')
                 ->modalHeading('Analisa Arus Kas dengan AI')
