@@ -33,7 +33,7 @@ class PembelianResource extends Resource
 
     protected static ?string $navigationLabel = 'Pembelian';
 
-    protected static ?string $navigationGroup = 'Transaksi';
+    protected static ?string $navigationGroup = '💵 Transaksi';
 
     protected static ?string $maxContentWidth = 'full';
 
@@ -66,17 +66,10 @@ class PembelianResource extends Resource
                                         ->preload()
                                         ->required(),
 
-                                    Hidden::make('tgl')
-                                        ->default(now()),
-
-                                    Hidden::make('total_bayar')
-                                        ->default(0),
-
-                                    Hidden::make('tagihan')
-                                        ->default(0),
-
-                                    Hidden::make('status')
-                                        ->default('pending'),
+                                    Hidden::make('tgl')->default(now()),
+                                    Hidden::make('total_bayar')->default(0),
+                                    Hidden::make('tagihan')->default(0),
+                                    Hidden::make('status')->default('pending'),
 
                                 ])->columns(2),
 
@@ -90,53 +83,25 @@ class PembelianResource extends Resource
                             Repeater::make('barang')
                                 ->relationship()
                                 ->minItems(1)
-
                                 ->schema([
 
                                     Select::make('id_barang')
                                         ->label('Barang')
-
-                                        ->options(
-                                            fn () => Barang::pluck(
-                                                'nama_barang',
-                                                'id_barang'
-                                            )
-                                        )
-
+                                        ->options(fn () => Barang::pluck('nama_barang', 'id_barang'))
                                         ->required()
                                         ->searchable()
                                         ->live()
-
-                                        ->afterStateUpdated(function (
-                                            $state,
-                                            Forms\Set $set
-                                        ) {
-
-                                            $barang = Barang::where(
-                                                'id_barang',
-                                                $state
-                                            )->first();
-
+                                        ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                            $barang = Barang::where('id_barang', $state)->first();
                                             if ($barang) {
-
-                                                $set(
-                                                    'harga_beli',
-                                                    $barang->harga_beli
-                                                );
+                                                $set('harga_beli', $barang->harga_beli);
                                             }
                                         })
-
-                                        // TAMBAH BARANG BARU
                                         ->suffixAction(
-
                                             Forms\Components\Actions\Action::make('tambah_barang_baru')
-
                                                 ->icon('heroicon-m-plus-circle')
-
                                                 ->color('success')
-
                                                 ->label('Barang Baru')
-
                                                 ->form([
 
                                                     TextInput::make('nama_barang')
@@ -149,25 +114,9 @@ class PembelianResource extends Resource
                                                         ->default(1)
                                                         ->required()
                                                         ->live()
-
-                                                        ->afterStateUpdated(function (
-                                                            $state,
-                                                            callable $set,
-                                                            callable $get
-                                                        ) {
-
-                                                            if (
-                                                                $state > 0 &&
-                                                                $get('harga_beli') > 0
-                                                            ) {
-
-                                                                $set(
-                                                                    'harga_jual',
-                                                                    hargajual(
-                                                                        $get('harga_beli'),
-                                                                        $state
-                                                                    )
-                                                                );
+                                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                            if ($state > 0 && $get('harga_beli') > 0) {
+                                                                $set('harga_jual', hargajual($get('harga_beli'), $state));
                                                             }
                                                         }),
 
@@ -177,25 +126,9 @@ class PembelianResource extends Resource
                                                         ->prefix('Rp')
                                                         ->required()
                                                         ->live()
-
-                                                        ->afterStateUpdated(function (
-                                                            $state,
-                                                            callable $set,
-                                                            callable $get
-                                                        ) {
-
-                                                            if (
-                                                                $state > 0 &&
-                                                                $get('stok') > 0
-                                                            ) {
-
-                                                                $set(
-                                                                    'harga_jual',
-                                                                    hargajual(
-                                                                        $state,
-                                                                        $get('stok')
-                                                                    )
-                                                                );
+                                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                            if ($state > 0 && $get('stok') > 0) {
+                                                                $set('harga_jual', hargajual($state, $get('stok')));
                                                             }
                                                         }),
 
@@ -206,20 +139,10 @@ class PembelianResource extends Resource
                                                         ->disabled()
                                                         ->dehydrated()
                                                         ->live()
-
                                                         ->default(fn ($get) =>
-
-                                                            (
-                                                                $get('harga_beli') > 0 &&
-                                                                $get('stok') > 0
-                                                            )
-
-                                                            ? hargajual(
-                                                                $get('harga_beli'),
-                                                                $get('stok')
-                                                            )
-
-                                                            : 0
+                                                            ($get('harga_beli') > 0 && $get('stok') > 0)
+                                                                ? hargajual($get('harga_beli'), $get('stok'))
+                                                                : 0
                                                         ),
 
                                                     TextInput::make('satuan')
@@ -227,45 +150,19 @@ class PembelianResource extends Resource
                                                         ->default('pcs'),
 
                                                 ])
-
-                                                ->action(function (
-                                                    array $data,
-                                                    Forms\Set $set
-                                                ) {
-
+                                                ->action(function (array $data, Forms\Set $set) {
                                                     $barangBaru = Barang::create([
-
-                                                        'id_barang'
-                                                            => Barang::getKodeBarang(),
-
-                                                        'nama_barang'
-                                                            => $data['nama_barang'],
-
-                                                        'harga_beli'
-                                                            => $data['harga_beli'],
-
-                                                        'harga_jual'
-                                                            => $data['harga_jual'],
-
-                                                        'satuan'
-                                                            => $data['satuan'] ?? 'pcs',
-
-                                                        'stok'
-                                                            => $data['stok'],
-
-                                                        'gambar'
-                                                            => null,
+                                                        'id_barang'   => Barang::getKodeBarang(),
+                                                        'nama_barang' => $data['nama_barang'],
+                                                        'harga_beli'  => $data['harga_beli'],
+                                                        'harga_jual'  => $data['harga_jual'],
+                                                        'satuan'      => $data['satuan'] ?? 'pcs',
+                                                        'stok'        => $data['stok'],
+                                                        'gambar'      => null,
                                                     ]);
 
-                                                    $set(
-                                                        'id_barang',
-                                                        $barangBaru->id_barang
-                                                    );
-
-                                                    $set(
-                                                        'harga_beli',
-                                                        $barangBaru->harga_beli
-                                                    );
+                                                    $set('id_barang', $barangBaru->id_barang);
+                                                    $set('harga_beli', $barangBaru->harga_beli);
                                                 })
                                         ),
 
@@ -280,85 +177,40 @@ class PembelianResource extends Resource
                                         ->required(),
 
                                     Hidden::make('tgl')
-                                        ->default(fn (Forms\Get $get) =>
-                                            $get('../../tgl') ?? now()
-                                        ),
+                                        ->default(fn (Forms\Get $get) => $get('../../tgl') ?? now()),
 
                                 ])->columns(3),
 
                             Forms\Components\Actions::make([
 
                                 Action::make('konfirmasi')
-
                                     ->label('Konfirmasi Pembayaran')
-
                                     ->color('success')
-
                                     ->icon('heroicon-m-check-circle')
-
                                     ->form([
-
                                         Select::make('status_bayar')
                                             ->options([
-                                                'lunas' => 'Lunas',
-                                                'hutang' => 'Hutang'
+                                                'lunas'  => 'Lunas',
+                                                'hutang' => 'Hutang',
                                             ])
                                             ->required(),
-
                                     ])
-
-                                    ->action(function (
-                                        $get,
-                                        $set,
-                                        $data
-                                    ) {
-
+                                    ->action(function ($get, $set, $data) {
                                         $items = $get('barang') ?? [];
-
                                         $total = collect($items)->sum(
-
-                                            fn($i) =>
-
-                                            floatval($i['harga_beli'])
-                                            *
-                                            floatval($i['jumlah'])
+                                            fn($i) => floatval($i['harga_beli']) * floatval($i['jumlah'])
                                         );
 
-                                        $set(
-                                            'status',
-                                            $data['status_bayar']
-                                        );
-
-                                        $set(
-                                            'total_bayar',
-                                            $total
-                                        );
-
-                                        $set(
-                                            'tagihan',
-
-                                            $data['status_bayar'] === 'hutang'
-                                                ? $total
-                                                : 0
-                                        );
+                                        $set('status', $data['status_bayar']);
+                                        $set('total_bayar', $total);
+                                        $set('tagihan', $data['status_bayar'] === 'hutang' ? $total : 0);
 
                                         $set('pembayaran', [[
-
                                             'tgl_bayar'        => now(),
-
                                             'jenis_pembayaran' => 'cash',
-
                                             'nama_vendor'      => '-',
-
-                                            'jumlah_bayar'
-                                                => $data['status_bayar'] === 'lunas'
-                                                    ? $total
-                                                    : 0,
-
-                                            'sisa_tagihan'
-                                                => $data['status_bayar'] === 'hutang'
-                                                    ? $total
-                                                    : 0,
+                                            'jumlah_bayar'     => $data['status_bayar'] === 'lunas' ? $total : 0,
+                                            'sisa_tagihan'     => $data['status_bayar'] === 'hutang' ? $total : 0,
                                         ]]);
                                     }),
 
@@ -373,7 +225,6 @@ class PembelianResource extends Resource
 
                             Repeater::make('pembayaran')
                                 ->relationship()
-
                                 ->schema([
 
                                     DatePicker::make('tgl_bayar')
@@ -381,8 +232,8 @@ class PembelianResource extends Resource
 
                                     Select::make('jenis_pembayaran')
                                         ->options([
-                                            'cash' => 'Cash',
-                                            'transfer' => 'Transfer'
+                                            'cash'     => 'Cash',
+                                            'transfer' => 'Transfer',
                                         ])
                                         ->required(),
 
@@ -391,50 +242,38 @@ class PembelianResource extends Resource
                                         ->required(),
 
                                     TextInput::make('jumlah_bayar')
+                                        ->label('Jumlah Bayar')
                                         ->numeric()
                                         ->prefix('Rp')
                                         ->live()
-
-                                        ->afterStateUpdated(function (
-                                            $state,
-                                            Forms\Set $set,
-                                            Forms\Get $get
-                                        ) {
-
-                                            $tagihan = floatval(
-                                                $get('../../tagihan') ?? 0
-                                            );
-
-                                            $bayar = floatval(
-                                                $state ?? 0
-                                            );
+                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                            $tagihan = floatval($get('../../tagihan') ?? 0);
+                                            $bayar   = floatval($state ?? 0);
 
                                             if ($bayar > $tagihan) {
-
                                                 $bayar = $tagihan;
-
-                                                $set(
-                                                    'jumlah_bayar',
-                                                    $bayar
-                                                );
+                                                $set('jumlah_bayar', $bayar);
                                             }
 
-                                            $set(
-                                                'sisa_tagihan',
-                                                max(
-                                                    0,
-                                                    $tagihan - $bayar
-                                                )
-                                            );
+                                            $sisa = max(0, $tagihan - $bayar);
+                                            $set('sisa_tagihan', $sisa);
+
+                                            if ($sisa <= 0) {
+                                                $set('../../status', 'lunas');
+                                            } else {
+                                                $set('../../status', 'hutang');
+                                            }
+
+                                            $set('../../total_bayar', $bayar);
                                         }),
 
                                     TextInput::make('sisa_tagihan')
+                                        ->label('Sisa Tagihan')
                                         ->numeric()
                                         ->prefix('Rp')
                                         ->readOnly(),
 
                                 ])
-
                                 ->columns(3)
                                 ->addable(false)
                                 ->deletable(false),
@@ -442,20 +281,16 @@ class PembelianResource extends Resource
                         ]),
 
                 ])
-
+                // ✅ Tombol submit pindah ke sebelah Next
                 ->submitAction(
-
                     new \Illuminate\Support\HtmlString(
-
                         '<button type="submit"
                             class="fi-btn fi-btn-size-md inline-flex items-center justify-center gap-1 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500">
                             Buat Pembelian
                         </button>'
                     )
                 )
-
                 ->columnSpanFull()
-
                 ->skippable(false),
 
             ]);
@@ -476,7 +311,9 @@ class PembelianResource extends Resource
                     ->placeholder('Tidak ada karyawan')
                     ->searchable(),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
                     ->colors([
                         'success' => 'lunas',
                         'warning' => 'hutang',
@@ -490,12 +327,8 @@ class PembelianResource extends Resource
                     ->label('Sisa Tagihan')
                     ->money('IDR')
                     ->placeholder('0')
-
                     ->color(fn ($record) =>
-
-                        $record->status === 'hutang'
-                            ? 'danger'
-                            : 'success'
+                        $record->status === 'hutang' ? 'danger' : 'success'
                     ),
 
                 TextColumn::make('pembayaran.nama_vendor')
@@ -514,25 +347,17 @@ class PembelianResource extends Resource
             ->headerActions([
 
                 TableAction::make('downloadPdf')
-
                     ->label('Unduh PDF')
-
                     ->icon('heroicon-o-document-arrow-down')
-
                     ->color('success')
-
                     ->action(function () {
-
                         $pembelian = Pembelian::with([
                             'barang',
                             'pembayaran',
-                            'karyawan'
+                            'karyawan',
                         ])->get();
 
-                        $pdf = Pdf::loadView(
-                            'pdf.pembelian',
-                            ['pembelian' => $pembelian]
-                        );
+                        $pdf = Pdf::loadView('pdf.pembelian', ['pembelian' => $pembelian]);
 
                         return response()->streamDownload(
                             fn () => print($pdf->output()),
@@ -556,15 +381,9 @@ class PembelianResource extends Resource
     public static function getPages(): array
     {
         return [
-
-            'index'
-                => Pages\ListPembelians::route('/'),
-
-            'create'
-                => Pages\CreatePembelian::route('/create'),
-
-            'edit'
-                => Pages\EditPembelian::route('/{record}/edit'),
+            'index'  => Pages\ListPembelians::route('/'),
+            'create' => Pages\CreatePembelian::route('/create'),
+            'edit'   => Pages\EditPembelian::route('/{record}/edit'),
         ];
     }
 }

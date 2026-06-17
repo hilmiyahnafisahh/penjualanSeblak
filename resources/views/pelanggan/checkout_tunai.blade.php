@@ -43,7 +43,7 @@
     </div>
     <div class="info-row">
       <span class="label">Total</span>
-      <span class="val">Rp {{ number_format($pemesanan->subtotal, 0, ',', '.') }}</span>
+      <span class="val">Rp {{ number_format($grandTotal ?? $pemesanan->DetailPesanan->sum('subtotal'), 0, ',', '.') }}</span>
     </div>
     <div class="info-row mb-4">
       <span class="label">Status</span>

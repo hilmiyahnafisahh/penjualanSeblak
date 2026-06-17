@@ -23,24 +23,24 @@ class PelangganResource extends Resource
     protected static ?string $model = Pelanggan::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-
-    protected static ?string $navigationGroup = 'Master Data';
+    protected static ?string $navigationLabel = 'Pelanggan';
+    protected static ?string $navigationGroup = '📦 MASTER DATA';
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-
                 TextInput::make('id_pelanggan')
                     ->default(fn () => Pelanggan::getIDPelanggan())
                     ->label('ID Pelanggan')
                     ->required()
-                    ->readonly()//tidak bisa diubah karena sudah auto generate
-                    ->dehydrated(), 
+                    ->readonly() // tidak bisa diubah karena sudah auto generate
+                    ->dehydrated(),
 
                 TextInput::make('nama_pelanggan')
                     ->label('Nama Pelanggan')
-                    ->required(),//data wajib di isi
+                    ->required(), // data wajib diisi
 
                 Select::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
@@ -70,7 +70,6 @@ class PelangganResource extends Resource
     {
         return $table
             ->columns([
-
                 TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
@@ -81,7 +80,7 @@ class PelangganResource extends Resource
                 TextColumn::make('nama_pelanggan')
                     ->label('Nama')
                     ->searchable()
-                    ->sortable(), 
+                    ->sortable(),
 
                 TextColumn::make('jenis_kelamin')
                     ->label('Jenis Kelamin')

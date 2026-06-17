@@ -27,9 +27,7 @@ class CatatBebanResource extends Resource
     protected static ?string $model = CatatBeban::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-
-    protected static ?string $navigationGroup = 'Transaksi';
-
+    protected static ?string $navigationGroup = '💵 Transaksi';
     protected static ?string $maxContentWidth = 'full';
 
     public static function form(Form $form): Form
