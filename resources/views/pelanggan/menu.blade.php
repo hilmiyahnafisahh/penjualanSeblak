@@ -67,7 +67,8 @@
           </div>
         </div>
 
-        {{-- Rasa --}}
+        {{-- Rasa (hanya makanan) --}}
+        @if($isMakanan)
         <div class="mb-3">
           <label class="fw-semibold mb-2 d-block">Rasa <span class="text-danger">*</span></label>
           <select name="rasa" class="form-select" required onchange="updateSummary()">
@@ -84,6 +85,7 @@
             @foreach($sayurOptions as $s)<option value="{{ $s }}">{{ $s }}</option>@endforeach
           </select>
         </div>
+        @endif
 
         {{-- Catatan --}}
         <div class="mb-4">
@@ -145,8 +147,10 @@
       <div class="summary-sticky bg-white rounded-3 p-4 border" style="border-color:#f0d0d0!important;">
         <h6 class="fw-bold mb-3">Ringkasan Pesanan</h6>
         <div class="summary-row"><span class="text-muted">Menu</span><span class="fw-semibold">{{ $menu->nama_menu }}</span></div>
+        @if($isMakanan)
         <div class="summary-row"><span class="text-muted">Rasa</span><span id="sumRasa" class="fw-semibold text-muted">Belum dipilih</span></div>
         <div class="summary-row"><span class="text-muted">Sayur</span><span id="sumSayur" class="fw-semibold text-muted">Belum dipilih</span></div>
+        @endif
         <div class="summary-row"><span class="text-muted">Jumlah</span><span id="sumQty" class="fw-semibold">1</span></div>
         <div class="summary-row"><span class="text-muted">Harga Dasar</span><span id="sumHargaDasar" class="fw-semibold">Rp {{ number_format($menu->harga_menu,0,',','.') }}</span></div>
         <div class="summary-row"><span class="text-muted">Topping</span><span id="sumTopping" class="fw-semibold">Rp 0</span></div>
@@ -178,12 +182,16 @@ function toggleTopping(id) {
 }
 
 function updateSummary() {
-  const rasa  = document.querySelector('[name="rasa"]').value;
-  const sayur = document.querySelector('[name="sayur_sawi"]').value;
-  document.getElementById('sumRasa').textContent  = rasa  || 'Belum dipilih';
-  document.getElementById('sumSayur').textContent = sayur || 'Belum dipilih';
-  document.getElementById('sumRasa').style.color  = rasa  ? '#1a1a1a':'#aaa';
-  document.getElementById('sumSayur').style.color = sayur ? '#1a1a1a':'#aaa';
+  const rasaEl  = document.querySelector('[name="rasa"]');
+  const sayurEl = document.querySelector('[name="sayur_sawi"]');
+  if (rasaEl) {
+    document.getElementById('sumRasa').textContent  = rasaEl.value  || 'Belum dipilih';
+    document.getElementById('sumRasa').style.color  = rasaEl.value  ? '#1a1a1a':'#aaa';
+  }
+  if (sayurEl) {
+    document.getElementById('sumSayur').textContent = sayurEl.value || 'Belum dipilih';
+    document.getElementById('sumSayur').style.color = sayurEl.value ? '#1a1a1a':'#aaa';
+  }
   hitungTotal();
 }
 
