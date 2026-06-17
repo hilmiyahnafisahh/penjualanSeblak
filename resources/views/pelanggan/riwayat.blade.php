@@ -79,17 +79,6 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
   </div>
   @endif
 
-  {{-- Filter --}}
-  <div class="d-flex flex-wrap gap-2 mb-4">
-    @foreach($statusLabels as $key => $label)
-      <a href="{{ route('pelanggan.riwayat',['status'=>$key]) }}"
-         class="btn filter-pill {{ $statusParam===$key ? 'btn-merah' : 'btn-outline-secondary' }}">
-        @if($key==='semua') 📋 @elseif($key==='belumdibayar') ⏳ @elseif($key==='diproses') 🔄 @else ✅ @endif
-        {{ $label }}
-      </a>
-    @endforeach
-  </div>
-
   @if($pesanan->isEmpty())
     <div class="text-center py-5 bg-white rounded-3 border" style="border-color:#f0d0d0!important;">
       <div style="font-size:3.5rem;">📋</div>

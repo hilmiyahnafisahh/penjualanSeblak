@@ -90,7 +90,6 @@ Route::get('/kasir/login', [KasirController::class, 'showLogin'])->name('kasir.l
 Route::post('/kasir/login', [KasirController::class, 'login'])->name('kasir.login.post');
 Route::post('/kasir/logout', [KasirController::class, 'logout'])->name('kasir.logout');
 
-// Route kasir yang butuh session aktif
 Route::middleware('kasir.session')->group(function () {
     Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
     Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.pesanan');
@@ -100,6 +99,15 @@ Route::middleware('kasir.session')->group(function () {
     Route::get('/kasir/laporan-penjualan', [\App\Http\Controllers\LaporanPenjualanController::class, 'index'])->name('kasir.laporan_penjualan');
     Route::get('/kasir/laporan-penjualan/pdf', [\App\Http\Controllers\LaporanPenjualanController::class, 'pdf'])->name('kasir.laporan_penjualan.pdf');
 });
+
+Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
+Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.pesanan');
+Route::get('/kasir/pembayaran', [KasirController::class, 'pembayaran'])->name('kasir.pembayaran');
+Route::post('/kasir/pembayaran/{id}/bayar', [KasirController::class, 'bayarPembayaran'])->name('kasir.pembayaran.bayar');
+Route::post('/kasir/pesanan/{id}/selesaikan', [KasirController::class, 'selesaikanPesanan'])->name('kasir.pesanan.selesaikan');
+Route::get('/kasir/stok-menu', [KasirController::class, 'stokMenu'])->name('kasir.stok_menu');
+Route::get('/kasir/laporan-penjualan', [\App\Http\Controllers\LaporanPenjualanController::class, 'index'])->name('kasir.laporan_penjualan');
+Route::get('/kasir/laporan-penjualan/pdf', [\App\Http\Controllers\LaporanPenjualanController::class, 'pdf'])->name('kasir.laporan_penjualan.pdf');
 
 // ============================================================
 // Midtrans & Pembayaran
