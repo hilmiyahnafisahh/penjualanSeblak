@@ -1,8 +1,15 @@
 <x-filament::page>
     <x-filament::card>
-        <h1 class="text-2xl font-bold mb-4">Laporan Penjualan</h1>
 
-        {{-- FILTER + TOMBOL PDF (satu baris, persis pola laba rugi) --}}
+        {{-- HEADER --}}
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-5">
+            <div>
+                <h1 class="text-2xl font-bold">Laporan Penjualan</h1>
+                <p class="text-sm text-slate-500">Analisis penjualan harian, mingguan, dan bulanan.</p>
+            </div>
+        </div>
+
+        {{-- FILTER + TOMBOL PDF --}}
         <div class="flex justify-between items-center mb-4">
             <div>
                 <form method="get" class="inline-flex flex-wrap gap-2 items-center" id="laporan-penjualan-form">
@@ -12,14 +19,12 @@
                         <option value="weekly"  {{ $periodeType === 'weekly'  ? 'selected' : '' }}>Mingguan</option>
                         <option value="monthly" {{ $periodeType === 'monthly' ? 'selected' : '' }}>Bulanan</option>
                     </select>
-
                     <input type="date"  name="periode_daily" id="periode_daily" value="{{ $periodeDaily }}"
                            class="border rounded px-2 py-1 text-sm {{ $periodeType !== 'daily'   ? 'hidden' : '' }}" />
                     <input type="week"  name="periode_week"  id="periode_week"  value="{{ $periodeWeek }}"
                            class="border rounded px-2 py-1 text-sm {{ $periodeType !== 'weekly'  ? 'hidden' : '' }}" />
                     <input type="month" name="periode_month" id="periode_month" value="{{ $periodeMonth }}"
                            class="border rounded px-2 py-1 text-sm {{ $periodeType !== 'monthly' ? 'hidden' : '' }}" />
-
                     <button type="submit"
                             style="background:#16a34a;color:#fff;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;border:none;cursor:pointer;">
                         Filter
@@ -28,12 +33,7 @@
             </div>
             <div>
                 <a id="btn-unduh-pdf"
-                   href="{{ route('laporan.penjualan.pdf', [
-                       'periode_type'  => $periodeType,
-                       'periode_daily' => $periodeDaily,
-                       'periode_week'  => $periodeWeek,
-                       'periode_month' => $periodeMonth,
-                   ]) }}"
+                   href="{{ route('laporan.penjualan.pdf', ['periode_type'=>$periodeType,'periode_daily'=>$periodeDaily,'periode_week'=>$periodeWeek,'periode_month'=>$periodeMonth]) }}"
                    target="_blank"
                    style="background:#16a34a;color:#fff;padding:8px 14px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(0,0,0,0.08);text-decoration:none;font-weight:600;font-size:13px;">
                     <svg xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="#fff" stroke-width="2">
@@ -46,8 +46,93 @@
 
         <p class="text-sm text-gray-500 mb-4">{{ $rangeLabel }}</p>
 
+        {{-- RINGKASAN 3 KOLOM --}}
+        <div class="grid gap-4 lg:grid-cols-3 mb-4">
+            <div class="bg-slate-50 p-4 rounded border">
+                <p class="text-sm text-slate-500 font-semibold uppercase tracking-wide mb-2">Ringkasan</p>
+                <p class="text-sm text-slate-800 leading-relaxed">{{ $analysisSummary }}</p>
+            </div>
+            <div class="bg-white p-4 rounded shadow border">
+                <h2 class="text-base font-semibold mb-3">Menu Terlaris</h2>
+                @forelse($topMenus as $menu)
+                    <div class="flex justify-between text-sm py-1 border-b last:border-0">
+                        <span class="font-medium">{{ $menu['nama'] }}</span>
+                        <span class="text-slate-500">{{ $menu['jumlah'] }} item</span>
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-400">Tidak ada data menu.</p>
+                @endforelse
+            </div>
+            <div class="bg-white p-4 rounded shadow border">
+                <h2 class="text-base font-semibold mb-3">Topping Favorit</h2>
+                @forelse($topToppings as $topping)
+                    <div class="flex justify-between text-sm py-1 border-b last:border-0">
+                        <span class="font-medium">{{ $topping['nama'] }}</span>
+                        <span class="text-slate-500">{{ $topping['jumlah'] }} item</span>
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-400">Tidak ada data topping.</p>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- HASIL AI TERAKHIR (jika ada, sesuai periode) --}}
+        @php
+            $aiResult = \App\Models\LaporanPenjualanAi::where('periode', $periode)
+                ->where('tipe_periode', $periodeType)
+                ->latest()
+                ->first();
+        @endphp
+
+        @if($aiResult)
+            <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-amber-600 text-lg">✨</span>
+                    <h2 class="font-bold text-amber-800">Analisa AI — {{ $aiResult->periode }}</h2>
+                    @if($aiResult->status_penjualan)
+                        <span style="font-size:11px;padding:2px 10px;border-radius:20px;font-weight:600;
+                            background:{{ match($aiResult->status_penjualan) {'Tinggi'=>'#dcfce7','Sedang'=>'#fef3c7',default=>'#fee2e2'} }};
+                            color:{{ match($aiResult->status_penjualan) {'Tinggi'=>'#166534','Sedang'=>'#92400e',default=>'#991b1b'} }}">
+                            {{ $aiResult->status_penjualan }}
+                        </span>
+                    @endif
+                </div>
+
+                @if($aiResult->ringkasan)
+                    <p class="text-sm text-amber-900 mb-3">{{ $aiResult->ringkasan }}</p>
+                @endif
+
+                @if($aiResult->rekomendasi && count($aiResult->rekomendasi))
+                    <div class="mb-3">
+                        <p class="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Rekomendasi</p>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-amber-900">
+                            @foreach($aiResult->rekomendasi as $rek)
+                                <li>{{ $rek }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if($aiResult->proyeksi)
+                    <div>
+                        <p class="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">Proyeksi</p>
+                        <p class="text-sm text-amber-900">{{ $aiResult->proyeksi }}</p>
+                    </div>
+                @endif
+
+                <p class="text-xs text-amber-500 mt-3">Dibuat: {{ $aiResult->created_at->format('d M Y H:i') }}</p>
+            </div>
+        @else
+            <div class="mb-4 rounded-xl border border-dashed border-amber-300 bg-amber-50 p-5 text-center">
+                <p class="text-amber-700 text-sm font-medium">
+                    ✨ Belum ada analisa AI untuk periode ini.
+                    Klik tombol <strong>"Generate laporan &amp; analisa dengan AI"</strong> di atas untuk membuat analisis.
+                </p>
+            </div>
+        @endif
+
         {{-- TABEL DETAIL PENJUALAN --}}
-        <div class="bg-white p-4 rounded shadow border overflow-x-auto mb-4">
+        <div class="bg-white p-4 rounded shadow border overflow-x-auto">
             <h2 class="text-lg font-semibold mb-3">Detail Penjualan</h2>
             <table class="min-w-full text-left text-sm border-collapse border">
                 <thead class="bg-gray-100 text-xs uppercase">
@@ -96,9 +181,6 @@
                 @endif
             </table>
         </div>
-
-
-
 
     </x-filament::card>
 

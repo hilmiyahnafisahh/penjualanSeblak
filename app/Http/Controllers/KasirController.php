@@ -126,7 +126,7 @@ class KasirController extends Controller
         $todayRevenue = Pembayaran::whereDate('tanggal_pembayaran', now())->sum('total_pembayaran');
 
         $recentOrders = Pemesanan::with('Pelanggan')
-            ->orderBy('tanggal_pemesanan', 'desc')
+            ->orderBy('id', 'desc')
             ->take(5)
             ->get();
 
