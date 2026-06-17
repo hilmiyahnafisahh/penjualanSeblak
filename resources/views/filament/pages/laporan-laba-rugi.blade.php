@@ -45,6 +45,20 @@
             'periode' => $periode,
         ])
 
+        {{-- ── EMPTY STATE ── --}}
+        @if(!$hasData)
+        <div style="text-align:center; padding:48px 20px; margin-top:16px; background:#fafafa; border-radius:12px; border:1.5px dashed #e5e7eb;">
+            <div style="font-size:3rem; margin-bottom:12px;">📊</div>
+            <div style="font-size:1rem; font-weight:700; color:#374151; margin-bottom:6px;">
+                Tidak ada data di periode ini
+            </div>
+            <div style="font-size:.85rem; color:#6b7280;">
+                Belum ada jurnal yang dicatat untuk periode
+                <strong>{{ \Carbon\Carbon::createFromFormat('Y-m', $periode)->translatedFormat('F Y') }}</strong>.
+            </div>
+        </div>
+        @else
+
         {{-- ── PENDAPATAN ── --}}
         <div style="margin-top:20px;">
             <div style="font-weight:700; font-size:14px; color:#111827; border-left:4px solid #16a34a; padding-left:10px; margin-bottom:10px;">
@@ -121,6 +135,8 @@
                 @endif
             </div>
         </div>
+
+        @endif {{-- end hasData --}}
 
     </x-filament::card>
 </x-filament::page>

@@ -11,53 +11,8 @@ class LaporanController extends Controller
 {
     public function labaRugi()
     {
-        // Periode dari query string (format YYYY-MM) atau bulan berjalan
-        $periode = request('periode');
-        $start = $periode ? Carbon::createFromFormat('Y-m', $periode)->startOfMonth() : Carbon::now()->startOfMonth();
-        $end = $periode ? Carbon::createFromFormat('Y-m', $periode)->endOfMonth() : Carbon::now()->endOfMonth();
-
-        $details = JurnalDetail::with(['akun', 'jurnal'])
-            ->whereHas('jurnal', function ($q) use ($start, $end) {
-                $q->whereBetween('tgl', [$start->toDateString(), $end->toDateString()]);
-            })->get();
-
-        // Kelompokkan per akun pendapatan (jenis_akun = 'Pendapatan') dan jumlahkan credit
-        $pendapatanGroups = $details->filter(fn($d) => $d->akun && $d->akun->jenis_akun === 'Pendapatan')
-            ->groupBy(fn($d) => $d->akun->id)
-            ->map(function ($items) {
-                $akun = $items->first()->akun;
-                return [
-                    'kode' => $akun->kode_akun ?? '-',
-                    'nama' => $akun->nama_akun ?? '-',
-                    'jumlah' => $items->sum('credit'),
-                ];
-            })->values();
-
-        // Kelompokkan per akun beban (jenis_akun = 'Beban') dan jumlahkan debit
-        $bebanGroups = $details->filter(fn($d) => $d->akun && $d->akun->jenis_akun === 'Beban')
-            ->groupBy(fn($d) => $d->akun->id)
-            ->map(function ($items) {
-                $akun = $items->first()->akun;
-                return [
-                    'kode' => $akun->kode_akun ?? '-',
-                    'nama' => $akun->nama_akun ?? '-',
-                    'jumlah' => $items->sum('debit'),
-                ];
-            })->values();
-
-        $totalPendapatan = $pendapatanGroups->sum('jumlah');
-        $totalBeban = $bebanGroups->sum('jumlah');
-        $labaBersih = $totalPendapatan - $totalBeban;
-
-        return view('laporan.laba-rugi', [
-            'periode' => $periode,
-            'periodeLabel' => $periode ? Carbon::createFromFormat('Y-m', $periode)->translatedFormat('F Y') : Carbon::now()->translatedFormat('F Y'),
-            'pendapatanGroups' => $pendapatanGroups,
-            'bebanGroups' => $bebanGroups,
-            'totalPendapatan' => $totalPendapatan,
-            'totalBeban' => $totalBeban,
-            'labaBersih' => $labaBersih,
-        ]);
+        // Redirect ke halaman Filament admin — filter ditangani di sana via Livewire
+        return redirect('/admin/laporan-laba-rugi');
     }
 
     public function pdf()
