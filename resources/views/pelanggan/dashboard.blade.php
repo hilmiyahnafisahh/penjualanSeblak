@@ -6,6 +6,13 @@
     <title>Menu — Seblak Sangkuriang</title>
     <link rel="stylesheet" href="{{ asset('css/seblak-pelanggan.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/pelanggan.css') }}">
+    <style>
+        /* page-specific overrides only */
+        .level-pedas-wrap { display: flex; gap: .4rem; flex-wrap: wrap; }
+        .level-btn { border: 1.5px solid #ddd; border-radius: .5rem; padding: .3rem .75rem; font-size: .78rem; cursor: pointer; transition: all .15s; background: white; }
+        .level-btn.active { background: var(--merah); color: white; border-color: var(--merah); }
+    </style>
 </head>
 <body>
 
@@ -137,42 +144,102 @@
 <!-- ============ PRODUCT GRID ============ -->
 <div class="p-grid">
   @if(isset($produk) && $produk->isNotEmpty())
-    @foreach($produk as $item)
-      <div class="p-card">
-        <div class="p-card-media">
-          @if($item->gambar_menu)
-            <img src="{{ asset('storage/'.$item->gambar_menu) }}" alt="{{ $item->nama_menu }}" loading="lazy">
-          @else
-            <div class="emoji">🍲</div>
-          @endif
+    <div class="row g-3">
+      @foreach($produk as $item)
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="product-card">
+            <div class="product-img-wrap">
+              @if($item->gambar_menu)
+                <img src="{{ asset('storage/'.$item->gambar_menu) }}" alt="{{ $item->nama_menu }}" loading="lazy">
+              @else
+                <div class="product-img-emoji">🍲</div>
+              @endif
+            </div>
+            <div class="product-body">
+              <div class="product-kategori">{{ $item->kategori_menu }}</div>
+              <div class="product-name">{{ $item->nama_menu }}</div>
+              <div class="product-price">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
+              @if(strtolower($item->kategori_menu) === 'makanan')
+                <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none">
+                  Pilih & Pesan
+                </a>
+              @else
+                <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST" class="form-addcart">
+                  @csrf
+                  <input type="hidden" name="id_produk" value="{{ $item->id_menu }}">
+                  <input type="hidden" name="qty" value="1">
+                  <button type="submit" class="btn-order w-100">+ Keranjang</button>
+                </form>
+              @endif
+            </div>
+          </div>
         </div>
-        <div class="p-card-body">
-          <div class="p-card-kategori">{{ $item->kategori_menu }}</div>
-          <div class="p-card-name">{{ $item->nama_menu }}</div>
-          <div class="p-card-price"><span class="currency">Rp</span> {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
-          @if(strtolower($item->kategori_menu) === 'makanan')
-            <a href="{{ route('pelanggan.pilihTopping', $item->id_menu) }}" class="btn-add is-pilih" style="text-decoration:none; text-align:center; display:block;">Pilih &amp; Pesan</a>
-          @else
-            <form action="{{ route('pelanggan.tambahKeranjang') }}" method="POST" class="form-addcart">
-              @csrf
-              <input type="hidden" name="id_produk" value="{{ $item->id_menu }}">
-              <input type="hidden" name="qty" value="1">
-              <button type="submit" class="btn-add">+ Tambah ke Keranjang</button>
-            </form>
-          @endif
-        </div>
-      </div>
-    @endforeach
+      @endforeach
+    </div>
   @else
-    <div class="p-empty">
-      <div class="emoji">🔍</div>
-      <p>Belum ada menu yang cocok dengan pencarian Anda.</p>
+    <div class="text-center py-5">
+      <div style="font-size:3rem;">🔍</div>
+      <p class="text-muted mt-2">Tidak ada menu ditemukan.</p>
       @if(!empty(request('q')))
-        <a href="{{ route('pelanggan.dashboard') }}" class="btn-pop-primary" style="text-decoration:none; display:inline-block; padding:0.6rem 1.5rem;">Lihat Semua Menu</a>
+        <a href="{{ route('pelanggan.dashboard') }}" class="btn btn-merah btn-sm">Lihat Semua Menu</a>
       @endif
     </div>
   @endif
 </div>
+
+{{-- ── REKOMENDASI UNTUK ANDA ── --}}
+@if(isset($rekomendasiMenu) && $rekomendasiMenu->isNotEmpty())
+<div class="px-3 pb-2">
+  <hr style="border-color:#f0d0d0; margin:0 0 1.5rem;">
+  <div class="section-header mb-3">
+    <div style="display:flex; align-items:center; gap:.5rem;">
+      <span style="font-size:1.3rem;">✨</span>
+      <div>
+        <div class="section-title">Rekomendasi Untuk Anda</div>
+        <div class="section-sub">Menu yang sering dipesan pelanggan dengan selera mirip Anda</div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-3">
+    @foreach($rekomendasiMenu as $item)
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="product-card" style="border:2px solid #f9d4d4; position:relative;">
+          {{-- Badge rekomendasi --}}
+          <div style="position:absolute; top:.5rem; left:.5rem; z-index:1; background:var(--merah); color:white; font-size:.62rem; font-weight:700; padding:2px 8px; border-radius:2rem;">
+            ⭐ Rekomendasi
+          </div>
+          <div class="product-img-wrap">
+            @if($item->gambar_menu)
+              <img src="{{ asset('storage/'.$item->gambar_menu) }}" alt="{{ $item->nama_menu }}" loading="lazy">
+            @else
+              <div class="product-img-emoji">🍲</div>
+            @endif
+          </div>
+          <div class="product-body">
+            <div class="product-kategori">{{ $item->kategori_menu }}</div>
+            <div class="product-name">{{ $item->nama_menu }}</div>
+            <div class="product-price">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
+            @if(strtolower($item->kategori_menu) === 'makanan')
+              <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none">
+                Pilih & Pesan
+              </a>
+            @else
+              <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST" class="form-addcart">
+                @csrf
+                <input type="hidden" name="id_produk" value="{{ $item->id_menu }}">
+                <input type="hidden" name="qty" value="1">
+                <button type="submit" class="btn-order w-100">+ Keranjang</button>
+              </form>
+            @endif
+          </div>
+        </div>
+      </div>
+    @endforeach
+  </div>
+</div>
+@endif
+
+{{-- ── END REKOMENDASI ── --}}
 
 <script>
 function tutupPopup() { document.getElementById('popupSukses').classList.remove('show'); }

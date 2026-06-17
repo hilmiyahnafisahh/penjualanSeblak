@@ -238,4 +238,18 @@ class LaporanController extends Controller
 
         return $pdf->download('jurnal-umum-' . ($periode ?? now()->format('Y-m')) . '.pdf');
     }
+
+    public function bukuBesarPdf(Request $request)
+    {
+        $details = JurnalDetail::with(['akun', 'jurnal'])
+            ->get()
+            ->sortBy(fn ($d) => [$d->akun->kode_akun ?? '', $d->jurnal->tgl ?? '']);
+
+        $groupedDetails = $details->groupBy(fn ($d) => $d->akun_id);
+
+        $pdf = Pdf::loadView('pdf.buku-besar-pdf', compact('groupedDetails'))
+            ->setPaper('A4', 'portrait');
+
+        return $pdf->download('buku-besar-' . now()->format('Y-m') . '.pdf');
+    }
 }

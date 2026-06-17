@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\KaryawanResource\Pages;
 use App\Filament\Resources\KaryawanResource\RelationManagers;
 use App\Models\Karyawan;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,11 +13,13 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 
 // tambahan
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
 
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;//untuk tipe file
@@ -37,43 +40,70 @@ class KaryawanResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('id_karyawan')
-                    ->default(fn () => Karyawan::getIDKaryawan()) // SESUAI MODEL KAMU
-                    ->label('ID Karyawan')
-                    ->required()
-                    ->readonly(),
+                Section::make('Data Karyawan')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('id_karyawan')
+                            ->default(fn () => Karyawan::getIDKaryawan())
+                            ->label('ID Karyawan')
+                            ->required()
+                            ->readonly(),
 
-                TextInput::make('nama')
-                    ->label('Nama')
-                    ->required(),
+                        TextInput::make('nama')
+                            ->label('Nama')
+                            ->required(),
 
-                TextInput::make('alamat')
-                    ->label('Alamat')
-                    ->required(),
+                        TextInput::make('alamat')
+                            ->label('Alamat')
+                            ->required(),
 
-                TextInput::make('no_telepon')
-                    ->label('No Telepon')
-                    ->required(),
+                        TextInput::make('no_telepon')
+                            ->label('No Telepon')
+                            ->required(),
 
-                Select::make('status_karyawan')
-                    ->label('Status Karyawan')
-                    ->options([
-                        'aktif' => 'Aktif',
-                        'tidak_aktif' => 'Tidak Aktif',
-                        'cuti' => 'Cuti',
-                        'resign' => 'Resign',
-                    ])
-                    ->required(),
+                        Select::make('status_karyawan')
+                            ->label('Status Karyawan')
+                            ->options([
+                                'aktif'       => 'Aktif',
+                                'tidak_aktif' => 'Tidak Aktif',
+                                'cuti'        => 'Cuti',
+                                'resign'      => 'Resign',
+                            ])
+                            ->required(),
 
-                Select::make('jabatan')
-                    ->label('Jabatan')
-                    ->options([
-                        'kasir' => 'Kasir',
-                        'koki' => 'Koki',
-                        'admin' => 'Admin',
-                        'owner' => 'Owner',
-                    ])
-                    ->required(),
+                        Select::make('jabatan')
+                            ->label('Jabatan')
+                            ->options([
+                                'kasir' => 'Kasir',
+                                'koki'  => 'Koki',
+                                'admin' => 'Admin',
+                                'owner' => 'Owner',
+                            ])
+                            ->required()
+                            ->reactive(),
+                    ]),
+
+                Section::make('Akun Login')
+                    ->description('Isi email & password agar karyawan bisa login ke sistem kasir.')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('email')
+                            ->label('Email Login')
+                            ->email()
+                            ->required()
+                            ->dehydrated(false) // tidak disimpan ke tabel karyawan
+                            ->default(fn ($record) => $record
+                                ? optional(User::where('name', $record->nama)->where('user_group', $record->jabatan)->first())->email
+                                : null
+                            ),
+
+                        TextInput::make('password')
+                            ->label('Password')
+                            ->password()
+                            ->revealable()
+                            ->dehydrated(false) // tidak disimpan ke tabel karyawan
+                            ->helperText('Kosongkan jika tidak ingin mengubah password.'),
+                    ]),
             ]);
     }
 

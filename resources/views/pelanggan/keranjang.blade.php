@@ -5,26 +5,7 @@
     <title>Keranjang | Seblak Sangkuriang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        :root{--merah:#8b1a1a;--merah-gelap:#600e0e;--bg:#fdf0f0;}
-        body{background:var(--bg);font-family:'Segoe UI',sans-serif;}
-        .navbar-custom{background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:200;}
-        .btn-merah{background:var(--merah);color:white;border:none;}
-        .btn-merah:hover{background:var(--merah-gelap);color:white;}
-        .nav-tabs-custom{border-bottom:2px solid #f0d0d0;}
-        .nav-tabs-custom .nav-link{color:#555;border:none;padding:.6rem 1.2rem;font-size:.875rem;border-radius:0;}
-        .nav-tabs-custom .nav-link.active{color:var(--merah);font-weight:700;border-bottom:2px solid var(--merah);margin-bottom:-2px;}
-        .cart-item-card{background:white;border-radius:1rem;border:1px solid #f0d0d0;margin-bottom:.85rem;overflow:hidden;}
-        .cart-item-header{padding:.85rem 1rem;border-bottom:1px solid #fdf0f0;}
-        .cart-item-body{padding:.75rem 1rem;}
-        .qty-wrap{display:flex;align-items:center;gap:.5rem;}
-        .qty-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid #ddd;background:white;font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-        .qty-btn:hover{border-color:var(--merah);color:var(--merah);}
-        .summary-card{background:white;border-radius:1rem;border:1px solid #f0d0d0;padding:1.25rem;position:sticky;top:80px;}
-        .metode-btn{border:2px solid #ddd;border-radius:.85rem;padding:.75rem;cursor:pointer;transition:all .15s;background:white;width:100%;text-align:center;}
-        .metode-btn.selected{border-color:var(--merah);background:#fff8f8;}
-        .badge-rincian{background:#f5f5f5;border-radius:.5rem;padding:.3rem .6rem;font-size:.75rem;color:#555;display:inline-block;margin:.15rem .15rem 0 0;}
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/pelanggan.css') }}">
 </head>
 <body>
 <svg style="display:none;">

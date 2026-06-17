@@ -12,6 +12,7 @@ use App\Http\Controllers\KasirController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\KeranjangController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PembayaranEmailController;
@@ -67,6 +68,11 @@ Route::get('/pelanggan/keranjang', [PelangganController::class, 'cart'])->name('
 Route::post('/pelanggan/keranjang/update', [PelangganController::class, 'updateCart'])->name('pelanggan.keranjang.update');
 Route::post('/pelanggan/keranjang/remove', [PelangganController::class, 'removeCartItem'])->name('pelanggan.keranjang.remove');
 Route::get('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout');
+
+// Routes for the new KeranjangController feature
+Route::post('/tambah', [KeranjangController::class, 'tambahKeranjang'])->name('keranjang.tambah');
+Route::delete('/hapus/{barang_id}', [KeranjangController::class, 'hapus'])->name('keranjang.hapus');
+Route::get('/lihatkeranjang', [KeranjangController::class, 'lihatkeranjang'])->name('keranjang.lihat');
 Route::post('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout.post');
 Route::get('/pelanggan/checkout/qris/success', [PelangganController::class, 'checkoutQrisSuccess'])->name('pelanggan.checkout.qris.success');
 Route::get('/pelanggan/bayar-qris/{id}', [PelangganController::class, 'bayarQris'])->name('pelanggan.bayar.qris');
@@ -186,4 +192,5 @@ Route::match(['get','post'], '/admin/seblak-logout', [AdminAuthController::class
 Route::get('/laporan/laba-rugi', [LaporanController::class, 'labaRugi'])->name('laporan.laba-rugi');
 Route::get('/laporan/laba-rugi/pdf', [LaporanController::class, 'pdf'])->name('laporan.laba-rugi.pdf');
 Route::get('/laporan/jurnal-umum/pdf', [LaporanController::class, 'jurnalPdf'])->name('laporan.jurnal-umum.pdf');
+Route::get('/laporan/buku-besar/pdf', [LaporanController::class, 'bukuBesarPdf'])->name('laporan.buku-besar.pdf');
 Route::get('/laporan/penjualan/pdf', [LaporanController::class, 'penjualanPdf'])->name('laporan.penjualan.pdf');

@@ -22,9 +22,17 @@ class KasirController extends Controller
     {
         $user = $this->kasirUser($request);
 
-        return $user && $user->user_group === 'kasir'
-            ? $user
-            : null;
+        if (!$user) return null;
+
+        // case-insensitive check untuk user_group
+        if (strtolower($user->user_group) === 'kasir') return $user;
+
+        // fallback: cek nama cocok dengan karyawan jabatan kasir
+        $isKasir = \App\Models\Karyawan::whereRaw('LOWER(nama) = ?', [strtolower($user->name)])
+            ->whereRaw('LOWER(jabatan) = ?', ['kasir'])
+            ->exists();
+
+        return $isKasir ? $user : null;
     }
 
     public function index(Request $request)
@@ -45,21 +53,43 @@ class KasirController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $request->validate([
+            'email'    => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        $user = User::where('email', $credentials['email'])
-            ->where('user_group', 'kasir')
+        $input = trim($request->input('email'));
+
+        // Cari user berdasarkan email atau nama, tanpa filter user_group dulu
+        $user = User::where(function ($q) use ($input) {
+                $q->where('email', $input)
+                  ->orWhereRaw('LOWER(name) = ?', [strtolower($input)]);
+            })
             ->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        // Verifikasi password
+        if (!$user || !Hash::check($request->input('password'), $user->password)) {
             return back()
-                ->withErrors([
-                    'email' => 'Email atau password salah'
-                ])
+                ->withErrors(['email' => 'Email/nama atau password salah'])
                 ->withInput();
+        }
+
+        // Cek apakah user ini adalah karyawan dengan jabatan kasir
+        // Cek di tabel karyawan berdasarkan nama (case-insensitive)
+        $isKasir = strtolower($user->user_group) === 'kasir'
+            || \App\Models\Karyawan::whereRaw('LOWER(nama) = ?', [strtolower($user->name)])
+                ->whereRaw('LOWER(jabatan) = ?', ['kasir'])
+                ->exists();
+
+        if (!$isKasir) {
+            return back()
+                ->withErrors(['email' => 'Akun ini tidak memiliki akses kasir'])
+                ->withInput();
+        }
+
+        // Update user_group jadi kasir kalau belum
+        if ($user->user_group !== 'kasir') {
+            $user->update(['user_group' => 'kasir']);
         }
 
         $request->session()->put('kasir_user_id', $user->id);

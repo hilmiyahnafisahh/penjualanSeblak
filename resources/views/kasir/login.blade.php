@@ -29,9 +29,9 @@
 
         <form method="POST" action="{{ route('kasir.login') }}">
             @csrf
-            <div class="form-field">
-                <label for="k-email">Email</label>
-                <input id="k-email" type="email" name="email" value="{{ old('email') }}" class="form-control" placeholder="kasir@seblak.id" required autofocus>
+            <div class="mb-3">
+                <label class="form-label">Nama / Email</label>
+                <input type="text" name="email" value="{{ old('email') }}" class="form-control" required autofocus placeholder="Contoh: Galang atau galang@seblak.com">
             </div>
             <div class="form-field">
                 <label for="k-pass">Password</label>

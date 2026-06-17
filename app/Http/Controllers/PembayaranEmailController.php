@@ -15,7 +15,7 @@ class PembayaranEmailController extends Controller
             ->findOrFail($id);
 
         return view('pembayaran.send_invoice', [
-            'pembayaran' => $pembayaran,
+            'pembayaran'     => $pembayaran,
             'pelangganEmail' => $pembayaran->pemesanan?->Pelanggan?->email,
         ]);
     }
