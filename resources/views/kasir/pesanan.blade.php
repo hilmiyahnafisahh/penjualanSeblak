@@ -72,6 +72,13 @@
                 <span class="badge bg-secondary">{{ $pesanan->count() }} pesanan</span>
             </div>
 
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show py-2">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show py-2">{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            @endif
+
             @if($pesanan->isEmpty())
                 <div class="text-center py-5 text-muted">
                     Tidak ada pesanan dengan status ini
@@ -87,6 +94,7 @@
                                 <th>Status</th>
                                 <th>Tanggal</th>
                                 <th>Subtotal</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,6 +110,18 @@
                                     </td>
                                     <td>{{ optional($order->tanggal_pemesanan)->format('d M Y H:i') }}</td>
                                     <td>Rp {{ number_format($order->subtotal, 0, ',', '.') }}</td>
+                                    <td>
+                                        @if($order->status_pemesanan === 'diproses' && $order->pembayaran && strtolower($order->pembayaran->metode_pembayaran) === 'qris' && in_array(strtolower($order->pembayaran->status_pembayaran), ['lunas','settlement','capture']))
+                                            <form action="{{ route('kasir.pesanan.selesaikan', $order->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    ✓ Selesaikan
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="text-muted small">—</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
