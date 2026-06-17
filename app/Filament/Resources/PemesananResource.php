@@ -29,17 +29,17 @@ use Illuminate\Support\HtmlString;
 
 class PemesananResource extends Resource
 {
-    protected static ?string $model            = Pemesanan::class;
-    protected static ?string $navigationIcon   = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationGroup  = 'Transaksi';
-    protected static ?string $modelLabel       = 'Pemesanan';
-    protected static ?string $pluralModelLabel = 'Pemesanan';
-    protected static ?string $navigationLabel  = 'Pemesanan';
-    protected static ?string $slug             = 'pemesanan';
+    protected static ?string $model = Pemesanan::class;
 
-    // =========================================================
-    // FORM
-    // =========================================================
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+
+    protected static ?string $navigationGroup = '💵 Transaksi';
+
+
+    protected static ?string $modelLabel        = 'Pemesanan';
+    protected static ?string $pluralModelLabel  = 'Pemesanan';
+    protected static ?string $navigationLabel   = 'Pemesanan';
+    protected static ?string $slug              = 'pemesanan';
 
     public static function form(Form $form): Form
     {

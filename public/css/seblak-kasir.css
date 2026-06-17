@@ -1,0 +1,795 @@
+/* ============================================================
+   SEBLAK SANGKURIANG — KASIR THEME
+   Personality: Operator / POS Terminal — focused, fast, precise.
+   Anchor: Orange-forward on warm cream, no serif. Flat sidebar.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+
+:root {
+    /* Brand palette (shared with admin & pelanggan) */
+    --brand-maroon-900: #5C1010;
+    --brand-maroon-800: #7F1D1D;
+    --brand-red-700:    #B91C1C;
+    --brand-red-600:    #DC2626;
+    --brand-orange-600: #EA580C;
+    --brand-orange-500: #F97316;
+    --brand-amber-400:  #FBBF24;
+
+    /* Surfaces */
+    --cream-50:   #FDFAF7;
+    --cream-100:  #FAF4EE;
+    --cream-200:  #F4E9DC;
+    --line-warm:  #EFE3D2;
+
+    /* Text */
+    --ink-900: #1C1917;
+    --ink-700: #44403C;
+    --ink-500: #78716C;
+    --ink-400: #A8A29E;
+
+    /* Status accents */
+    --st-warn:   #F59E0B;
+    --st-info:   #0EA5E9;
+    --st-danger: #DC2626;
+    --st-success:#16A34A;
+
+    /* Effects */
+    --shadow-sm: 0 1px 2px rgba(60, 20, 10, 0.04), 0 1px 3px rgba(60, 20, 10, 0.06);
+    --shadow-md: 0 4px 12px rgba(60, 20, 10, 0.06), 0 2px 4px rgba(60, 20, 10, 0.04);
+    --shadow-lg: 0 20px 40px rgba(60, 20, 10, 0.08), 0 8px 16px rgba(60, 20, 10, 0.04);
+
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, var(--cream-100) 0%, var(--cream-50) 100%);
+    color: var(--ink-900);
+    min-height: 100vh;
+    margin: 0;
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ─────────────────────────── LOGIN PAGE ─────────────────────────── */
+
+.auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(234, 88, 12, 0.08), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(127, 29, 29, 0.06), transparent 45%),
+        linear-gradient(135deg, var(--cream-100) 0%, var(--cream-50) 100%);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: #fff;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line-warm);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem 2.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Orange accent stripe at the top of the auth card */
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--brand-orange-600) 0%, var(--brand-red-600) 50%, var(--brand-maroon-800) 100%);
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--line-warm);
+}
+.auth-brand img {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    object-fit: contain;
+    background: var(--cream-100);
+    padding: 4px;
+    border: 1px solid var(--line-warm);
+}
+.auth-brand-text .b-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--ink-900);
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+}
+.auth-brand-text .b-sub {
+    font-size: 0.78rem;
+    color: var(--brand-orange-600);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.auth-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink-900);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+}
+.auth-subtitle {
+    font-size: 0.875rem;
+    color: var(--ink-500);
+    margin-bottom: 1.75rem;
+}
+
+.form-field { margin-bottom: 1rem; }
+.form-field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-700);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.01em;
+}
+.form-control {
+    width: 100%;
+    padding: 0.7rem 0.875rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: var(--cream-50);
+    border: 1.5px solid var(--line-warm);
+    border-radius: var(--radius-sm);
+    color: var(--ink-900);
+    transition: all 0.15s ease;
+}
+.form-control:focus {
+    outline: none;
+    background: #fff;
+    border-color: var(--brand-orange-600);
+    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.12);
+}
+
+.btn-kasir-primary {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: linear-gradient(135deg, var(--brand-orange-600) 0%, var(--brand-red-700) 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.25);
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+.btn-kasir-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(234, 88, 12, 0.35);
+}
+.btn-kasir-primary:active { transform: translateY(0); }
+
+.auth-footer {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px dashed var(--line-warm);
+    font-size: 0.78rem;
+    color: var(--ink-400);
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+.auth-footer .kbd {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--cream-100);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    color: var(--brand-orange-600);
+    font-size: 0.72rem;
+    border: 1px solid var(--line-warm);
+}
+
+.alert-error {
+    background: #FEF2F2;
+    border-left: 3px solid var(--brand-red-600);
+    color: #991B1B;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+/* ─────────────────────────── DASHBOARD LAYOUT ─────────────────────────── */
+
+.kasir-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* SIDEBAR — flat deep maroon, orange accent on active item */
+.kasir-sidebar {
+    width: 264px;
+    flex-shrink: 0;
+    background: var(--brand-maroon-800);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 1.75rem 1rem 1.25rem;
+    position: relative;
+}
+.kasir-sidebar::after {
+    /* subtle vertical orange-to-transparent line on right edge */
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--brand-orange-500) 0%, transparent 100%);
+    opacity: 0.6;
+}
+
+.k-brand {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0 0.5rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 1.25rem;
+}
+.k-brand img {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    object-fit: contain;
+    background: rgba(255,255,255,0.08);
+    padding: 3px;
+}
+.k-brand .k-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+}
+.k-brand .k-sub {
+    font-size: 0.7rem;
+    color: var(--brand-amber-400);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.k-nav-label {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    padding: 0 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.k-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.78);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 2px;
+    position: relative;
+    transition: all 0.12s ease;
+}
+.k-nav-link svg, .k-nav-link i { width: 18px; font-size: 1rem; opacity: 0.85; }
+.k-nav-link:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+}
+.k-nav-link.active {
+    background: rgba(234, 88, 12, 0.18);
+    color: #fff;
+    font-weight: 600;
+}
+.k-nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: -1rem; top: 50%;
+    width: 3px; height: 60%;
+    transform: translateY(-50%);
+    background: var(--brand-orange-500);
+    border-radius: 0 3px 3px 0;
+}
+
+.k-sidebar-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.k-user-card {
+    display: flex; gap: 0.625rem; align-items: center;
+    padding: 0.625rem 0.75rem;
+    background: rgba(0,0,0,0.18);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+.k-user-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-orange-600), var(--brand-red-700));
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem;
+    flex-shrink: 0;
+}
+.k-user-meta .role {
+    font-size: 0.65rem; color: var(--brand-amber-400);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600;
+}
+.k-user-meta .name {
+    font-size: 0.82rem; color: #fff; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 140px;
+}
+.k-logout-btn {
+    width: 100%;
+    padding: 0.55rem 1rem;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.85);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.k-logout-btn:hover {
+    border-color: var(--brand-orange-500);
+    color: var(--brand-orange-500);
+    background: rgba(234, 88, 12, 0.1);
+}
+
+/* MAIN CONTENT */
+.kasir-main {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    overflow-x: auto;
+}
+
+.k-pageheader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.75rem;
+}
+.k-pageheader h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--ink-900);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.25rem;
+}
+.k-pageheader .subtitle {
+    font-size: 0.875rem;
+    color: var(--ink-500);
+    margin: 0;
+}
+.k-timestamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.875rem;
+    background: #fff;
+    border: 1px solid var(--line-warm);
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--ink-700);
+}
+.k-status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #16A34A;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+    animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15); }
+    50% { box-shadow: 0 0 0 7px rgba(22, 163, 74, 0); }
+}
+
+/* STAT CARDS — left border accent indicates status family */
+.k-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+.k-stat {
+    background: #fff;
+    border: 1px solid var(--line-warm);
+    border-left: 3px solid var(--ink-400);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.k-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.k-stat.is-warn    { border-left-color: var(--st-warn); }
+.k-stat.is-info    { border-left-color: var(--st-info); }
+.k-stat.is-danger  { border-left-color: var(--st-danger); }
+.k-stat.is-success { border-left-color: var(--st-success); }
+
+.k-stat-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.75rem;
+}
+.k-stat-label {
+    font-size: 0.72rem;
+    color: var(--ink-500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+.k-stat-icon {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+.k-stat.is-warn    .k-stat-icon { background: rgba(245, 158, 11, 0.12); color: var(--st-warn); }
+.k-stat.is-info    .k-stat-icon { background: rgba(14, 165, 233, 0.12); color: var(--st-info); }
+.k-stat.is-danger  .k-stat-icon { background: rgba(220, 38, 38, 0.12); color: var(--st-danger); }
+.k-stat.is-success .k-stat-icon { background: rgba(22, 163, 74, 0.12); color: var(--st-success); }
+.k-stat-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--ink-900);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+}
+.k-stat-foot {
+    font-size: 0.78rem;
+    color: var(--ink-500);
+}
+
+/* PANEL (data table card) */
+.k-panel {
+    background: #fff;
+    border: 1px solid var(--line-warm);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+.k-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--line-warm);
+    background: linear-gradient(180deg, var(--cream-50) 0%, #fff 100%);
+}
+.k-panel-head h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink-900);
+    margin: 0 0 2px;
+    letter-spacing: -0.01em;
+}
+.k-panel-head .panel-sub {
+    font-size: 0.78rem;
+    color: var(--ink-500);
+    margin: 0;
+}
+
+.btn-link-orange {
+    padding: 0.45rem 0.875rem;
+    background: #fff;
+    border: 1px solid var(--line-warm);
+    border-radius: 8px;
+    color: var(--brand-orange-600);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.12s;
+}
+.btn-link-orange:hover {
+    border-color: var(--brand-orange-600);
+    background: rgba(234, 88, 12, 0.04);
+}
+
+.k-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.k-table thead th {
+    text-align: left;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-500);
+    background: var(--cream-50);
+    border-bottom: 1px solid var(--line-warm);
+}
+.k-table tbody td {
+    padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--cream-200);
+    font-size: 0.875rem;
+    color: var(--ink-700);
+    vertical-align: middle;
+}
+.k-table tbody tr:last-child td { border-bottom: none; }
+.k-table tbody tr:hover td { background: var(--cream-50); }
+
+.k-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.01em;
+}
+.k-badge.is-warn    { background: rgba(245, 158, 11, 0.12); color: #92400E; }
+.k-badge.is-info    { background: rgba(14, 165, 233, 0.12); color: #075985; }
+.k-badge.is-danger  { background: rgba(220, 38, 38, 0.12); color: #991B1B; }
+.k-badge.is-success { background: rgba(22, 163, 74, 0.12); color: #166534; }
+
+.k-empty {
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+    color: var(--ink-400);
+    font-size: 0.875rem;
+}
+.k-empty::before {
+    content: '';
+    display: block;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--cream-100);
+    border: 1px dashed var(--line-warm);
+    margin: 0 auto 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .kasir-sidebar { display: none; }
+    .kasir-main { padding: 1.5rem 1rem; }
+}
+/* ====================================================================
+   SEBLAK KASIR — Inner pages additions (filter pills, tabs, alerts)
+   Append to seblak-kasir.css OR keep as separate include after it.
+==================================================================== */
+
+/* ===== Filter bar (pesanan & pembayaran status filters) ===== */
+.k-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 1.5rem;
+}
+
+.k-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.05rem;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(127, 29, 29, 0.22);
+  color: var(--brand-maroon-900);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 0 rgba(28, 25, 23, 0.02);
+}
+
+.k-filter-pill:hover {
+  border-color: var(--brand-maroon-900);
+  background: var(--cream-100);
+  color: var(--brand-maroon-900);
+  transform: translateY(-1px);
+}
+
+.k-filter-pill.active {
+  background: var(--brand-maroon-900);
+  border-color: var(--brand-maroon-900);
+  color: #FFFFFF;
+  box-shadow:
+    0 6px 14px -4px rgba(92, 16, 16, 0.35),
+    0 2px 4px -1px rgba(92, 16, 16, 0.2);
+}
+
+.k-filter-pill.active:hover {
+  background: #4a0d0d;
+  border-color: #4a0d0d;
+  color: #FFFFFF;
+}
+
+/* ===== Tabs (stok_menu Menu/Barang) ===== */
+.k-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1.5px solid rgba(127, 29, 29, 0.14);
+  padding: 0;
+}
+
+.k-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.4rem;
+  font-family: var(--font-base);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(28, 25, 23, 0.55);
+  text-decoration: none;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -1.5px;
+  transition: all 0.18s ease;
+  position: relative;
+}
+
+.k-tab:hover {
+  color: var(--brand-maroon-900);
+}
+
+.k-tab.active {
+  color: var(--brand-maroon-900);
+  border-bottom-color: var(--brand-orange-600);
+}
+
+.k-tab.active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -1.5px;
+  width: 6px;
+  height: 6px;
+  background: var(--brand-orange-600);
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+}
+
+/* ===== Action button (small, inline-table) ===== */
+.k-btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.9rem;
+  font-family: var(--font-base);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--brand-orange-600) 0%, #C2410C 100%);
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  box-shadow:
+    0 3px 8px -2px rgba(234, 88, 12, 0.4),
+    0 1px 2px -1px rgba(234, 88, 12, 0.2);
+}
+
+.k-btn-action:hover {
+  transform: translateY(-1px);
+  color: #FFFFFF;
+  box-shadow:
+    0 6px 14px -3px rgba(234, 88, 12, 0.5),
+    0 2px 4px -1px rgba(234, 88, 12, 0.3);
+}
+
+.k-btn-action:active {
+  transform: translateY(0);
+}
+
+/* Outlined variant for muted actions */
+.k-btn-action.is-outline {
+  background: #FFFFFF;
+  color: var(--brand-maroon-900);
+  border: 1.5px solid rgba(127, 29, 29, 0.3);
+  box-shadow: none;
+}
+
+.k-btn-action.is-outline:hover {
+  background: var(--cream-100);
+  border-color: var(--brand-maroon-900);
+  color: var(--brand-maroon-900);
+}
+
+/* Dim placeholder cell text */
+.k-table .k-dash {
+  color: rgba(28, 25, 23, 0.3);
+  font-weight: 500;
+}
+
+/* ===== Alerts ===== */
+.k-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  margin-bottom: 1.2rem;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+}
+
+.k-alert.is-success {
+  background: #F0FDF4;
+  border-color: rgba(22, 163, 74, 0.25);
+  border-left-color: #16A34A;
+  color: #14532D;
+}
+
+.k-alert.is-error {
+  background: #FEF2F2;
+  border-color: rgba(220, 38, 38, 0.25);
+  border-left-color: #DC2626;
+  color: #7F1D1D;
+}
+
+.k-alert.is-warn {
+  background: #FFFBEB;
+  border-color: rgba(217, 119, 6, 0.25);
+  border-left-color: #D97706;
+  color: #78350F;
+}
+
+/* ===== Number cell (right-aligned monetary) ===== */
+.k-table .k-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+/* ===== Sub-label (used inline next to stok value etc.) ===== */
+.k-table .k-sub {
+  font-size: 0.72rem;
+  color: rgba(28, 25, 23, 0.5);
+  font-weight: 500;
+  margin-left: 0.3rem;
+}
+
+/* ===== Detail-link (No Pesanan link style) ===== */
+.k-link {
+  color: var(--brand-maroon-900);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1.5px dotted rgba(127, 29, 29, 0.35);
+  transition: all 0.15s ease;
+}
+
+.k-link:hover {
+  color: var(--brand-orange-600);
+  border-bottom-color: var(--brand-orange-600);
+}

@@ -38,7 +38,7 @@ class PembayaranResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
 
-    protected static ?string $navigationGroup = 'Transaksi';
+    protected static ?string $navigationGroup = '💵 Transaksi';
 
     protected static ?string $modelLabel       = 'Pembayaran';
     protected static ?string $pluralModelLabel = 'Pembayaran';

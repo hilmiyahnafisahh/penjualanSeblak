@@ -1048,4 +1048,24 @@ class PelangganController extends Controller
 
         return view('pelanggan.riwayat', compact('pesanan', 'statusParam'));
     }
+
+    public function pilihTopping(Request $request, $id)
+    {
+        if (!$this->guardPelanggan($request)) {
+            return redirect()->route('pelanggan.login');
+        }
+
+        $menu = Menu::find($id);
+
+        if (!$menu) {
+            return redirect()->route('pelanggan.dashboard')->with('error', 'Menu tidak ditemukan');
+        }
+
+        $toppings = Barang::where('kategori_barang', 'topping')
+            ->where('stok', '>', 0)
+            ->orderBy('nama_barang')
+            ->get();
+
+        return view('pelanggan.pilih-topping', compact('menu', 'toppings'));
+    }
 }
