@@ -1,77 +1,71 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesanan Berhasil | Seblak</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background: #fdf0f0; font-family: 'Segoe UI', sans-serif; }
-        .card-sukses {
-            max-width: 480px; margin: 5rem auto;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 50px rgba(0,0,0,.08);
-            border: none;
-        }
-        .icon-sukses {
-            width: 80px; height: 80px; border-radius: 50%;
-            background: #d1e7dd;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1.2rem;
-            font-size: 2.5rem;
-        }
-        .btn-merah { background: #8b1a1a; color: white; border: none; border-radius: .75rem; }
-        .btn-merah:hover { background: #600e0e; color: white; }
-        .info-row { background: #fdf0f0; border-radius: .75rem; padding: .85rem 1rem; margin-bottom: .6rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesanan Berhasil | Seblak Sangkuriang</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset('css/pelanggan.css') }}">
+  <style>
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .success-card { width: 100%; max-width: 440px; }
+    .success-header { background: linear-gradient(135deg, #166534, #16a34a); color: white; border-radius: 14px 14px 0 0; padding: 2rem 1.5rem 1.5rem; text-align: center; }
+    .success-body   { background: white; border-radius: 0 0 14px 14px; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,.11); }
+    .success-icon   { font-size: 3rem; margin-bottom: .75rem; }
+    .info-row { background: var(--merah-muda); border-radius: 8px; padding: .65rem 1rem; margin-bottom: .5rem; display: flex; justify-content: space-between; align-items: center; }
+    .info-row .label { font-size: .78rem; color: #888; }
+    .info-row .val   { font-weight: 700; font-size: .92rem; }
+    .kasir-banner { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px; padding: .9rem 1rem; font-size: .82rem; color: #78350f; }
+  </style>
 </head>
 <body>
-<div class="container">
-    <div class="card card-sukses p-4 text-center">
 
-        <div class="icon-sukses">✅</div>
+<div class="success-card">
+  <div class="success-header">
+    <div class="success-icon">✅</div>
+    <div style="font-size:1.2rem; font-weight:800;">Pesanan Berhasil!</div>
+    <div style="font-size:.8rem; opacity:.85; margin-top:.3rem;">Silakan pergi ke kasir untuk pembayaran</div>
+  </div>
 
-        <h4 class="fw-bold mb-1" style="color:#0f5132;">Pesanan Berhasil!</h4>
-        <p class="text-muted mb-4">Silahkan pergi ke kasir untuk melakukan pembayaran.</p>
-
-        <div class="text-start mb-4">
-            <div class="info-row d-flex justify-content-between">
-                <span class="text-muted">No. Pesanan</span>
-                <strong style="color:#8b1a1a;">{{ $pemesanan->id_pesanan }}</strong>
-            </div>
-            <div class="info-row d-flex justify-content-between">
-                <span class="text-muted">Tanggal</span>
-                <span>{{ optional($pemesanan->tanggal_pemesanan)->format('d M Y, H:i') }}</span>
-            </div>
-            <div class="info-row d-flex justify-content-between">
-                <span class="text-muted">Metode</span>
-                <span class="badge bg-success fs-6">💵 Tunai</span>
-            </div>
-            <div class="info-row d-flex justify-content-between">
-                <span class="text-muted">Total</span>
-                <strong>Rp {{ number_format($pemesanan->subtotal, 0, ',', '.') }}</strong>
-            </div>
-            <div class="info-row d-flex justify-content-between">
-                <span class="text-muted">Status</span>
-                <span class="badge bg-warning text-dark">Menunggu Pembayaran di Kasir</span>
-            </div>
-        </div>
-
-        <div class="alert alert-warning text-start" role="alert" style="border-radius:.75rem;">
-            <strong>📍 Informasi Kasir:</strong><br>
-            Tunjukkan nomor pesanan <strong>{{ $pemesanan->id_pesanan }}</strong> kepada kasir untuk menyelesaikan pembayaran.
-        </div>
-
-        <div class="d-grid gap-2 mt-3">
-            <a href="{{ route('pelanggan.riwayat') }}" class="btn btn-merah py-2">
-                Lihat Riwayat Pesanan
-            </a>
-            <a href="{{ route('pelanggan.dashboard') }}" class="btn btn-outline-secondary py-2">
-                Kembali ke Menu
-            </a>
-        </div>
+  <div class="success-body">
+    <div class="info-row">
+      <span class="label">No. Pesanan</span>
+      <span class="val" style="color:var(--merah);">{{ $pemesanan->id_pesanan }}</span>
     </div>
+    <div class="info-row">
+      <span class="label">Tanggal</span>
+      <span class="val">{{ optional($pemesanan->tanggal_pemesanan)->format('d M Y, H:i') }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Metode</span>
+      <span class="badge px-3 py-2" style="background:#16a34a;font-size:.78rem;">💵 Tunai</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Total</span>
+      <span class="val">Rp {{ number_format($pemesanan->subtotal, 0, ',', '.') }}</span>
+    </div>
+    <div class="info-row mb-4">
+      <span class="label">Status</span>
+      <span class="pill pill-kuning"><i class="bi bi-clock me-1"></i>Menunggu Kasir</span>
+    </div>
+
+    <div class="kasir-banner mb-4">
+      <div class="fw-bold mb-1"><i class="bi bi-geo-alt-fill me-1"></i>Tunjukkan ke Kasir</div>
+      Nomor pesanan <strong class="text-danger">{{ $pemesanan->id_pesanan }}</strong> — kasir akan memproses pembayaran Anda.
+    </div>
+
+    <div class="d-grid gap-2">
+      <a href="{{ route('pelanggan.riwayat') }}" class="btn btn-merah py-2 fw-bold rounded-3">
+        <i class="bi bi-clock-history me-1"></i>Lihat Riwayat Pesanan
+      </a>
+      <a href="{{ route('pelanggan.dashboard') }}" class="btn btn-outline-secondary py-2 rounded-3">
+        Kembali ke Menu
+      </a>
+    </div>
+  </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

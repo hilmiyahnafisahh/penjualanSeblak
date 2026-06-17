@@ -8,54 +8,19 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
     <title>Riwayat Pemesanan | Seblak Sangkuriang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        :root{--merah:#8b1a1a;--merah-gelap:#600e0e;--bg:#fdf0f0;}
-        body{background:var(--bg);font-family:'Segoe UI',sans-serif;}
-        .navbar-custom{background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:200;}
-        .btn-merah{background:var(--merah);color:white;border:none;}
-        .btn-merah:hover{background:var(--merah-gelap);color:white;}
-        .nav-tabs-custom{border-bottom:2px solid #f0d0d0;}
-        .nav-tabs-custom .nav-link{color:#555;border:none;padding:.6rem 1.2rem;font-size:.875rem;border-radius:0;}
-        .nav-tabs-custom .nav-link.active{color:var(--merah);font-weight:700;border-bottom:2px solid var(--merah);margin-bottom:-2px;}
-        .filter-pill{border-radius:2rem;font-size:.8rem;padding:.35rem 1rem;}
-
-        /* Timeline card */
-        .order-card{background:white;border-radius:1.1rem;border:1px solid #f0d0d0;margin-bottom:1.25rem;overflow:hidden;}
-        .order-header{padding:.9rem 1.25rem;border-bottom:1px solid #fce8e8;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;}
-        .order-body{padding:1rem 1.25rem;}
-        .order-footer{padding:.75rem 1.25rem;border-top:1px solid #fce8e8;}
-
-        /* Badges */
-        .pill{display:inline-flex;align-items:center;gap:.3rem;border-radius:2rem;padding:.28rem .85rem;font-size:.73rem;font-weight:600;}
-        .pill-kuning{background:#fff3cd;color:#856404;}
-        .pill-biru{background:#cff4fc;color:#055160;}
-        .pill-hijau{background:#d1e7dd;color:#0f5132;}
-        .pill-abu{background:#e9ecef;color:#495057;}
-        .pill-merah{background:#f8d7da;color:#842029;}
-
-        /* Item rows */
-        .item-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.5rem 0;border-bottom:1px dashed #f0d0d0;}
-        .item-row:last-child{border-bottom:none;}
-        .item-name{font-weight:600;font-size:.875rem;}
-        .item-sub{font-size:.73rem;color:#aaa;margin-top:.15rem;}
-        .item-price{font-weight:700;font-size:.875rem;color:var(--merah);white-space:nowrap;margin-left:1rem;}
-
-        /* Summary box */
-        .summary-box{background:white;border-radius:1rem;border:1.5px solid #f0d0d0;padding:1.25rem;}
-        .summary-row{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid #f9f0f0;font-size:.875rem;}
-        .summary-row:last-child{border-bottom:none;}
-
-        /* Pay status indicator */
-        .pay-status-bar{display:flex;align-items:center;gap:.6rem;padding:.65rem 1rem;border-radius:.75rem;font-size:.8rem;font-weight:600;}
-        .pay-status-lunas{background:#d1e7dd;color:#0f5132;}
-        .pay-status-pending{background:#fff3cd;color:#856404;}
-        .pay-status-batal{background:#f8d7da;color:#842029;}
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/pelanggan.css') }}">
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 </head>
 <body>
 <svg style="display:none;"><defs>
   <symbol id="ic-user" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5.33 0-8 2.67-8 4v1h16v-1c0-1.33-2.67-4-8-4z"/></symbol>
 </defs></svg>
+
+<!-- Loading Snap overlay -->
+<div id="snapOverlay">
+  <div class="snap-spinner"></div>
+  <div>Memuat halaman pembayaran...</div>
+</div>
 
 {{-- Offcanvas --}}
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu">

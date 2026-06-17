@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PembayaranResource\Pages;
 use App\Models\Pembayaran;
 use App\Models\Pemesanan;
+use App\Models\Karyawan;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -69,15 +70,13 @@ class PembayaranResource extends Resource
                                         ->readOnly()
                                         ->dehydrated()
                                         ->afterStateHydrated(function ($state, callable $set) {
-
-                                    if (!$state) {
-
-                                            $set(
+                                            if (!$state) {
+                                                $set(
                                                     'id_pembayaran',
                                                     Pembayaran::getKodePembayaran()
-                                        );
-                                        }
-                                    }),
+                                                );
+                                            }
+                                        }),
 
                                     DateTimePicker::make('tanggal_pembayaran')
                                         ->label('Tanggal Pembayaran')
@@ -95,20 +94,16 @@ class PembayaranResource extends Resource
                                         ->default(fn () => request()->query('id_pemesanan'))
                                         ->options(
                                             Pemesanan::whereDoesntHave('pembayaran')
-                                                ->where('status_pemesanan', 'diproses')
+                                                ->orderByDesc('tanggal_pemesanan')
                                                 ->pluck('id_pesanan', 'id')
                                         )
                                         ->getOptionLabelUsing(fn ($value) => Pemesanan::find($value)?->id_pesanan)
                                         ->searchable()
                                         ->required()
                                         ->reactive()
-
                                         ->afterStateUpdated(function ($state, Set $set) {
-
                                             $pesanan = Pemesanan::find($state);
-
                                             if ($pesanan) {
-
                                                 $set('total_pembayaran', $pesanan->subtotal);
                                             }
                                         }),
@@ -137,6 +132,12 @@ class PembayaranResource extends Resource
                                             }
                                         }),
 
+                                    Select::make('id_karyawan')
+                                        ->label('Karyawan')
+                                        ->options(Karyawan::pluck('nama', 'id_karyawan'))
+                                        ->searchable()
+                                        ->columnSpan(1),
+
                                     TextInput::make('status_pembayaran')
                                         ->default('lunas')
                                         ->hidden()
@@ -156,7 +157,6 @@ class PembayaranResource extends Resource
                             Placeholder::make('detail_pesanan')
                                 ->label('')
                                 ->reactive()
-
                                 ->content(function (Get $get) {
 
                                     $idPemesanan = $get('id_pemesanan');
@@ -173,68 +173,38 @@ class PembayaranResource extends Resource
                                     }
 
                                     $html  = '<div class="space-y-4">';
-
                                     $html .= '<table class="w-full text-sm border-collapse border border-gray-300">';
-
                                     $html .= '
                                         <thead>
                                             <tr class="bg-gray-100">
-                                                <th class="border px-4 py-2 text-left">
-                                                    Menu
-                                                </th>
-
-                                                <th class="border px-4 py-2 text-center">
-                                                    Qty
-                                                </th>
-
-                                                <th class="border px-4 py-2 text-right">
-                                                    Subtotal
-                                                </th>
+                                                <th class="border px-4 py-2 text-left">Menu</th>
+                                                <th class="border px-4 py-2 text-center">Qty</th>
+                                                <th class="border px-4 py-2 text-right">Subtotal</th>
                                             </tr>
                                         </thead>
                                     ';
-
                                     $html .= '<tbody>';
 
                                     foreach ($pemesanan->DetailPesanan as $detail) {
-
                                         $namaMenu = $detail->menu?->nama_menu ?? '-';
-
                                         $html .= '
                                             <tr>
-
-                                                <td class="border px-4 py-2">
-                                                    ' . $namaMenu . '
-                                                </td>
-
-                                                <td class="border px-4 py-2 text-center">
-                                                    ' . $detail->jumlah . '
-                                                </td>
-
-                                                <td class="border px-4 py-2 text-right">
-                                                    Rp ' . number_format($detail->subtotal, 0, ',', '.') . '
-                                                </td>
-
+                                                <td class="border px-4 py-2">' . $namaMenu . '</td>
+                                                <td class="border px-4 py-2 text-center">' . $detail->jumlah . '</td>
+                                                <td class="border px-4 py-2 text-right">Rp ' . number_format($detail->subtotal, 0, ',', '.') . '</td>
                                             </tr>
                                         ';
                                     }
 
                                     $html .= '</tbody>';
                                     $html .= '</table>';
-
                                     $html .= '
                                         <div class="mt-4 p-4 bg-green-100 rounded-lg">
-
                                             <div class="text-right text-lg font-bold text-green-700">
-
-                                                TOTAL :
-                                                Rp ' . number_format($pemesanan->subtotal, 0, ',', '.') . '
-
+                                                TOTAL : Rp ' . number_format($pemesanan->subtotal, 0, ',', '.') . '
                                             </div>
-
                                         </div>
                                     ';
-
                                     $html .= '</div>';
 
                                     return new HtmlString($html);
@@ -252,35 +222,26 @@ class PembayaranResource extends Resource
 
                             Placeholder::make('konfirmasi')
                                 ->label('')
-
                                 ->content(function (Get $get) {
-
                                     return new HtmlString('
-
                                         <div class="space-y-2">
-
                                             <div>
                                                 <strong>No Pembayaran:</strong>
                                                 ' . $get('id_pembayaran') . '
                                             </div>
-
                                             <div>
                                                 <strong>No Pesanan:</strong>
                                                 ' . optional(Pemesanan::find($get('id_pemesanan')))->id_pesanan . '
                                             </div>
-
                                             <div>
                                                 <strong>Total:</strong>
                                                 Rp ' . number_format((float) $get('total_pembayaran'), 0, ',', '.') . '
                                             </div>
-
                                             <div>
                                                 <strong>Metode:</strong>
                                                 ' . strtoupper($get('metode_pembayaran')) . '
                                             </div>
-
                                         </div>
-
                                     ');
                                 }),
 
@@ -293,9 +254,7 @@ class PembayaranResource extends Resource
                         <button
                             type="submit"
                             class="fi-btn fi-btn-size-md fi-btn-color-primary fi-ac-btn-action">
-
                             Simpan Pembayaran
-
                         </button>
                     ')
                 )
@@ -324,6 +283,10 @@ class PembayaranResource extends Resource
                     ->label('Pelanggan')
                     ->searchable(),
 
+                TextColumn::make('karyawan.nama')
+                    ->label('Karyawan')
+                    ->searchable(),
+
                 TextColumn::make('metode_pembayaran')
                     ->badge()
                     ->color('success'),
@@ -338,11 +301,9 @@ class PembayaranResource extends Resource
                 TextColumn::make('status_pembayaran')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-
                         'lunas'   => 'success',
                         'pending' => 'warning',
                         'batal'   => 'danger',
-
                         default   => 'gray',
                     }),
 
@@ -356,11 +317,9 @@ class PembayaranResource extends Resource
 
                 SelectFilter::make('status_pembayaran')
                     ->options([
-
                         'lunas'   => 'Lunas',
                         'pending' => 'Pending',
                         'batal'   => 'Batal',
-
                     ]),
 
             ])
@@ -397,11 +356,9 @@ class PembayaranResource extends Resource
     public static function getPages(): array
     {
         return [
-
             'index'  => Pages\ListPembayarans::route('/'),
             'create' => Pages\CreatePembayaran::route('/create'),
             'edit'   => Pages\EditPembayaran::route('/{record}/edit'),
-
         ];
     }
 }

@@ -4,6 +4,8 @@ namespace App\Filament\Resources\PemesananResource\Pages;
 
 use App\Filament\Resources\PemesananResource;
 use App\Models\Barang;
+use App\Models\Menu;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -13,10 +15,7 @@ class CreatePemesanan extends CreateRecord
 {
     protected static string $resource = PemesananResource::class;
 
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
-    }
+    protected bool $redirectToPayment = false;
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -26,73 +25,56 @@ class CreatePemesanan extends CreateRecord
         return $data;
     }
 
-    /**
-     * Biarkan Filament handle create + relasi,
-     * lalu kurangi stok setelah record tersimpan.
-     */
-    protected function handleRecordCreation(array $data): Model
+    protected function afterCreate(): void
     {
-        return DB::transaction(function () use ($data) {
-            // Filament handle simpan pemesanan + DetailPesanan
-            $record = parent::handleRecordCreation($data);
+        $detailItems = $this->data['DetailPesanan'] ?? [];
+        $this->kurangiStokTopping($detailItems);
+    }
 
-            // Kurangi stok topping
-            $this->kurangiStokTopping($record);
+    private function kurangiStokTopping(array $detailItems): void
+    {
+        DB::transaction(function () use ($detailItems) {
+            foreach ($detailItems as $detail) {
+                $toppingItems = $detail['topping'] ?? [];
 
-            return $record;
+                foreach ($toppingItems as $toppingItem) {
+                    $barang = Barang::find($toppingItem['id_barang'] ?? null);
+                    $qtyTopping = (int) ($toppingItem['qty'] ?? 0);
+                    if ($barang && $qtyTopping > 0) {
+                        $barang->decrement('stok', $qtyTopping);
+                    }
+                }
+            }
         });
     }
 
-    /**
-     * Kurangi stok barang berdasarkan topping di setiap detail.
-     */
-    private function kurangiStokTopping(Model $pemesanan): void
+    protected function getRedirectUrl(): string
     {
-        $pemesanan->load('DetailPesanan');
-
-        foreach ($pemesanan->DetailPesanan as $detail) {
-
-            $toppings = $detail->topping ?? []; // sudah di-decode oleh cast array
-
-            if (empty($toppings) || ! is_array($toppings)) {
-                continue;
-            }
-
-            foreach ($toppings as $topping) {
-                $idBarang = $topping['id_barang'] ?? null;
-                $qty      = (int) ($topping['qty'] ?? 0);
-
-                if (! $idBarang || $qty <= 0) {
-                    continue;
-                }
-
-                $barang = Barang::where('id_barang', $idBarang)->lockForUpdate()->first();
-
-                if (! $barang) {
-                    continue;
-                }
-
-                if ($barang->stok_barang < $qty) {
-                    Notification::make()
-                        ->title('Stok Tidak Cukup')
-                        ->body("Stok {$barang->nama_barang} hanya {$barang->stok_barang}, dibutuhkan {$qty}.")
-                        ->danger()
-                        ->persistent()
-                        ->send();
-
-                    // Batalkan seluruh transaction
-                    throw new \Exception("Stok {$barang->nama_barang} tidak mencukupi.");
-                }
-
-                // Kurangi stok dengan cara aman (hindari race condition)
-                $barang->decrement('stok_barang', $qty);
-            }
+        if ($this->redirectToPayment && $this->record) {
+            return route('pembayaran.show', ['id' => $this->record->id]);
         }
 
-        Notification::make()
-            ->title('Pemesanan Berhasil')
-            ->body('Stok topping berhasil diperbarui.')
-            ->success()
-            ->send();
+        return $this->getResource()::getUrl('index');
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction()
+                ->label('Simpan Pesanan'),
+
+            Action::make('bayarSekarang')
+                ->label('Bayar Sekarang')
+                ->color('success')
+                ->action('bayarSekarang'),
+
+            $this->getCancelFormAction(),
+        ];
+    }
+
+    public function bayarSekarang(): void
+    {
+        $this->redirectToPayment = true;
+        $this->create();
     }
 }

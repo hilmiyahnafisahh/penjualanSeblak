@@ -8,58 +8,8 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
     <title>Pesanan Saya | Seblak Sangkuriang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/pelanggan.css') }}">
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
-    <style>
-        :root{--merah:#8b1a1a;--merah-gelap:#600e0e;--bg:#fdf0f0;}
-        body{background:var(--bg);font-family:'Segoe UI',sans-serif;}
-        .navbar-custom{background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:200;}
-        .btn-merah{background:var(--merah);color:white;border:none;}
-        .btn-merah:hover{background:var(--merah-gelap);color:white;}
-        .nav-tabs-custom{border-bottom:2px solid #f0d0d0;}
-        .nav-tabs-custom .nav-link{color:#555;border:none;padding:.6rem 1.2rem;font-size:.875rem;border-radius:0;}
-        .nav-tabs-custom .nav-link.active{color:var(--merah);font-weight:700;border-bottom:2px solid var(--merah);margin-bottom:-2px;}
-        .filter-pill{border-radius:2rem;font-size:.8rem;padding:.35rem 1rem;}
-
-        /* Card */
-        .order-card{background:white;border-radius:1.1rem;border:1px solid #f0d0d0;margin-bottom:1.25rem;overflow:hidden;}
-        .order-header{padding:.9rem 1.25rem;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;cursor:pointer;transition:background .15s;}
-        .order-header:hover{background:#fff8f8;}
-        .order-body{padding:1rem 1.25rem;border-top:1px solid #fce8e8;display:none;}
-        .order-body.open{display:block;}
-        .order-footer{padding:.75rem 1.25rem;border-top:1px solid #fce8e8;background:#fff8f8;}
-        .chevron{transition:transform .2s;flex-shrink:0;margin-left:.5rem;color:#aaa;}
-        .order-header.expanded .chevron{transform:rotate(180deg);}
-
-        /* Badges */
-        .pill{display:inline-flex;align-items:center;gap:.3rem;border-radius:2rem;padding:.28rem .85rem;font-size:.73rem;font-weight:600;}
-        .pill-kuning{background:#fff3cd;color:#856404;}
-        .pill-biru{background:#cff4fc;color:#055160;}
-        .pill-hijau{background:#d1e7dd;color:#0f5132;}
-        .pill-abu{background:#e9ecef;color:#495057;}
-        .pill-merah{background:#f8d7da;color:#842029;}
-
-        /* Item rows */
-        .item-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.55rem 0;border-bottom:1px dashed #f0d0d0;}
-        .item-row:last-child{border-bottom:none;}
-        .item-name{font-weight:600;font-size:.875rem;}
-        .item-sub{font-size:.73rem;color:#aaa;margin-top:.15rem;}
-        .item-price{font-weight:700;font-size:.875rem;color:var(--merah);white-space:nowrap;margin-left:1rem;}
-
-        /* Pay info box */
-        .pay-box{border-radius:.85rem;padding:.85rem 1rem;display:flex;align-items:flex-start;gap:.75rem;}
-        .pay-box-warning{background:#fff3cd;border:1px solid #ffe69c;}
-        .pay-box-info{background:#e8f4fd;border:1px solid #bee5fd;}
-        .pay-box-success{background:#d1e7dd;border:1px solid #a3cfbb;}
-        .pay-icon{font-size:1.4rem;flex-shrink:0;}
-        .pay-title{font-weight:700;font-size:.85rem;margin-bottom:.25rem;}
-        .pay-desc{font-size:.78rem;color:#555;line-height:1.5;}
-
-        /* Snap loading overlay */
-        #snapOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;flex-direction:column;color:white;}
-        #snapOverlay.show{display:flex;}
-        .snap-spinner{width:46px;height:46px;border:4px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:1rem;}
-        @keyframes spin{to{transform:rotate(360deg)}}
-    </style>
 </head>
 <body>
 <svg style="display:none;"><defs>
@@ -212,12 +162,20 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
             <div class="pay-icon">📱</div>
             <div class="flex-grow-1">
               <div class="pay-title">Pembayaran QRIS Belum Selesai</div>
-              <div class="pay-desc">Klik tombol di bawah untuk membuka QR pembayaran.</div>
-              <button class="btn btn-merah btn-sm mt-2 w-100"
-                      onclick="bayarQris('{{ $order->id_pesanan }}')"
-                      id="btnBayar-{{ $i }}">
-                <i class="bi bi-qr-code me-2"></i>Bayar Sekarang via QRIS
-              </button>
+              <div class="pay-desc mb-2">Sudah scan? Klik cek status, atau klik bayar untuk buka QR baru.</div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm flex-fill"
+                        onclick="cekStatus('{{ $order->id_pesanan }}', {{ $i }}, '{{ $bayar->midtrans_order_id ?? '' }}')"
+                        id="btnCek-{{ $i }}">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Cek Status
+                </button>
+                <button class="btn btn-merah btn-sm flex-fill"
+                        onclick="bayarQris('{{ $order->id_pesanan }}')"
+                        id="btnBayar-{{ $i }}">
+                  <i class="bi bi-qr-code me-1"></i>Bayar via QRIS
+                </button>
+              </div>
+              <div id="statusMsg-{{ $i }}" class="mt-2" style="display:none;font-size:.8rem;"></div>
             </div>
           </div>
           @elseif($metode === 'tunai')
@@ -226,6 +184,27 @@ $statusLabels = ['semua'=>'Semua','belumdibayar'=>'Belum Bayar','diproses'=>'Dip
             <div>
               <div class="pay-title">Bayar Tunai di Kasir</div>
               <div class="pay-desc">Tunjukkan nomor <strong style="color:var(--merah);">{{ $order->id_pesanan }}</strong> ke kasir.</div>
+            </div>
+          </div>
+          @elseif($metode === 'transfer' || $metode === 'bank_transfer')
+          <div class="pay-box pay-box-warning mt-3">
+            <div class="pay-icon">🏦</div>
+            <div class="flex-grow-1">
+              <div class="pay-title">Pembayaran Transfer Belum Selesai</div>
+              <div class="pay-desc mb-2">Klik tombol di bawah untuk membuka halaman pembayaran Midtrans.</div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm flex-fill"
+                        onclick="cekStatus('{{ $order->id_pesanan }}', {{ $i }}, '{{ $bayar->midtrans_order_id ?? '' }}')"
+                        id="btnCekTransfer-{{ $i }}">
+                  <i class="bi bi-arrow-clockwise me-1"></i>Cek Status
+                </button>
+                <button class="btn btn-merah btn-sm flex-fill"
+                        onclick="bayarTransfer('{{ $order->id_pesanan }}')"
+                        id="btnBayarTransfer-{{ $i }}">
+                  <i class="bi bi-credit-card me-1"></i>Bayar Sekarang
+                </button>
+              </div>
+              <div id="statusMsgTransfer-{{ $i }}" class="mt-2" style="display:none;font-size:.8rem;"></div>
             </div>
           </div>
           @endif
@@ -264,6 +243,56 @@ function toggleDetail(i) {
   }
 }
 
+// Cek status pembayaran ke Midtrans
+function cekStatus(idPesanan, i, dbOrderId) {
+  const btn = document.getElementById('btnCek-' + i);
+  const msg = document.getElementById('statusMsg-' + i);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Mengecek...';
+  msg.style.display = 'none';
+
+  // Prioritas: localStorage (dari bayar terbaru) → DB order_id (dari blade) → tanpa order_id
+  const latestOrderId = localStorage.getItem('midtrans_order_' + idPesanan) || dbOrderId || '';
+  const url = '/pelanggan/cek-status/' + idPesanan + (latestOrderId ? '?order_id=' + encodeURIComponent(latestOrderId) : '');
+
+  fetch(url, {
+    headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Cek Status';
+
+    if (data.status === 'lunas') {
+      msg.style.display = 'block';
+      msg.style.color = '#0f5132';
+      msg.innerHTML = '✅ <strong>' + data.message + '</strong>';
+      localStorage.removeItem('midtrans_order_' + idPesanan);
+      setTimeout(() => window.location.reload(), 1500);
+    } else if (data.status === 'pending') {
+      msg.style.display = 'block';
+      msg.style.color = '#856404';
+      msg.innerHTML = '⏳ ' + data.message;
+    } else if (data.status === 'batal') {
+      msg.style.display = 'block';
+      msg.style.color = '#842029';
+      msg.innerHTML = '❌ ' + data.message;
+      setTimeout(() => window.location.reload(), 2000);
+    } else {
+      msg.style.display = 'block';
+      msg.style.color = '#555';
+      msg.innerHTML = 'ℹ️ ' + (data.message || data.error || 'Status tidak diketahui');
+    }
+  })
+  .catch(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Cek Status';
+    msg.style.display = 'block';
+    msg.style.color = '#842029';
+    msg.innerHTML = '❌ Gagal menghubungi server.';
+  });
+}
+
 // Bayar via QRIS — ambil token baru lalu buka Snap
 function bayarQris(idPesanan) {
   const overlay = document.getElementById('snapOverlay');
@@ -277,12 +306,54 @@ function bayarQris(idPesanan) {
     overlay.classList.remove('show');
     if (data.error) { alert('Error: ' + data.error); return; }
 
+    // Simpan order_id terbaru untuk dipakai saat cek status
+    localStorage.setItem('midtrans_order_' + idPesanan, data.order_id);
+
     window.snap.pay(data.snap_token, {
       onSuccess: function(result) {
-        // Update status via success route
+        localStorage.setItem('midtrans_order_' + idPesanan, result.order_id);
         window.location.href = '{{ route("pelanggan.checkout.qris.success") }}?order_id=' + result.order_id;
       },
-      onPending: function() { window.location.reload(); },
+      onPending: function(result) {
+        if (result.order_id) localStorage.setItem('midtrans_order_' + idPesanan, result.order_id);
+        window.location.reload();
+      },
+      onError:   function() { alert('Pembayaran gagal. Silakan coba lagi.'); },
+      onClose:   function() { /* user tutup popup */ }
+    });
+  })
+  .catch(err => {
+    overlay.classList.remove('show');
+    alert('Gagal memuat pembayaran. Coba lagi.');
+    console.error(err);
+  });
+}
+
+// Bayar via Transfer — ambil token baru lalu buka Snap
+function bayarTransfer(idPesanan) {
+  const overlay = document.getElementById('snapOverlay');
+  overlay.classList.add('show');
+
+  fetch('/pelanggan/bayar-transfer/' + idPesanan, {
+    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    overlay.classList.remove('show');
+    if (data.error) { alert('Error: ' + data.error); return; }
+
+    // Simpan order_id terbaru untuk dipakai saat cek status
+    localStorage.setItem('midtrans_order_' + idPesanan, data.order_id);
+
+    window.snap.pay(data.snap_token, {
+      onSuccess: function(result) {
+        localStorage.setItem('midtrans_order_' + idPesanan, result.order_id);
+        window.location.href = '{{ route("pelanggan.checkout.qris.success") }}?order_id=' + result.order_id;
+      },
+      onPending: function(result) {
+        if (result.order_id) localStorage.setItem('midtrans_order_' + idPesanan, result.order_id);
+        window.location.reload();
+      },
       onError:   function() { alert('Pembayaran gagal. Silakan coba lagi.'); },
       onClose:   function() { /* user tutup popup */ }
     });
