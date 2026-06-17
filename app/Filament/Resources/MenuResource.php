@@ -33,14 +33,9 @@ class MenuResource extends Resource
 {
     protected static ?string $model = Menu::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-book-open';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationLabel = 'Menu';
-
-    protected static ?string $navigationGroup = '📦 MASTER DATA';
-    
-    protected static ?int $navigationSort = 3;
-
+    protected static ?string $navigationGroup = 'Master Data';
 
     public static function form(Form $form): Form
     {

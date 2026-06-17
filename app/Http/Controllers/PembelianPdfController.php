@@ -11,7 +11,8 @@ class PembelianPdfController extends Controller
     {
         // Ambil data pembelian beserta relasinya
         $pembelian = Pembelian::with([
-            'karyawan'
+            'karyawan',
+            'pembayaran'
         ])->get();
 
         // Load view PDF
@@ -20,8 +21,10 @@ class PembelianPdfController extends Controller
         // Ukuran kertas
         $pdf->setPaper('A4', 'landscape');
 
+        // Tampilkan di browser
         return $pdf->stream('pembelian.pdf');
 
+        // Kalau mau langsung download:
         // return $pdf->download('pembelian.pdf');
     }
 }
