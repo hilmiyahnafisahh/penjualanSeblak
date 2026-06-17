@@ -173,12 +173,10 @@ class PelangganController extends Controller
         $keranjang = Session::get('keranjang', []);
 
         // ── REKOMENDASI BERBASIS CLUSTERING ──
-        // Ambil menu yang pernah dipesan pelanggan ini
         $pelanggan = Pelanggan::where('email', $user->email)->first();
         $rekomendasiMenu = collect();
 
         if ($pelanggan) {
-            // Menu yang sudah pernah dipesan pelanggan ini
             $sudahDipesan = DB::table('detail_pemesanan')
                 ->join('pemesanan', 'pemesanan.id', '=', 'detail_pemesanan.id_pemesanan')
                 ->where('pemesanan.id_pelanggan', $pelanggan->id)
@@ -186,7 +184,6 @@ class PelangganController extends Controller
                 ->unique()
                 ->toArray();
 
-            // Temukan pelanggan lain yang pernah pesan menu yang sama (cluster serupa)
             $pelangganMirip = DB::table('detail_pemesanan')
                 ->join('pemesanan', 'pemesanan.id', '=', 'detail_pemesanan.id_pemesanan')
                 ->whereIn('detail_pemesanan.id_menu', $sudahDipesan)
@@ -196,7 +193,6 @@ class PelangganController extends Controller
                 ->toArray();
 
             if (!empty($pelangganMirip)) {
-                // Menu populer dari pelanggan mirip yang BELUM pernah dipesan pelanggan ini
                 $rekomendasiIds = DB::table('detail_pemesanan')
                     ->join('pemesanan', 'pemesanan.id', '=', 'detail_pemesanan.id_pemesanan')
                     ->whereIn('pemesanan.id_pelanggan', $pelangganMirip)
@@ -211,8 +207,8 @@ class PelangganController extends Controller
                 $rekomendasiMenu = Menu::whereIn('id', $rekomendasiIds)->get();
             }
 
-            // Fallback: jika rekomendasi kosong, tampilkan menu terlaris secara global
-            if ($rekomendasiMenu->isEmpty()) {
+            // Fallback 1: menu terlaris yang belum pernah dipesan
+            if ($rekomendasiMenu->isEmpty() && !empty($sudahDipesan)) {
                 $topMenuIds = DB::table('detail_pemesanan')
                     ->select('id_menu', DB::raw('COUNT(*) as freq'))
                     ->whereNotIn('id_menu', $sudahDipesan)
@@ -224,6 +220,11 @@ class PelangganController extends Controller
 
                 $rekomendasiMenu = Menu::whereIn('id', $topMenuIds)->get();
             }
+        }
+
+        // Fallback 2: tampilkan 4 menu acak jika rekomendasi masih kosong
+        if ($rekomendasiMenu->isEmpty()) {
+            $rekomendasiMenu = Menu::inRandomOrder()->limit(4)->get();
         }
 
         return view('pelanggan.dashboard', compact(
@@ -256,16 +257,16 @@ class PelangganController extends Controller
             ->orderBy('nama_barang')
             ->get();
 
-        $rasaOptions = ['Gurih', 'Gurih Manis', 'Asin Manis'];
-        $sayurOptions = ['Pakai Sayur Sawi', 'Tidak Pakai Sayur Sawi'];
-        $levelPedasOptions = ['Level 0', 'Level 1', 'Level 2', 'Level 3'];
+        $rasaOptions    = ['Gurih', 'Gurih Manis', 'Asin Manis'];
+        $sayurOptions   = ['Pakai Sayur Sawi', 'Tidak Pakai Sayur Sawi'];
+        $isMakanan      = strtolower($menu->kategori_menu) === 'makanan';
 
         return view('pelanggan.menu', compact(
             'menu',
             'toppingBarang',
             'rasaOptions',
             'sayurOptions',
-            'levelPedasOptions'
+            'isMakanan'
         ));
     }
 
@@ -615,7 +616,11 @@ class PelangganController extends Controller
 
             // ── TUNAI: tampilkan halaman info kasir ──
             if ($metodePembayaran === 'tunai') {
-                return view('pelanggan.checkout_tunai', compact('pemesanan'));
+                $pemesanan->load('DetailPesanan'); // load relasi agar subtotal accessor benar
+                return view('pelanggan.checkout_tunai', [
+                    'pemesanan'  => $pemesanan,
+                    'grandTotal' => $grandTotal,
+                ]);
             }
 
             // ── QRIS: buat Snap Token Midtrans ──

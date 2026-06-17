@@ -71,9 +71,7 @@ class KaryawanResource extends Resource
                             ->label('Jabatan')
                             ->options([
                                 'kasir' => 'Kasir',
-                                'koki'  => 'Koki',
                                 'admin' => 'Admin',
-                                'owner' => 'Owner',
                             ])
                             ->required()
                             ->reactive(),
