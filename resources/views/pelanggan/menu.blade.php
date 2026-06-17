@@ -113,10 +113,31 @@
         </div>
         @endif
 
-        <button type="submit" class="btn btn-merah w-100 py-3 fw-bold fs-6">
+        <button type="submit" class="btn btn-merah w-100 py-3 fw-bold fs-6" id="btnTambahKeranjang">
           <i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang
         </button>
       </form>
+
+      {{-- Popup Berhasil --}}
+      <div class="modal fade" id="popupBerhasil" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+          <div class="modal-content border-0 rounded-4 shadow" style="overflow:hidden;">
+            <div class="modal-body text-center p-4">
+              <div style="font-size:3rem;margin-bottom:.5rem;">🛒</div>
+              <h5 class="fw-bold mb-1" style="color:#0f5132;">Berhasil!</h5>
+              <p class="text-muted small mb-3" id="popupMsg">{{ $menu->nama_menu }} berhasil ditambahkan ke keranjang.</p>
+              <div class="d-grid gap-2">
+                <a href="{{ route('pelanggan.keranjang') }}" class="btn btn-merah btn-sm py-2">
+                  <i class="bi bi-cart3 me-1"></i>Lihat Keranjang
+                </a>
+                <button class="btn btn-outline-secondary btn-sm py-2" data-bs-dismiss="modal">
+                  Lanjut Belanja
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     {{-- Kanan: Ringkasan --}}
@@ -182,6 +203,44 @@ function hitungTotal() {
 
 document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', hitungTotal));
 document.querySelectorAll('input[type="number"]').forEach(n => n.addEventListener('input', hitungTotal));
+
+// Submit form via AJAX → tampilkan popup
+document.getElementById('menuForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn   = document.getElementById('btnTambahKeranjang');
+  const form  = this;
+  const nama  = '{{ $menu->nama_menu }}';
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menambahkan...';
+
+  fetch(form.action, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': '{{ csrf_token() }}',
+      'Accept': 'application/json, text/html, */*',
+    },
+    body: new FormData(form),
+    redirect: 'follow',
+  })
+  .then(response => {
+    // Sukses jika status 200-399 atau redirect
+    if (response.ok || response.redirected) {
+      document.getElementById('popupMsg').textContent = nama + ' berhasil ditambahkan ke keranjang.';
+      const modal = new bootstrap.Modal(document.getElementById('popupBerhasil'));
+      modal.show();
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang';
+    } else {
+      // Fallback: submit biasa
+      form.submit();
+    }
+  })
+  .catch(() => {
+    // Fallback: submit biasa jika fetch error
+    form.submit();
+  });
+});
 </script>
 </body>
 </html>
