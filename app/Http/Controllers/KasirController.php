@@ -148,7 +148,7 @@ class KasirController extends Controller
             'semua' => null,
         ];
 
-        $query = Pemesanan::with('Pelanggan')
+        $query = Pemesanan::with(['Pelanggan', 'pembayaran'])
             ->orderBy('id', 'desc');
 
         if ($statusMap[$statusParam] ?? null) {
@@ -210,6 +210,36 @@ class KasirController extends Controller
 
         return redirect()->route('kasir.pembayaran')
             ->with('success', 'Pembayaran tunai berhasil diproses.');
+    }
+
+    public function selesaikanPesanan(Request $request, $id)
+    {
+        if (!$this->guardKasir($request)) {
+            return redirect()->route('kasir.login');
+        }
+
+        $pemesanan = Pemesanan::with('pembayaran')->find($id);
+
+        if (!$pemesanan) {
+            abort(404);
+        }
+
+        // Hanya pesanan berstatus diproses dengan pembayaran QRIS lunas
+        $pembayaran = $pemesanan->pembayaran;
+        $metode     = strtolower($pembayaran?->metode_pembayaran ?? '');
+        $status     = strtolower($pembayaran?->status_pembayaran ?? '');
+
+        if ($pemesanan->status_pemesanan !== 'diproses'
+            || $metode !== 'qris'
+            || !in_array($status, ['lunas', 'settlement', 'capture'])) {
+            return redirect()->route('kasir.pesanan', ['status' => 'diproses'])
+                ->with('error', 'Pesanan tidak dapat diselesaikan.');
+        }
+
+        $pemesanan->update(['status_pemesanan' => 'selesai']);
+
+        return redirect()->route('kasir.pesanan', ['status' => 'diproses'])
+            ->with('success', 'Pesanan ' . $pemesanan->id_pesanan . ' berhasil diselesaikan.');
     }
 
     public function stokMenu(Request $request)
