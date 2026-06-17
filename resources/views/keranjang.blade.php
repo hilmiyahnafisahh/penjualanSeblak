@@ -135,6 +135,173 @@
     });
   }
 </script>
+<!-- Tambahan Rekomendasi -->
+         <!-- 🔥 REKOMENDASI PRODUK -->
+        @if(isset($rekomendasi) && count($rekomendasi) > 0)
+        <hr class="my-5">
+
+        <h4 class="mb-4">Rekomendasi Untuk Anda</h4>
+        <div class="card h-500">
+          <div class="product-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
+              @foreach($rekomendasi as $r)
+              <div class="col">
+                  <div class="product-item">
+
+                      <a href="#" class="btn-wishlist"><svg width="24" height="24"><use xlink:href="#heart"></use></svg></a>
+                      <figure>
+                        <a href="{{ Storage::url($r->foto) }}" title="Product Title">
+                          <img src="{{ Storage::url($r->foto) }}" class="img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+                        </a>
+                      </figure>
+                      <h3>{{$r->nama_barang}}</h3>
+                      <span class="qty"><b>Harga : {{rupiah($r->harga_barang*1.2)}}</b></span> <br>
+                      <button class="btn btn-success btn-sm w-100"
+                              onclick="tambahKeKeranjang({{ $r->id }})">
+                              Tambah ke Keranjang
+                      </button>
+
+                  </div>
+              </div>
+              @endforeach
+          </div>
+        </div>
+        @endif
+        <!-- Akhir Tambahan Rekomendasi -->
+
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tambahan script untuk payment gateway -->
+<script type="text/javascript">
+    // Pastikan Midtrans Snap.js sudah dimuat
+    var payButton = document.getElementById('pay-button');
+    payButton.addEventListener('click', function () {
+        // console.log("Token:", "{{ $snap_token }}");
+        window.snap.pay('{{$snap_token}}', {
+        onSuccess: function(result){
+            console.log('Pembayaran berhasil:', result);
+            Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Pembayaran Berhasil',
+                    showConfirmButton: false,
+                    timer: 2000 // Popup otomatis hilang setelah 2 detik
+                });
+            window.location.href = "/depan";
+        },
+        onPending: function(result){
+            // console.log('Pembayaran tertunda:', result);
+            Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'Pembayaran Tertunda'
+                });
+            window.location.href = "/depan";
+        },
+        onError: function(result){
+            // console.log('Pembayaran gagal:', result);
+            Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'Pembayaran Gagal'
+                });
+            // alert("Pembayaran gagal. Silakan coba lagi.");
+            window.location.href = "/depan";
+        },
+        onClose: function(){
+            alert("Anda menutup pop-up pembayaran sebelum menyelesaikan transaksi.");
+        }
+        });
+    });
+</script>
+
+<!-- untuk sintak hapus data -->
+ <script>
+  function hapus(barang_id) {
+        // console.log(barang_id);
+        fetch('/hapus/'+barang_id, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // alert("Produk berhasil dihapus!");
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Produk berhasil dihapus dari keranjang!',
+                    showConfirmButton: false,
+                    timer: 2000 // Popup otomatis hilang setelah 2 detik
+                });
+
+                // let vtotal = new Intl.NumberFormat("en-IN").format(data.total);
+                let formatter = new Intl.NumberFormat('id-ID', {
+                              style: 'currency',
+                              currency: 'IDR',
+                              minimumFractionDigits: 0
+                            });
+                let vtotal = formatter.format(data.total);
+                document.getElementById('cart-total').textContent = "Total: " +vtotal;
+                document.getElementById('total_belanja').textContent = vtotal;
+                // jmlbarangdibeli
+                document.getElementById('cart-count').textContent = data.jmlbarangdibeli;
+
+                location.reload(); // Refresh tampilan
+            } else {
+                // alert("Gagal menghapus produk.");
+                console.log(data);
+                // Swal.fire({
+                //   icon: 'error',
+                //   title: 'Oops...',
+                //   text: 'Gagal menghapus produk dari keranjang!'
+                // });
+            }
+        })
+        .catch(error => {
+        console.error('Error:', error);
+          Swal.fire({
+              icon: 'error',
+              title: 'Terjadi Kesalahan',
+              text: error.message || 'Terjadi kesalahan saat menghapus produk.',
+          });
+        });
+    }
+ </script>
+<script>
+function tambahKeKeranjang(id) {
+    // console.log("CLICK MASUK:", id); // 👈 DEBUG
+    fetch('/tambah', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            product_id: id,
+            quantity: 1
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Ditambahkan!',
+            text: 'Produk masuk ke keranjang',
+            timer: 1500,
+            showConfirmButton: false
+        });
+
+        location.reload();
+    })
+    .catch(err => console.log(err));
+}
+</script>
 @endpush
 
 @endsection

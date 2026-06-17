@@ -6,108 +6,12 @@
     <title>Menu | Seblak Sangkuriang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/pelanggan.css') }}">
     <style>
-        :root { --merah:#8b1a1a; --merah-gelap:#600e0e; --bg:#fdf0f0; }
-        * { box-sizing: border-box; }
-        body { background:var(--bg); font-family:'Segoe UI',sans-serif; margin:0; }
-
-        /* ── NAVBAR ── */
-        .navbar-custom {
-            background:white; position:sticky; top:0; z-index:200;
-            box-shadow:0 2px 12px rgba(0,0,0,.08);
-        }
-        .brand-logo { height:44px; width:44px; border-radius:50%; object-fit:contain; }
-        .brand-name { font-weight:700; color:var(--merah); font-size:1rem; line-height:1; }
-        .brand-sub  { font-size:.65rem; color:#aaa; }
-        .search-bar { border-radius:2rem; border:1.5px solid #ddd; padding:.45rem 1rem .45rem 2.5rem; font-size:.875rem; width:100%; }
-        .search-bar:focus { border-color:var(--merah); box-shadow:0 0 0 3px rgba(139,26,26,.1); outline:none; }
-        .search-wrap { position:relative; }
-        .search-icon { position:absolute; left:.85rem; top:50%; transform:translateY(-50%); color:#aaa; pointer-events:none; }
-        .cart-btn { position:relative; background:#f5f5f5; border:none; border-radius:50%; width:42px; height:42px; display:flex; align-items:center; justify-content:center; }
-        .cart-badge { position:absolute; top:-4px; right:-4px; background:var(--merah); color:white; border-radius:50%; font-size:.6rem; width:17px; height:17px; display:flex; align-items:center; justify-content:center; font-weight:700; }
-        .btn-merah { background:var(--merah); color:white; border:none; }
-        .btn-merah:hover { background:var(--merah-gelap); color:white; }
-        .nav-tabs-custom { border-bottom:2px solid #f0d0d0; }
-        .nav-tabs-custom .nav-link { color:#555; border:none; padding:.6rem 1.2rem; font-size:.875rem; border-radius:0; }
-        .nav-tabs-custom .nav-link.active { color:var(--merah); font-weight:700; border-bottom:2px solid var(--merah); margin-bottom:-2px; }
-        .nav-tabs-custom .nav-link:hover { color:var(--merah); background:none; }
-
-        /* ── HERO BANNER ── */
-        .hero-banner {
-            background: linear-gradient(135deg, var(--merah) 0%, #c0392b 60%, #e74c3c 100%);
-            color:white; padding:2.5rem 2rem; border-radius:1.5rem; margin:1.5rem 1rem;
-            position:relative; overflow:hidden;
-        }
-        .hero-banner::after {
-            content:'🍲'; position:absolute; right:1.5rem; top:50%; transform:translateY(-50%);
-            font-size:5rem; opacity:.25;
-        }
-        .hero-banner h2 { font-size:1.6rem; font-weight:800; margin-bottom:.4rem; }
-        .hero-banner p  { opacity:.85; margin-bottom:1rem; font-size:.9rem; }
-        .hero-badge { background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); color:white; border-radius:2rem; padding:.25rem .9rem; font-size:.8rem; display:inline-block; margin-bottom:.75rem; }
-
-        /* ── KATEGORI PILLS ── */
-        .kategori-scroll { display:flex; gap:.5rem; overflow-x:auto; padding:.75rem 1rem; scrollbar-width:none; }
-        .kategori-scroll::-webkit-scrollbar { display:none; }
-        .kategori-pill {
-            background:white; border:1.5px solid #e0e0e0; border-radius:2rem;
-            padding:.35rem 1.1rem; font-size:.82rem; white-space:nowrap; cursor:pointer;
-            text-decoration:none; color:#555; transition:all .15s; flex-shrink:0;
-        }
-        .kategori-pill.active, .kategori-pill:hover { background:var(--merah); color:white; border-color:var(--merah); }
-
-        /* ── PRODUCT CARD ── */
-        .product-card {
-            background:white; border-radius:1.1rem; overflow:hidden; border:none;
-            box-shadow:0 2px 12px rgba(0,0,0,.06); transition:transform .2s, box-shadow .2s;
-            height:100%;
-        }
-        .product-card:hover { transform:translateY(-4px); box-shadow:0 10px 28px rgba(0,0,0,.12); }
-        .product-img-wrap {
-            position:relative; aspect-ratio:1/1; overflow:hidden; background:#fdf0f0;
-        }
-        .product-img-wrap img { width:100%; height:100%; object-fit:cover; }
-        .product-img-emoji { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:3.5rem; }
-        .product-body { padding:.9rem; }
-        .product-name { font-weight:700; font-size:.9rem; color:#1a1a1a; margin-bottom:.15rem; }
-        .product-kategori { font-size:.72rem; color:#aaa; margin-bottom:.3rem; }
-        .product-price { font-weight:800; font-size:1rem; color:var(--merah); margin-bottom:.75rem; }
-        .btn-order {
-            background:var(--merah); color:white; border:none; border-radius:.6rem;
-            width:100%; padding:.45rem; font-size:.8rem; font-weight:600; cursor:pointer;
-            transition:background .15s;
-        }
-        .btn-order:hover { background:var(--merah-gelap); }
-        .btn-order-outline {
-            background:white; color:var(--merah); border:1.5px solid var(--merah);
-            border-radius:.6rem; width:100%; padding:.45rem; font-size:.8rem; font-weight:600;
-            cursor:pointer; transition:all .15s;
-        }
-        .btn-order-outline:hover { background:var(--merah); color:white; }
-
-        /* ── SECTION ── */
-        .section-header { padding:0 1rem .3rem; }
-        .section-title { font-weight:800; font-size:1.1rem; color:#1a1a1a; margin-bottom:.1rem; }
-        .section-sub { font-size:.78rem; color:#aaa; }
-
-        /* ── TOAST ── */
-        .toast-container { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; }
-
-        /* ── POPUP (SweetAlert-style) ── */
-        .popup-overlay {
-            display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
-            z-index:5000; align-items:center; justify-content:center;
-        }
-        .popup-overlay.show { display:flex; }
-        .popup-box {
-            background:white; border-radius:1.25rem; padding:2rem; max-width:340px;
-            width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.2);
-            animation:popIn .25s ease;
-        }
-        @keyframes popIn { from{transform:scale(.85);opacity:0} to{transform:scale(1);opacity:1} }
-        .popup-icon { font-size:3rem; margin-bottom:1rem; }
-        .popup-title { font-weight:700; font-size:1.1rem; margin-bottom:.5rem; }
-        .popup-msg { color:#666; font-size:.875rem; margin-bottom:1.5rem; }
+        /* page-specific overrides only */
+        .level-pedas-wrap { display: flex; gap: .4rem; flex-wrap: wrap; }
+        .level-btn { border: 1.5px solid #ddd; border-radius: .5rem; padding: .3rem .75rem; font-size: .78rem; cursor: pointer; transition: all .15s; background: white; }
+        .level-btn.active { background: var(--merah); color: white; border-color: var(--merah); }
     </style>
 </head>
 <body>
@@ -316,6 +220,60 @@
     </div>
   @endif
 </div>
+
+{{-- ── REKOMENDASI UNTUK ANDA ── --}}
+@if(isset($rekomendasiMenu) && $rekomendasiMenu->isNotEmpty())
+<div class="px-3 pb-2">
+  <hr style="border-color:#f0d0d0; margin:0 0 1.5rem;">
+  <div class="section-header mb-3">
+    <div style="display:flex; align-items:center; gap:.5rem;">
+      <span style="font-size:1.3rem;">✨</span>
+      <div>
+        <div class="section-title">Rekomendasi Untuk Anda</div>
+        <div class="section-sub">Menu yang sering dipesan pelanggan dengan selera mirip Anda</div>
+      </div>
+    </div>
+  </div>
+  <div class="row g-3">
+    @foreach($rekomendasiMenu as $item)
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="product-card" style="border:2px solid #f9d4d4; position:relative;">
+          {{-- Badge rekomendasi --}}
+          <div style="position:absolute; top:.5rem; left:.5rem; z-index:1; background:var(--merah); color:white; font-size:.62rem; font-weight:700; padding:2px 8px; border-radius:2rem;">
+            ⭐ Rekomendasi
+          </div>
+          <div class="product-img-wrap">
+            @if($item->gambar_menu)
+              <img src="{{ asset('storage/'.$item->gambar_menu) }}" alt="{{ $item->nama_menu }}" loading="lazy">
+            @else
+              <div class="product-img-emoji">🍲</div>
+            @endif
+          </div>
+          <div class="product-body">
+            <div class="product-kategori">{{ $item->kategori_menu }}</div>
+            <div class="product-name">{{ $item->nama_menu }}</div>
+            <div class="product-price">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
+            @if(strtolower($item->kategori_menu) === 'makanan')
+              <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none">
+                Pilih & Pesan
+              </a>
+            @else
+              <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST" class="form-addcart">
+                @csrf
+                <input type="hidden" name="id_produk" value="{{ $item->id_menu }}">
+                <input type="hidden" name="qty" value="1">
+                <button type="submit" class="btn-order w-100">+ Keranjang</button>
+              </form>
+            @endif
+          </div>
+        </div>
+      </div>
+    @endforeach
+  </div>
+</div>
+@endif
+
+{{-- ── END REKOMENDASI ── --}}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 <script>

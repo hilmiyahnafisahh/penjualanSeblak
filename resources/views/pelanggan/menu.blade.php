@@ -5,22 +5,15 @@
     <title>Pesan {{ $menu->nama_menu }} | Seblak Sangkuriang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/pelanggan.css') }}">
     <style>
-        :root{--merah:#8b1a1a;--merah-gelap:#600e0e;--bg:#fdf0f0;}
-        body{background:var(--bg);font-family:'Segoe UI',sans-serif;}
-        .navbar-custom{background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:200;}
-        .btn-merah{background:var(--merah);color:white;border:none;}
-        .btn-merah:hover{background:var(--merah-gelap);color:white;}
-        .nav-tabs-custom{border-bottom:2px solid #f0d0d0;}
-        .nav-tabs-custom .nav-link{color:#555;border:none;padding:.6rem 1.2rem;font-size:.875rem;border-radius:0;}
-        .nav-tabs-custom .nav-link.active{color:var(--merah);font-weight:700;border-bottom:2px solid var(--merah);margin-bottom:-2px;}
-        .menu-img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:1rem;}
-        .topping-card{border:1.5px solid #e5e5e5;border-radius:.75rem;padding:.75rem;cursor:pointer;transition:all .15s;}
-        .topping-card:has(input:checked){border-color:var(--merah);background:#fff8f8;}
-        .qty-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid #ddd;background:white;font-size:1.2rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-        .qty-btn:hover{border-color:var(--merah);color:var(--merah);}
-        .summary-sticky{position:sticky;top:80px;}
-        .summary-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #f5f5f5;font-size:.875rem;}
+        /* menu.blade.php specific */
+        .menu-img    { width:100%; max-height:260px; object-fit:cover; border-radius:14px; }
+        .topping-card { border:1.5px solid #e5e5e5; border-radius:.7rem; padding:.7rem; cursor:pointer; transition:all .15s; }
+        .topping-card:has(input:checked) { border-color:var(--merah); background:#fff8f8; }
+        .qty-btn { width:34px; height:34px; border-radius:50%; border:1.5px solid #ddd; background:white; font-size:1.2rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:border-color .15s; }
+        .qty-btn:hover { border-color:var(--merah); color:var(--merah); }
+        .summary-row { display:flex; justify-content:space-between; align-items:center; padding:.45rem 0; border-bottom:1px solid #f5f5f5; font-size:.875rem; }
     </style>
 </head>
 <body>
@@ -120,10 +113,31 @@
         </div>
         @endif
 
-        <button type="submit" class="btn btn-merah w-100 py-3 fw-bold fs-6">
+        <button type="submit" class="btn btn-merah w-100 py-3 fw-bold fs-6" id="btnTambahKeranjang">
           <i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang
         </button>
       </form>
+
+      {{-- Popup Berhasil --}}
+      <div class="modal fade" id="popupBerhasil" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+          <div class="modal-content border-0 rounded-4 shadow" style="overflow:hidden;">
+            <div class="modal-body text-center p-4">
+              <div style="font-size:3rem;margin-bottom:.5rem;">🛒</div>
+              <h5 class="fw-bold mb-1" style="color:#0f5132;">Berhasil!</h5>
+              <p class="text-muted small mb-3" id="popupMsg">{{ $menu->nama_menu }} berhasil ditambahkan ke keranjang.</p>
+              <div class="d-grid gap-2">
+                <a href="{{ route('pelanggan.keranjang') }}" class="btn btn-merah btn-sm py-2">
+                  <i class="bi bi-cart3 me-1"></i>Lihat Keranjang
+                </a>
+                <button class="btn btn-outline-secondary btn-sm py-2" data-bs-dismiss="modal">
+                  Lanjut Belanja
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     {{-- Kanan: Ringkasan --}}
@@ -189,6 +203,44 @@ function hitungTotal() {
 
 document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', hitungTotal));
 document.querySelectorAll('input[type="number"]').forEach(n => n.addEventListener('input', hitungTotal));
+
+// Submit form via AJAX → tampilkan popup
+document.getElementById('menuForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn   = document.getElementById('btnTambahKeranjang');
+  const form  = this;
+  const nama  = '{{ $menu->nama_menu }}';
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menambahkan...';
+
+  fetch(form.action, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': '{{ csrf_token() }}',
+      'Accept': 'application/json, text/html, */*',
+    },
+    body: new FormData(form),
+    redirect: 'follow',
+  })
+  .then(response => {
+    // Sukses jika status 200-399 atau redirect
+    if (response.ok || response.redirected) {
+      document.getElementById('popupMsg').textContent = nama + ' berhasil ditambahkan ke keranjang.';
+      const modal = new bootstrap.Modal(document.getElementById('popupBerhasil'));
+      modal.show();
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang';
+    } else {
+      // Fallback: submit biasa
+      form.submit();
+    }
+  })
+  .catch(() => {
+    // Fallback: submit biasa jika fetch error
+    form.submit();
+  });
+});
 </script>
 </body>
 </html>
