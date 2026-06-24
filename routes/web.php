@@ -52,25 +52,29 @@ Route::post('/pelanggan/login', [PelangganController::class, 'login'])->name('pe
 Route::get('/pelanggan/register', [PelangganController::class, 'register'])->name('pelanggan.register');
 Route::post('/pelanggan/register', [PelangganController::class, 'register'])->name('pelanggan.register.post');
 Route::post('/pelanggan/logout', [PelangganController::class, 'logout'])->name('pelanggan.logout');
-Route::get('/pelanggan/dashboard', [PelangganController::class, 'dashboard'])->name('pelanggan.dashboard');
-Route::post('/pelanggan/keranjang/tambah', [PelangganController::class, 'addToCart'])->name('pelanggan.keranjang.tambah');
-Route::get('/pelanggan/menu/{id}', [PelangganController::class, 'showMenu'])->name('pelanggan.menu.show');
-Route::get('/pelanggan/keranjang', [PelangganController::class, 'cart'])->name('pelanggan.keranjang');
-Route::post('/pelanggan/keranjang/update', [PelangganController::class, 'updateCart'])->name('pelanggan.keranjang.update');
-Route::post('/pelanggan/keranjang/remove', [PelangganController::class, 'removeCartItem'])->name('pelanggan.keranjang.remove');
-Route::get('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout');
+
+// Route pelanggan yang butuh session aktif
+Route::middleware('pelanggan.session')->group(function () {
+    Route::get('/pelanggan/dashboard', [PelangganController::class, 'dashboard'])->name('pelanggan.dashboard');
+    Route::post('/pelanggan/keranjang/tambah', [PelangganController::class, 'addToCart'])->name('pelanggan.keranjang.tambah');
+    Route::get('/pelanggan/menu/{id}', [PelangganController::class, 'showMenu'])->name('pelanggan.menu.show');
+    Route::get('/pelanggan/keranjang', [PelangganController::class, 'cart'])->name('pelanggan.keranjang');
+    Route::post('/pelanggan/keranjang/update', [PelangganController::class, 'updateCart'])->name('pelanggan.keranjang.update');
+    Route::post('/pelanggan/keranjang/remove', [PelangganController::class, 'removeCartItem'])->name('pelanggan.keranjang.remove');
+    Route::get('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout');
+    Route::post('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout.post');
+    Route::get('/pelanggan/checkout/qris/success', [PelangganController::class, 'checkoutQrisSuccess'])->name('pelanggan.checkout.qris.success');
+    Route::get('/pelanggan/bayar-qris/{id}', [PelangganController::class, 'bayarQris'])->name('pelanggan.bayar.qris');
+    Route::get('/pelanggan/bayar-transfer/{id}', [PelangganController::class, 'bayarTransfer'])->name('pelanggan.bayar.transfer');
+    Route::get('/pelanggan/cek-status/{id}', [PelangganController::class, 'cekStatusPembayaran'])->name('pelanggan.cek.status');
+    Route::get('/pelanggan/pesanan', [PelangganController::class, 'pesanan'])->name('pelanggan.pesanan');
+    Route::get('/pelanggan/riwayat', [PelangganController::class, 'riwayat'])->name('pelanggan.riwayat');
+});
 
 // Routes for the new KeranjangController feature
 Route::post('/tambah', [KeranjangController::class, 'tambahKeranjang'])->name('keranjang.tambah');
 Route::delete('/hapus/{barang_id}', [KeranjangController::class, 'hapus'])->name('keranjang.hapus');
 Route::get('/lihatkeranjang', [KeranjangController::class, 'lihatkeranjang'])->name('keranjang.lihat');
-Route::post('/pelanggan/checkout', [PelangganController::class, 'checkout'])->name('pelanggan.checkout.post');
-Route::get('/pelanggan/checkout/qris/success', [PelangganController::class, 'checkoutQrisSuccess'])->name('pelanggan.checkout.qris.success');
-Route::get('/pelanggan/bayar-qris/{id}', [PelangganController::class, 'bayarQris'])->name('pelanggan.bayar.qris');
-Route::get('/pelanggan/bayar-transfer/{id}', [PelangganController::class, 'bayarTransfer'])->name('pelanggan.bayar.transfer');
-Route::get('/pelanggan/cek-status/{id}', [PelangganController::class, 'cekStatusPembayaran'])->name('pelanggan.cek.status');
-Route::get('/pelanggan/pesanan', [PelangganController::class, 'pesanan'])->name('pelanggan.pesanan');
-Route::get('/pelanggan/riwayat', [PelangganController::class, 'riwayat'])->name('pelanggan.riwayat');
 
 Route::get('/depan', function () {
     $barang = Barang::where('stok', '>', 0)->orderBy('nama_barang')->get();
@@ -85,6 +89,17 @@ Route::get('/kasir', [KasirController::class, 'index'])->name('kasir.home');
 Route::get('/kasir/login', [KasirController::class, 'showLogin'])->name('kasir.login');
 Route::post('/kasir/login', [KasirController::class, 'login'])->name('kasir.login.post');
 Route::post('/kasir/logout', [KasirController::class, 'logout'])->name('kasir.logout');
+
+Route::middleware('kasir.session')->group(function () {
+    Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
+    Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.pesanan');
+    Route::get('/kasir/pembayaran', [KasirController::class, 'pembayaran'])->name('kasir.pembayaran');
+    Route::post('/kasir/pembayaran/{id}/bayar', [KasirController::class, 'bayarPembayaran'])->name('kasir.pembayaran.bayar');
+    Route::get('/kasir/stok-menu', [KasirController::class, 'stokMenu'])->name('kasir.stok_menu');
+    Route::get('/kasir/laporan-penjualan', [\App\Http\Controllers\LaporanPenjualanController::class, 'index'])->name('kasir.laporan_penjualan');
+    Route::get('/kasir/laporan-penjualan/pdf', [\App\Http\Controllers\LaporanPenjualanController::class, 'pdf'])->name('kasir.laporan_penjualan.pdf');
+});
+
 Route::get('/kasir/dashboard', [KasirController::class, 'dashboard'])->name('kasir.dashboard');
 Route::get('/kasir/pesanan', [KasirController::class, 'pesanan'])->name('kasir.pesanan');
 Route::get('/kasir/pembayaran', [KasirController::class, 'pembayaran'])->name('kasir.pembayaran');

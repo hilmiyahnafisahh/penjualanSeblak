@@ -136,6 +136,7 @@ class PembayaranResource extends Resource
                                         ->label('Karyawan')
                                         ->options(Karyawan::pluck('nama', 'id_karyawan'))
                                         ->searchable()
+                                        ->dehydrated(false)
                                         ->columnSpan(1),
 
                                     TextInput::make('status_pembayaran')

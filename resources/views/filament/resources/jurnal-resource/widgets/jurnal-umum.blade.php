@@ -57,10 +57,11 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php $no = 1; @endphp
                     @foreach($jurnals as $jurnal)
                         @foreach($jurnal->jurnaldetail as $detail)
-                            <tr style="{{ $loop->even ? 'background:#f9fafb;' : '' }}">
-                                <td class="px-4 py-2 border">{{ $loop->iteration }}</td>
+                            <tr style="{{ $no % 2 === 0 ? 'background:#f9fafb;' : '' }}">
+                                <td class="px-4 py-2 border">{{ $no++ }}</td>
                                 <td class="px-4 py-2 border">{{ \Carbon\Carbon::parse($jurnal->tgl)->format('Y-m-d') }}</td>
 
                                 @if($detail->debit != 0)

@@ -1,0 +1,57 @@
+[33mda75add[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mnafisa[m[33m)[m HEAD@{0}: commit (merge): fiks
+[33m492ddd9[m HEAD@{1}: commit: login
+[33ma72b6a8[m[33m ([m[1;31morigin/nafisa[m[33m)[m HEAD@{2}: commit: login
+[33m5352181[m HEAD@{3}: commit (merge): clustering
+[33m4b5af78[m HEAD@{4}: commit: clustering
+[33me131dd3[m HEAD@{5}: commit: sign up page
+[33m47b09a2[m HEAD@{6}: commit: laporan laba rugi
+[33m9b635f3[m HEAD@{7}: commit (merge): jurnal umum revisi
+[33m91fa217[m HEAD@{8}: commit: registrasi
+[33mcb3b4f4[m HEAD@{9}: pull origin main: Fast-forward
+[33m2a2fcec[m HEAD@{10}: commit: jurnal & buku besar
+[33m9ec4a1a[m HEAD@{11}: pull origin main: Fast-forward
+[33m9fa4a4b[m HEAD@{12}: commit: penggajian done LAGI
+[33m1ce295e[m HEAD@{13}: pull origin main: Fast-forward
+[33mdfb3aa8[m HEAD@{14}: commit: penggajian done
+[33m27593e9[m HEAD@{15}: commit: penggajian lagi
+[33m921a754[m HEAD@{16}: commit (merge): revisian
+[33m1b16d91[m HEAD@{17}: commit: backup perubahan reksa
+[33m6b23a7e[m HEAD@{18}: commit: bayar
+[33mf2df3fe[m HEAD@{19}: pull origin main: Fast-forward
+[33mf03c045[m HEAD@{20}: commit: penggajian pdf bayar
+[33m63c6840[m HEAD@{21}: commit: penggajian form
+[33m5486882[m HEAD@{22}: pull origin main: Fast-forward
+[33m397c37d[m HEAD@{23}: pull origin main: Fast-forward
+[33m478e106[m HEAD@{24}: commit: relasi menu barang
+[33m6e51514[m HEAD@{25}: pull origin main: Fast-forward
+[33m48979d4[m HEAD@{26}: pull origin main: Fast-forward
+[33m29c57b6[m HEAD@{27}: checkout: moving from Reksaa to nafisa
+[33md661a79[m[33m ([m[1;32mReksaa[m[33m)[m HEAD@{28}: checkout: moving from asif to Reksaa
+[33m021810d[m[33m ([m[1;32masif[m[33m)[m HEAD@{29}: checkout: moving from nafisa to asif
+[33m29c57b6[m HEAD@{30}: checkout: moving from main to nafisa
+[33m5bef94f[m[33m ([m[1;32mmain[m[33m)[m HEAD@{31}: checkout: moving from nafisa to main
+[33m29c57b6[m HEAD@{32}: commit (merge): revisi barang
+[33md457f0d[m HEAD@{33}: checkout: moving from main to nafisa
+[33m5bef94f[m[33m ([m[1;32mmain[m[33m)[m HEAD@{34}: checkout: moving from nafisa to main
+[33md457f0d[m HEAD@{35}: commit: revisi barang
+[33m61b1bf9[m HEAD@{36}: pull origin main: Fast-forward
+[33m30f8737[m HEAD@{37}: reset: moving to HEAD
+[33m30f8737[m HEAD@{38}: checkout: moving from nafisa to nafisa
+[33m30f8737[m HEAD@{39}: checkout: moving from nafisa to nafisa
+[33m30f8737[m HEAD@{40}: commit: resource akun
+[33m18bd3c2[m HEAD@{41}: pull origin main: Fast-forward
+[33m541acb3[m HEAD@{42}: pull origin main: Fast-forward
+[33m8092486[m HEAD@{43}: pull origin main: Fast-forward
+[33m8d1123b[m HEAD@{44}: checkout: moving from Reksaa to nafisa
+[33md661a79[m[33m ([m[1;32mReksaa[m[33m)[m HEAD@{45}: checkout: moving from nafisa to Reksaa
+[33m8d1123b[m HEAD@{46}: checkout: moving from asif to nafisa
+[33m021810d[m[33m ([m[1;32masif[m[33m)[m HEAD@{47}: checkout: moving from nafisa to asif
+[33m8d1123b[m HEAD@{48}: pull origin main: Fast-forward
+[33m59a8f38[m HEAD@{49}: commit: update error
+[33ma7e7b5d[m HEAD@{50}: commit: resource barang dan create helper
+[33mf355f47[m HEAD@{51}: pull origin main: Fast-forward
+[33m85597d1[m HEAD@{52}: commit: barang
+[33m5bef94f[m[33m ([m[1;32mmain[m[33m)[m HEAD@{53}: checkout: moving from main to nafisa
+[33m5bef94f[m[33m ([m[1;32mmain[m[33m)[m HEAD@{54}: pull origin main: Fast-forward
+[33m02aed07[m HEAD@{55}: commit: modified: .env.example
+[33m2d92558[m HEAD@{56}: commit (initial): new file: .editorconfig

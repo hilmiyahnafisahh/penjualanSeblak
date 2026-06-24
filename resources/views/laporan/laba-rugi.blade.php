@@ -33,7 +33,6 @@
                 </svg>
                 <span style="color:#fff;font-weight:600">Unduh PDF</span>
             </a>
-
         </div>
         <table class="w-full text-sm mt-2 border">
             <thead class="bg-gray-100 text-xs uppercase">
