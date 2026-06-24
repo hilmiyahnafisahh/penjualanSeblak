@@ -32,11 +32,9 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName('Seblak Sangkuriang')
             ->brandLogo(new HtmlString('
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <img src="' . asset('images/logo-seblak.png') . '" style="height:2.5rem;width:2.5rem;border-radius:50%;object-fit:contain;" alt="Logo">
-                    <span style="color:#fff;font-weight:800;font-size:1rem;letter-spacing:.2px;line-height:1.2;">Seblak<br><span style="font-weight:400;font-size:.8rem;opacity:.85;">Sangkuriang</span></span>
-                </div>
+                <img src="' . asset('images/logo-seblak.png') . '" style="height:2.5rem;width:2.5rem;border-radius:50%;object-fit:contain;" alt="Logo">
             '))
+            ->brandLogoHeight('2.5rem')
             ->brandLogoHeight('2.5rem')
             ->favicon(asset('images/logo-seblak.png'))
             ->font('Inter')
