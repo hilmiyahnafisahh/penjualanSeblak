@@ -130,7 +130,10 @@ class KasirController extends Controller
             'belumBayarCount',
             'todayRevenue',
             'recentOrders'
-        ));
+        ) + [
+            'prosesCount'       => $diprosesCount,
+            'pendapatanHariIni' => $todayRevenue,
+        ]);
     }
 
     public function pesanan(Request $request)
@@ -157,7 +160,18 @@ class KasirController extends Controller
 
         $pesanan = $query->get();
 
-        return view('kasir.pesanan', compact('pesanan', 'statusParam'));
+        // Labels used by the view filter pills
+        $statusLabels = [
+            'pending' => 'Belum Dibayar',
+            'diproses' => 'Diproses',
+            'selesai' => 'Selesai',
+            'semua' => 'Semua',
+        ];
+
+        // Provide generic name expected by view
+        $status = $statusParam;
+
+        return view('kasir.pesanan', compact('pesanan', 'statusParam', 'statusLabels', 'status'));
     }
 
     public function pembayaran(Request $request)
