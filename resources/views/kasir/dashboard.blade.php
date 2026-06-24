@@ -167,17 +167,17 @@
                         @foreach($recentOrders as $i => $order)
                             <tr>
                                 <td style="color:var(--ink-400); font-weight:600;">{{ $i + 1 }}</td>
-                                <td style="font-weight:600; color:var(--ink-900);">{{ $order->no_pesanan }}</td>
-                                <td>{{ $order->pelanggan->name ?? '-' }}</td>
+                                <td style="font-weight:600; color:var(--ink-900);">{{ $order->id_pesanan ?? '-' }}</td>
+                                <td>{{ $order->Pelanggan->nama_pelanggan ?? '-' }}</td>
                                 <td>
                                     @php
-                                        $st = strtolower($order->status ?? '');
+                                        $st = strtolower($order->status_pemesanan ?? '');
                                         $stCls = 'is-info';
-                                        if (in_array($st, ['pending','menunggu','belum bayar'])) $stCls = 'is-warn';
-                                        elseif (in_array($st, ['selesai','lunas','sukses'])) $stCls = 'is-success';
+                                        if (in_array($st, ['belumdibayar','pending','menunggu'])) $stCls = 'is-warn';
+                                        elseif (in_array($st, ['selesai','lunas'])) $stCls = 'is-success';
                                         elseif (in_array($st, ['batal','gagal','ditolak'])) $stCls = 'is-danger';
                                     @endphp
-                                    <span class="k-badge {{ $stCls }}">{{ $order->status }}</span>
+                                    <span class="k-badge {{ $stCls }}">{{ ucfirst($order->status_pemesanan ?? '-') }}</span>
                                 </td>
                                 <td style="text-align:right; color:var(--ink-500); font-size:0.82rem;">
                                     {{ $order->created_at->translatedFormat('d M Y · H:i') }}

@@ -12,6 +12,21 @@
         .level-pedas-wrap { display: flex; gap: .4rem; flex-wrap: wrap; }
         .level-btn { border: 1.5px solid #ddd; border-radius: .5rem; padding: .3rem .75rem; font-size: .78rem; cursor: pointer; transition: all .15s; background: white; }
         .level-btn.active { background: var(--merah); color: white; border-color: var(--merah); }
+
+        /* Pastikan product-card mengisi cell grid dengan baik */
+        .p-grid .product-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .p-grid .product-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .p-grid .btn-order,
+        .p-grid .form-addcart { margin-top: auto; }
+        .p-grid .form-addcart .btn-order { margin-top: 0; }
     </style>
 </head>
 <body>
@@ -178,42 +193,38 @@
   </div>
 
   @if(isset($produk) && $produk->isNotEmpty())
-    <div class="row g-3">
-      @foreach($produk as $item)
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="product-card">
-            <div class="product-img-wrap">
-              @if($item->gambar_menu)
-                <img src="{{ asset('storage/'.$item->gambar_menu) }}" alt="{{ $item->nama_menu }}" loading="lazy">
-              @else
-                <div class="product-img-emoji">🍲</div>
-              @endif
-            </div>
-            <div class="product-body">
-              <div class="product-kategori">{{ $item->kategori_menu }}</div>
-              <div class="product-name">{{ $item->nama_menu }}</div>
-              <div class="product-price">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
-              @if(strtolower($item->kategori_menu) === 'makanan')
-                <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none">
-                  Pilih & Pesan
-                </a>
-              @else
-                <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST" class="form-addcart">
-                  @csrf
-                  <input type="hidden" name="id_produk" value="{{ $item->id_menu }}">
-                  <input type="hidden" name="qty" value="1">
-                  <button type="submit" class="btn-order w-100">+ Keranjang</button>
-                </form>
-              @endif
-            </div>
-          </div>
+    @foreach($produk as $item)
+      <div class="product-card">
+        <div class="product-img-wrap">
+          @if($item->gambar_menu)
+            <img src="{{ asset('storage/'.$item->gambar_menu) }}" alt="{{ $item->nama_menu }}" loading="lazy">
+          @else
+            <div class="product-img-emoji">🍲</div>
+          @endif
         </div>
-      @endforeach
-    </div>
+        <div class="product-body">
+          <div class="product-kategori">{{ $item->kategori_menu }}</div>
+          <div class="product-name">{{ $item->nama_menu }}</div>
+          <div class="product-price">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
+          @if(strtolower($item->kategori_menu) === 'makanan')
+            <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none">
+              Pilih & Pesan
+            </a>
+          @else
+            <form action="{{ route('pelanggan.keranjang.tambah') }}" method="POST" class="form-addcart">
+              @csrf
+              <input type="hidden" name="id_produk" value="{{ $item->id_menu }}">
+              <input type="hidden" name="qty" value="1">
+              <button type="submit" class="btn-order w-100">+ Keranjang</button>
+            </form>
+          @endif
+        </div>
+      </div>
+    @endforeach
   @else
-    <div class="text-center py-5">
+    <div style="grid-column:1/-1; text-align:center; padding:3rem 1rem;">
       <div style="font-size:3rem;">🔍</div>
-      <p class="text-muted mt-2">Tidak ada menu ditemukan.</p>
+      <p style="color:#aaa; margin-top:.75rem;">Tidak ada menu ditemukan.</p>
       @if(!empty(request('q')))
         <a href="{{ route('pelanggan.dashboard') }}" class="btn btn-merah btn-sm">Lihat Semua Menu</a>
       @endif
@@ -223,44 +234,64 @@
 
 {{-- ── REKOMENDASI UNTUK ANDA ── --}}
 @if(isset($rekomendasiMenu) && $rekomendasiMenu->isNotEmpty())
-<div class="px-3 pb-2">
-  <hr style="border-color:#f0d0d0; margin:0 0 1.5rem;">
-  <div class="section-header mb-3">
+<div class="px-3 pb-4">
+  <hr style="border-color:#f0d0d0; margin:0 0 1.25rem;">
+
+  {{-- Section header --}}
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
     <div style="display:flex; align-items:center; gap:.5rem;">
-      <span style="font-size:1.3rem;">✨</span>
+      <div style="width:32px; height:32px; background:linear-gradient(135deg,#8b1a1a,#c0392b); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <span style="font-size:.95rem;">✨</span>
+      </div>
       <div>
-        <div class="section-title">Rekomendasi Untuk Anda</div>
-        <div class="section-sub">Menu yang sering dipesan pelanggan dengan selera mirip Anda</div>
+        <div style="font-weight:800; font-size:.97rem; color:#1a1a1a; line-height:1.2;">Rekomendasi Untuk Anda</div>
+        <div style="font-size:.72rem; color:#bbb; margin-top:.05rem;">Menu pilihan berdasarkan selera Anda</div>
       </div>
     </div>
+    <span style="font-size:.7rem; font-weight:600; color:var(--merah); background:#fdf0f0; border:1px solid #f0d0d0; padding:.2rem .7rem; border-radius:2rem;">
+      {{ $rekomendasiMenu->count() }} Menu
+    </span>
   </div>
-  <div class="row g-3">
+
+  {{-- Horizontal scroll cards --}}
+  <div style="display:flex; gap:.85rem; overflow-x:auto; padding-bottom:.5rem; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;">
     @foreach($rekomendasiMenu as $item)
-      <div class="col-6 col-md-4 col-lg-3">
-        <div class="product-card" style="border:2px solid #f9d4d4; position:relative;">
-          {{-- Badge rekomendasi --}}
-          <div style="position:absolute; top:.5rem; left:.5rem; z-index:1; background:var(--merah); color:white; font-size:.62rem; font-weight:700; padding:2px 8px; border-radius:2rem;">
-            ⭐ Rekomendasi
-          </div>
-          <div class="product-img-wrap">
+      <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}"
+         style="flex:0 0 150px; text-decoration:none; scroll-snap-align:start;">
+        <div style="background:white; border-radius:14px; overflow:hidden; border:1.5px solid #f5e0e0; box-shadow:0 2px 10px rgba(0,0,0,.07); transition:transform .18s, box-shadow .18s; height:100%;"
+             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 22px rgba(139,26,26,.15)'"
+             onmouseout="this.style.transform='';this.style.boxShadow='0 2px 10px rgba(0,0,0,.07)'">
+
+          {{-- Gambar --}}
+          <div style="position:relative; height:110px; overflow:hidden; background:#fdf0f0;">
             @if($item->gambar_menu)
-              <img src="{{ asset('storage/'.$item->gambar_menu) }}" alt="{{ $item->nama_menu }}" loading="lazy">
+              <img src="{{ asset('storage/'.$item->gambar_menu) }}"
+                   alt="{{ $item->nama_menu }}"
+                   loading="lazy"
+                   style="width:100%; height:100%; object-fit:cover;">
             @else
-              <div class="product-img-emoji">🍲</div>
+              <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:2.5rem;">🍲</div>
             @endif
+            {{-- Badge --}}
+            <div style="position:absolute; top:.4rem; left:.4rem; background:#8b1a1a; color:white; font-size:.55rem; font-weight:700; padding:2px 6px; border-radius:2rem; line-height:1.5;">
+              ⭐ Rekomendasi
+            </div>
           </div>
-          <div class="product-body">
-            <div class="product-kategori">{{ $item->kategori_menu }}</div>
-            <div class="product-name">{{ $item->nama_menu }}</div>
-            <div class="product-price">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
-            <a href="{{ route('pelanggan.menu.show', $item->id_menu) }}" class="btn-order d-block text-center text-decoration-none mt-2">
-              Pilih & Pesan
-            </a>
+
+          {{-- Info --}}
+          <div style="padding:.6rem .7rem .75rem;">
+            <div style="font-size:.62rem; color:#bbb; text-transform:uppercase; letter-spacing:.3px; margin-bottom:.15rem;">{{ $item->kategori_menu }}</div>
+            <div style="font-weight:700; font-size:.83rem; color:#1a1a1a; line-height:1.3; margin-bottom:.35rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{{ $item->nama_menu }}</div>
+            <div style="font-weight:800; font-size:.88rem; color:#8b1a1a; margin-bottom:.5rem;">Rp {{ number_format($item->harga_menu, 0, ',', '.') }}</div>
+            <div style="background:linear-gradient(135deg,#8b1a1a,#a32020); color:white; border:none; border-radius:8px; width:100%; padding:.35rem 0; font-size:.73rem; font-weight:700; text-align:center; cursor:pointer;">
+              Pesan
+            </div>
           </div>
         </div>
-      </div>
+      </a>
     @endforeach
   </div>
+  <style>.px-3 div[style*="overflow-x:auto"]::-webkit-scrollbar{display:none}</style>
 </div>
 @endif
 
