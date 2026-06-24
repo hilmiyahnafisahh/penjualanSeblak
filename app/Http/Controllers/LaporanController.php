@@ -196,7 +196,14 @@ class LaporanController extends Controller
 
     public function bukuBesarPdf(Request $request)
     {
+        $periode = $request->query('periode', now()->format('Y-m'));
+        $start   = Carbon::createFromFormat('Y-m', $periode)->startOfMonth();
+        $end     = Carbon::createFromFormat('Y-m', $periode)->endOfMonth();
+
         $details = JurnalDetail::with(['akun', 'jurnal'])
+            ->whereHas('jurnal', function ($q) use ($start, $end) {
+                $q->whereBetween('tgl', [$start->toDateString(), $end->toDateString()]);
+            })
             ->get()
             ->sortBy(fn ($d) => [$d->akun->kode_akun ?? '', $d->jurnal->tgl ?? '']);
 
@@ -205,6 +212,6 @@ class LaporanController extends Controller
         $pdf = Pdf::loadView('pdf.buku-besar-pdf', compact('groupedDetails'))
             ->setPaper('A4', 'portrait');
 
-        return $pdf->download('buku-besar-' . now()->format('Y-m') . '.pdf');
+        return $pdf->download('buku-besar-' . $periode . '.pdf');
     }
 }

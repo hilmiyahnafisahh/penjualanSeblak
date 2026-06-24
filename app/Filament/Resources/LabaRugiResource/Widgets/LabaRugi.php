@@ -1,20 +1,17 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace App\Filament\Resources\LabaRugiResource\Widgets;
 
-use Filament\Pages\Page;
+use Filament\Widgets\Widget;
 use App\Models\JurnalDetail;
 use Carbon\Carbon;
 
-class LaporanLabaRugi extends Page
+class LabaRugi extends Widget
 {
-    protected static ?string $navigationIcon  = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Laporan';
-    protected static ?string $navigationLabel = 'Laba Rugi';
-    protected static string  $view            = 'filament.pages.laporan-laba-rugi';
-    protected static bool    $shouldRegisterNavigation = false; // disembunyikan, diganti Resource
+    protected static string $view = 'filament.resources.laba-rugi-resource.widgets.laba-rugi';
 
-    // Livewire public property — berubah saat user pilih bulan
+    protected int | string | array $columnSpan = 'full';
+
     public string $periode = '';
 
     public function mount(): void
@@ -22,18 +19,15 @@ class LaporanLabaRugi extends Page
         $this->periode = now()->format('Y-m');
     }
 
-    // Dipanggil oleh wire:click="filter" — cukup kosong,
-    // karena Livewire akan re-render dan getViewData() terpanggil ulang
     public function filter(): void
     {
-        $data = $this->getViewData();
-
+        $data    = $this->getViewData();
         $isEmpty = $data['pendapatanGroups']->isEmpty() && $data['bebanGroups']->isEmpty();
 
         if ($isEmpty) {
             \Filament\Notifications\Notification::make()
                 ->title('Tidak ada data')
-                ->body('Tidak ada transaksi jurnal untuk periode ' . \Carbon\Carbon::createFromFormat('Y-m', $this->periode)->translatedFormat('F Y') . '.')
+                ->body('Tidak ada transaksi jurnal untuk periode ' . Carbon::createFromFormat('Y-m', $this->periode)->translatedFormat('F Y') . '.')
                 ->warning()
                 ->send();
         }
@@ -42,9 +36,8 @@ class LaporanLabaRugi extends Page
     public function getViewData(): array
     {
         $periode = $this->periode ?: now()->format('Y-m');
-
-        $start = Carbon::createFromFormat('Y-m', $periode)->startOfMonth();
-        $end   = Carbon::createFromFormat('Y-m', $periode)->endOfMonth();
+        $start   = Carbon::createFromFormat('Y-m', $periode)->startOfMonth();
+        $end     = Carbon::createFromFormat('Y-m', $periode)->endOfMonth();
 
         $details = JurnalDetail::with(['akun', 'jurnal'])
             ->whereHas('jurnal', function ($q) use ($start, $end) {
@@ -56,11 +49,7 @@ class LaporanLabaRugi extends Page
             ->groupBy(fn ($d) => $d->akun->id)
             ->map(function ($items) {
                 $akun = $items->first()->akun;
-                return [
-                    'kode'   => $akun->kode_akun ?? '-',
-                    'nama'   => $akun->nama_akun ?? '-',
-                    'jumlah' => $items->sum('credit'),
-                ];
+                return ['kode' => $akun->kode_akun ?? '-', 'nama' => $akun->nama_akun ?? '-', 'jumlah' => $items->sum('credit')];
             })->values();
 
         $bebanGroups = $details
@@ -68,11 +57,7 @@ class LaporanLabaRugi extends Page
             ->groupBy(fn ($d) => $d->akun->id)
             ->map(function ($items) {
                 $akun = $items->first()->akun;
-                return [
-                    'kode'   => $akun->kode_akun ?? '-',
-                    'nama'   => $akun->nama_akun ?? '-',
-                    'jumlah' => $items->sum('debit'),
-                ];
+                return ['kode' => $akun->kode_akun ?? '-', 'nama' => $akun->nama_akun ?? '-', 'jumlah' => $items->sum('debit')];
             })->values();
 
         $totalPendapatan = $pendapatanGroups->sum('jumlah');
@@ -80,14 +65,6 @@ class LaporanLabaRugi extends Page
         $labaBersih      = $totalPendapatan - $totalBeban;
         $hasData         = $pendapatanGroups->isNotEmpty() || $bebanGroups->isNotEmpty();
 
-        return compact(
-            'periode',
-            'pendapatanGroups',
-            'bebanGroups',
-            'totalPendapatan',
-            'totalBeban',
-            'labaBersih',
-            'hasData'
-        );
+        return compact('periode', 'pendapatanGroups', 'bebanGroups', 'totalPendapatan', 'totalBeban', 'labaBersih', 'hasData');
     }
 }

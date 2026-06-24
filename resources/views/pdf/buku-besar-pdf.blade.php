@@ -19,6 +19,7 @@
 </head>
 <body>
   <h1>Buku Besar</h1>
+  
   <div class="subtitle">Seblak Sangkuriang — Dicetak {{ now()->format('d/m/Y H:i') }}</div>
 
   @foreach($groupedDetails as $akunId => $details)

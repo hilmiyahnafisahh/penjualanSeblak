@@ -14,8 +14,10 @@
 </head>
 <body>
     <div class="header">
-        <h2>Jurnal Umum</h2>
-        <div>{{ $periodeLabel }}</div>
+        <h1>Jurnal Umum</h1>
+        <div class="subtitle">{{ $periodeLabel }}</div>
+        <div class="subtitle">Seblak Sangkuriang — Dicetak {{ now()->format('d/m/Y H:i') }}</div>
+
     </div>
 
     <table>
