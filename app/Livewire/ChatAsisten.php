@@ -7,6 +7,10 @@ use Livewire\Component;
 
 class ChatAsisten extends Component
 {
+    protected $listeners = [
+        'openChatAssistant' => 'open',
+    ];
+
     public bool $terbuka = false;
 
     /** @var array<int, array{role: string, text: string}> */
@@ -17,6 +21,11 @@ class ChatAsisten extends Component
     public function toggle(): void
     {
         $this->terbuka = ! $this->terbuka;
+    }
+
+    public function open(): void
+    {
+        $this->terbuka = true;
     }
 
     public function kirim(): void

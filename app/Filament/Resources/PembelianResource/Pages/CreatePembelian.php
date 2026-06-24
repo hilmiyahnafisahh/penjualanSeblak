@@ -11,15 +11,10 @@ class CreatePembelian extends CreateRecord
 {
     protected static string $resource = PembelianResource::class;
 
-    // ✅ Sembunyikan tombol bawah (Create & Cancel default)
-    public static function canCreateAnother(): bool
-    {
-        return false;
-    }
-
+    // HILANGKAN tombol default Filament
     protected function getFormActions(): array
     {
-        return []; // ✅ Kosongkan tombol bawah
+        return [];
     }
 
     protected function afterCreate(): void
@@ -28,17 +23,34 @@ class CreatePembelian extends CreateRecord
         $items  = $this->data['barang'] ?? [];
 
         DB::transaction(function () use ($record, $items) {
+
+            // UPDATE STOK BARANG
             foreach ($items as $item) {
+
                 if (!empty($item['id_barang']) && !empty($item['jumlah'])) {
-                    $barang = Barang::where('id_barang', $item['id_barang'])->first();
+
+                    $barang = Barang::where(
+                        'id_barang',
+                        $item['id_barang']
+                    )->first();
+
                     if ($barang) {
-                        $barang->increment('stok', (int) $item['jumlah']);
+                        $barang->increment(
+                            'stok',
+                            (int) $item['jumlah']
+                        );
                     }
                 }
             }
 
-            $jumlahBayar = $record->pembayaran()->sum('jumlah_bayar');
-            $record->update(['total_bayar' => $jumlahBayar]);
+            // TOTAL BAYAR
+            $jumlahBayar = $record
+                ->pembayaran()
+                ->sum('jumlah_bayar');
+
+            $record->update([
+                'total_bayar' => $jumlahBayar
+            ]);
         });
     }
 

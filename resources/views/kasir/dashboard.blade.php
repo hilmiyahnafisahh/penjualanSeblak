@@ -8,18 +8,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Kasir — Seblak Sangkuriang</title>
-    <link rel="stylesheet" href="{{ asset('css/seblak-kasir.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>Dashboard Kasir | Seblak</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" />
+    <style>
+        :root { --merah: #8b1a1a; --merah-light: #c85a57; --sidebar-bg: #3d0c0c; --sidebar-hover: rgba(255,255,255,.1); }
+        body { background: #fdf0f0; }
+        .sidebar { min-height: 100vh; background: var(--sidebar-bg); color: #f5e6e6; border-right: none; }
+        .sidebar a { color: #f5c6c6; text-decoration: none; }
+        .sidebar a:hover { background: var(--sidebar-hover); color: #fff; }
+        .sidebar a.active { background: rgba(255,255,255,.15); color: #fff; font-weight: 600; border-left: 3px solid #f87171; }
+        .card-status { border: none; border-radius: 1rem; }
+        .card-status .bi { font-size: 1.4rem; }
+        .badge-status { font-size: .85rem; }
+        .table-card { border-radius: 1rem; }
+        .btn-merah { background: var(--merah); color: #fff; border-radius: .6rem; border: none; padding: .35rem .7rem; box-shadow: 0 6px 18px rgba(139,26,26,.06); }
+        .btn-outline-merah { background: transparent; color: var(--merah); border: 1.5px solid var(--merah); border-radius: .6rem; padding: .25rem .6rem; }
+    </style>
 </head>
 <body>
-<div class="d-flex">
-    <aside class="sidebar p-4 flex-shrink-0" style="width:280px;">
-        <div class="mb-5 d-flex align-items-center gap-2">
-            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:50%;padding:2px;">
+<div class="kasir-shell">
+
+    {{-- SIDEBAR --}}
+    <aside class="kasir-sidebar">
+        <div class="k-brand">
+            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="border-radius:50%;">
             <div>
-                <div class="k-name">Seblak Sangkuriang</div>
-                <div class="k-sub">Panel Kasir</div>
+                <h3 class="fw-bold mb-0">Seblak Sangkuriang</h3>
+                <div style="color:#f5c6c6;font-size:.85rem;">Panel Kasir</div>
             </div>
         </div>
 
@@ -47,9 +63,7 @@
             </div>
             <form action="{{ route('kasir.logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="k-logout-btn">
-                    <i class="bi bi-box-arrow-right me-1"></i> Logout
-                </button>
+                <button type="submit" class="btn btn-outline-danger w-100">Keluar</button>
             </form>
         </div>
     </aside>
@@ -60,9 +74,9 @@
                 <h1>Dashboard</h1>
                 <p class="subtitle">Selamat datang kembali, {{ explode(' ', Auth::user()->name)[0] }}. Pantau pesanan masuk hari ini di sini.</p>
             </div>
-            <div class="k-timestamp">
-                <span class="k-status-dot"></span>
-                {{ now()->translatedFormat('l, d M Y — H:i') }}
+            <div class="text-end">
+                <div class="small text-muted">{{ now()->translatedFormat('l, d F Y H:i') }}</div>
+                <span class="badge bg-danger">Online</span>
             </div>
         </div>
 
@@ -75,26 +89,50 @@
                 <div class="k-stat-value">{{ $pendingCount ?? 0 }}</div>
                 <div class="k-stat-foot">Menunggu konfirmasi</div>
             </div>
-            <div class="k-stat is-info">
-                <div class="k-stat-top">
-                    <span class="k-stat-label">Sedang Diproses</span>
-                    <span class="k-stat-icon"><i class="bi bi-arrow-repeat"></i></span>
+            <div class="col-md-3">
+                <div class="card card-status p-3 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-muted">Sedang Diproses</div>
+                            <div class="h4 mb-0">{{ $diprosesCount }}</div>
+                        </div>
+                        <div class="bg-info rounded-circle p-2 text-white">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                    </div>
+                    <div class="text-muted">Pesanan diproses</div>
                 </div>
                 <div class="k-stat-value">{{ $prosesCount ?? 0 }}</div>
                 <div class="k-stat-foot">Sedang dimasak</div>
             </div>
-            <div class="k-stat is-danger">
-                <div class="k-stat-top">
-                    <span class="k-stat-label">Belum Dibayar</span>
-                    <span class="k-stat-icon"><i class="bi bi-credit-card"></i></span>
+            <div class="col-md-3">
+                <div class="card card-status p-3 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-muted">Belum Dibayar</div>
+                            <div class="h4 mb-0">{{ $belumBayarCount }}</div>
+                        </div>
+                        <div class="bg-danger rounded-circle p-2 text-white">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                    </div>
+                    <div class="text-muted">Menunggu pembayaran</div>
                 </div>
                 <div class="k-stat-value">{{ $belumBayarCount ?? 0 }}</div>
                 <div class="k-stat-foot">Menunggu pembayaran</div>
             </div>
-            <div class="k-stat is-success">
-                <div class="k-stat-top">
-                    <span class="k-stat-label">Pendapatan Hari Ini</span>
-                    <span class="k-stat-icon"><i class="bi bi-cash-stack"></i></span>
+            <div class="col-md-3">
+                <div class="card card-status p-3 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="text-muted">Pendapatan Hari Ini</div>
+                            <div class="h4 mb-0">{{ format_idr($todayRevenue) }}</div>
+                        </div>
+                        <div class="bg-success rounded-circle p-2 text-white">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
+                    <div class="text-muted">Pembayaran lunas</div>
                 </div>
                 <div class="k-stat-value">{{ format_idr($pendapatanHariIni ?? 0) }}</div>
                 <div class="k-stat-foot">Pembayaran lunas</div>
@@ -104,14 +142,16 @@
         <div class="k-panel">
             <div class="k-panel-head">
                 <div>
-                    <h2>Pesanan Masuk Terbaru</h2>
-                    <p class="panel-sub">5 pesanan terakhir dari pelanggan.</p>
+                    <h2 class="h5 mb-1">Pesanan Masuk Terbaru</h2>
+                    <p class="text-muted mb-0">Lihat pesanan terbaru dari pelanggan.</p>
                 </div>
-                <a href="{{ route('kasir.pesanan') }}" class="btn-link-orange">Lihat Semua &rarr;</a>
+                <a href="{{ route('kasir.pesanan') }}" class="btn btn-outline-secondary">Lihat Semua</a>
             </div>
 
             @if($recentOrders->isEmpty())
-                <div class="k-empty">Belum ada pesanan masuk.</div>
+                <div class="text-center py-5 text-muted">
+                    Tidak ada pesanan
+                </div>
             @else
                 <table class="k-table">
                     <thead>

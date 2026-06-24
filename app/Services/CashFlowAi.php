@@ -186,7 +186,13 @@ class CashflowAi
         array $rincianBeban
     ): array {
         $apiKey = config('services.gemini.key');
-        $model  = config('services.gemini.model', 'gemini-2.5-flash');
+
+        // Urutan model fallback
+        $models = [
+            config('services.gemini.model', 'gemini-2.5-flash'),
+            'gemini-1.5-flash',
+            'gemini-1.5-pro',
+        ];
 
         $fmt = fn ($n) => 'Rp ' . number_format($n, 0, ',', '.');
 
@@ -196,15 +202,11 @@ class CashflowAi
                 ->map(fn ($v, $k) => "- {$k}: " . $fmt($v))
                 ->implode("\n");
 
-        $masukStr  = $fmt($masuk);
-        $keluarStr = $fmt($keluar);
-        $bersihStr = $fmt($bersih);
-
         $prompt = "Kamu adalah konsultan keuangan untuk UMKM kuliner Seblak.\n"
             . "Analisis arus kas untuk periode {$periode}:\n\n"
-            . "- Total Kas Masuk : {$masukStr}\n"
-            . "- Total Kas Keluar: {$keluarStr}\n"
-            . "- Arus Kas Bersih : {$bersihStr}\n\n"
+            . "- Total Kas Masuk : {$fmt($masuk)}\n"
+            . "- Total Kas Keluar: {$fmt($keluar)}\n"
+            . "- Arus Kas Bersih : {$fmt($bersih)}\n\n"
             . "Rincian beban:\n{$rincianText}\n\n"
             . "Jawab HANYA dengan JSON valid (tanpa markdown, tanpa teks lain) berformat:\n"
             . '{"status_kesehatan":"Sehat|Waspada|Kritis",'
@@ -212,50 +214,55 @@ class CashflowAi
             . '"rekomendasi":["saran 1","saran 2","saran 3"],'
             . '"proyeksi":"perkiraan kondisi bulan depan 1-2 kalimat"}';
 
-        $url = "https://generativelanguage.googleapis.com/v1/models/"
-            . $model . ":generateContent?key=" . $apiKey;
+        $lastError = null;
 
-        // Retry otomatis hingga 3x kalau Gemini 503 (high demand)
-        $response = null;
-        $maxTry   = 3;
-        for ($try = 1; $try <= $maxTry; $try++) {
-            $response = Http::timeout(60)->post($url, [
-                'contents' => [
-                    ['parts' => [['text' => $prompt]]],
-                ],
-                'generationConfig' => [
-                    'temperature' => 0.4,
-                ],
-            ]);
+        foreach ($models as $model) {
+            $url = "https://generativelanguage.googleapis.com/v1/models/"
+                . $model . ":generateContent?key=" . $apiKey;
 
-            if ($response->successful()) {
-                break;
+            for ($attempt = 1; $attempt <= 3; $attempt++) {
+                try {
+                    $response = Http::timeout(60)->post($url, [
+                        'contents' => [
+                            ['parts' => [['text' => $prompt]]],
+                        ],
+                        'generationConfig' => [
+                            'temperature' => 0.4,
+                        ],
+                    ]);
+
+                    $status = $response->status();
+
+                    if (in_array($status, [503, 429])) {
+                        $lastError = $response->body();
+                        if ($attempt < 3) sleep($attempt * 2);
+                        continue;
+                    }
+
+                    if ($response->failed()) {
+                        $lastError = $response->body();
+                        break;
+                    }
+
+                    $teks = $response->json('candidates.0.content.parts.0.text', '');
+                    $teks = trim(preg_replace('/^```(json)?|```$/m', '', $teks));
+
+                    if (preg_match('/\{.*\}/s', $teks, $m)) {
+                        $teks = $m[0];
+                    }
+
+                    $data = json_decode($teks, true) ?: [];
+                    $data['raw'] = $teks;
+                    return $data;
+
+                } catch (\Throwable $e) {
+                    $lastError = $e->getMessage();
+                    if ($attempt < 3) sleep($attempt * 2);
+                }
             }
-
-            // Kalau bukan 503 atau sudah percobaan terakhir, keluar
-            if ($response->status() !== 503 || $try === $maxTry) {
-                break;
-            }
-
-            // Tunggu sebelum retry: 3s lalu 6s
-            sleep($try * 3);
         }
 
-        if ($response->failed()) {
-            throw new \RuntimeException('Gagal menghubungi Gemini: ' . $response->body());
-        }
-
-        $teks = $response->json('candidates.0.content.parts.0.text', '');
-        $teks = trim(preg_replace('/^```(json)?|```$/m', '', $teks));
-
-        if (preg_match('/\{.*\}/s', $teks, $m)) {
-            $teks = $m[0];
-        }
-
-        $data = json_decode($teks, true) ?: [];
-        $data['raw'] = $teks;
-
-        return $data;
+        throw new \RuntimeException('Gagal menghubungi Gemini setelah beberapa percobaan: ' . $lastError);
     }
 
     /**

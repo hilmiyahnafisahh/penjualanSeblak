@@ -8,13 +8,14 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
-<div class="d-flex">
-    <aside class="sidebar p-4 flex-shrink-0" style="width:280px;">
-        <div class="mb-5 d-flex align-items-center gap-2">
-            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo Seblak" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:50%;padding:2px;">
+<div class="kasir-shell">
+
+    <aside class="kasir-sidebar">
+        <div class="k-brand">
+            <img src="{{ asset('images/logo-seblak.png') }}" alt="Logo" style="border-radius:50%;">
             <div>
-                <h3 class="fw-bold mb-0">Seblak Sangkuriang</h3>
-                <div style="color:#f5c6c6;font-size:.85rem;">Panel Kasir</div>
+                <div class="k-name">Seblak Sangkuriang</div>
+                <div class="k-sub">Panel Kasir</div>
             </div>
         </div>
         <div class="mb-4">
