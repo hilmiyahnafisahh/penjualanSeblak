@@ -11,7 +11,7 @@
 
     @if (filled($heading))
         <h1
-            class="fi-simple-header-heading text-center text-2xl font-bold tracking-tight text-gray-950 dark:text-white"
+            class="fi-simple-header-heading text-center text-2xl font-bold tracking-tight text-gray-950 "
         >
             {{ $heading }}
         </h1>

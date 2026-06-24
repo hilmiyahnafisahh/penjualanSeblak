@@ -215,14 +215,31 @@ class CashflowAi
         $url = "https://generativelanguage.googleapis.com/v1/models/"
             . $model . ":generateContent?key=" . $apiKey;
 
-        $response = Http::timeout(60)->post($url, [
-            'contents' => [
-                ['parts' => [['text' => $prompt]]],
-            ],
-            'generationConfig' => [
-                'temperature' => 0.4,
-            ],
-        ]);
+        // Retry otomatis hingga 3x kalau Gemini 503 (high demand)
+        $response = null;
+        $maxTry   = 3;
+        for ($try = 1; $try <= $maxTry; $try++) {
+            $response = Http::timeout(60)->post($url, [
+                'contents' => [
+                    ['parts' => [['text' => $prompt]]],
+                ],
+                'generationConfig' => [
+                    'temperature' => 0.4,
+                ],
+            ]);
+
+            if ($response->successful()) {
+                break;
+            }
+
+            // Kalau bukan 503 atau sudah percobaan terakhir, keluar
+            if ($response->status() !== 503 || $try === $maxTry) {
+                break;
+            }
+
+            // Tunggu sebelum retry: 3s lalu 6s
+            sleep($try * 3);
+        }
 
         if ($response->failed()) {
             throw new \RuntimeException('Gagal menghubungi Gemini: ' . $response->body());

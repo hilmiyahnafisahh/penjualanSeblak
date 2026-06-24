@@ -11,6 +11,11 @@
     ])
 >
     <head>
+        {{-- Force remove dark mode sebelum apapun di-render --}}
+        <script>
+            localStorage.removeItem('theme');
+            document.documentElement.classList.remove('dark');
+        </script>
         {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::HEAD_START, scopes: $livewire->getRenderHookScopes()) }}
 
         <meta charset="utf-8" />

@@ -9,7 +9,7 @@
 :root {
     /* Brand palette (shared with admin & pelanggan) */
     --brand-maroon-900: #5C1010;
-    --brand-maroon-800: #7F1D1D;
+    --brand-maroon-800: #5A0F0F; /* darker for better contrast */
     --brand-red-700:    #B91C1C;
     --brand-red-600:    #DC2626;
     --brand-orange-600: #EA580C;
@@ -18,7 +18,7 @@
 
     /* Surfaces */
     --cream-50:   #FDFAF7;
-    --cream-100:  #FAF4EE;
+    --cream-100:  #F8EEE6; /* slightly warmer so elements pop */
     --cream-200:  #F4E9DC;
     --line-warm:  #EFE3D2;
 
@@ -285,7 +285,7 @@ body {
     gap: 0.75rem;
     padding: 0.625rem 0.875rem;
     border-radius: 8px;
-    color: rgba(255,255,255,0.78);
+    color: rgba(255,255,255,0.95);
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
@@ -299,18 +299,19 @@ body {
     color: #fff;
 }
 .k-nav-link.active {
-    background: rgba(234, 88, 12, 0.18);
+    background: linear-gradient(90deg, rgba(234,88,12,0.24), rgba(189,35,35,0.06));
     color: #fff;
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(89,18,18,0.06);
 }
 .k-nav-link.active::before {
     content: '';
     position: absolute;
     left: -1rem; top: 50%;
-    width: 3px; height: 60%;
+    width: 4px; height: 64%;
     transform: translateY(-50%);
     background: var(--brand-orange-500);
-    border-radius: 0 3px 3px 0;
+    border-radius: 0 4px 4px 0;
 }
 
 .k-sidebar-footer {
@@ -320,10 +321,10 @@ body {
 }
 .k-user-card {
     display: flex; gap: 0.625rem; align-items: center;
-    padding: 0.625rem 0.75rem;
-    background: rgba(0,0,0,0.18);
-    border-radius: 8px;
-    margin-bottom: 0.75rem;
+    padding: 0.75rem 0.85rem;
+    background: rgba(0,0,0,0.22);
+    border-radius: 10px;
+    margin-bottom: 0.9rem;
 }
 .k-user-avatar {
     width: 36px; height: 36px;
@@ -792,4 +793,34 @@ body {
 .k-link:hover {
   color: var(--brand-orange-600);
   border-bottom-color: var(--brand-orange-600);
+}
+
+/* ── SMALL ACTION BUTTON ─────────────────────────────── */
+.k-btn-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .75rem;
+    border: none;
+    border-radius: .45rem;
+    font-size: .78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    text-decoration: none;
+}
+.k-btn-sm.is-success {
+    background: #059669;
+    color: #fff;
+}
+.k-btn-sm.is-success:hover {
+    background: #047857;
+}
+.k-btn-sm.is-danger {
+    background: #DC2626;
+    color: #fff;
+}
+.k-btn-sm.is-primary {
+    background: var(--brand-red-700, #8b1a1a);
+    color: #fff;
 }

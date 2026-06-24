@@ -1,5 +1,5 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,693 +7,594 @@
 
 @config 'tailwind.config.js';
 
-/* ================================================================
-   TOKENS
-   ================================================================ */
+/* ============================================================
+   SEBLAK SANGKURIANG — Design Tokens
+   Tema: warm cream + sidebar maroon gelap
+   Prinsip: sidebar gelap kontras, konten putih bersih, aksen oranye
+   ============================================================ */
 :root {
-    --c-900: #3B0A0A;
-    --c-800: #5C1010;
-    --c-700: #7F1D1D;
-    --c-600: #B91C1C;
-    --c-500: #DC2626;
-    --org:   #EA580C;
-    --org-l: #FB923C;
-    --org-xl:#FED7AA;
-    --bg:    #F7F0EF;
-    --white: #FFFFFF;
-    --dark:  #111827;
-    --mid:   #4B5563;
-    --soft:  #9CA3AF;
-    --bdr:   #FECACA;
-    --bdr-l: #FEF2F2;
-    --grad: linear-gradient(175deg,
-        var(--c-900) 0%, var(--c-800) 18%, var(--c-700) 40%,
-        var(--c-600) 65%, var(--c-500) 82%, var(--org) 100%
-    );
+  /* Maroon ramp */
+  --m-950: #1A0303;
+  --m-900: #2D0707;
+  --m-800: #4A0E0E;
+  --m-700: #6B1414;
+  --m-600: #8B1A1A;
+  --m-500: #B91C1C;
+  --m-400: #DC2626;
+
+  /* Orange accent */
+  --o-600: #C2410C;
+  --o-500: #EA580C;
+  --o-400: #F97316;
+  --o-100: #FFF0E6;
+
+  /* Neutral warm */
+  --n-50:  #FDFAF8;
+  --n-100: #F5EDE9;
+  --n-200: #EBD9D3;
+  --n-300: #D5B8B1;
+  --n-600: #78716C;
+  --n-700: #57534E;
+  --n-900: #1C1410;
+
+  /* Surface */
+  --bg:      #F5EDE9;   /* halaman */
+  --card:    #FFFFFF;   /* card/widget */
+  --border:  #EBD9D3;   /* border halus */
+  --border2: #D5B8B1;   /* border tegas */
+
+  /* Sidebar */
+  --sb-bg: linear-gradient(175deg, var(--m-950) 0%, var(--m-900) 25%, var(--m-800) 55%, var(--m-700) 100%);
+  --sb-text: rgba(255,255,255,.82);
+  --sb-text-soft: rgba(255,255,255,.40);
+  --sb-active: linear-gradient(135deg, var(--o-500), var(--o-600));
+  --sb-hover: rgba(255,255,255,.09);
+
+  /* Accent gradient (header bars, pills, etc) */
+  --accent: linear-gradient(90deg, var(--m-600), var(--m-400), var(--o-500));
+  --cta: linear-gradient(135deg, var(--o-500), var(--o-600));
 }
 
-/* ================================================================
-   FONT
-   ================================================================ */
-* { font-family: 'Poppins', sans-serif !important; }
-html, body, .fi-body { background-color: var(--bg) !important; }
+/* ============================================================
+   GLOBAL
+   ============================================================ */
+*, *::before, *::after { font-family: 'Inter', system-ui, sans-serif !important; }
 
-/* ================================================================
-   SIDEBAR — styling saja, NO layout override
-   ================================================================ */
-aside.fi-sidebar {
-    background: var(--grad) !important;
-    border-right: none !important;
-    outline: none !important;
-    --tw-ring-color: transparent !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    --tw-ring-offset-shadow: 0 0 #0000 !important;
-    --tw-ring-width: 0px !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
+html, body, .fi-body {
+  background: var(--bg) !important;
+  color: var(--n-900) !important;
 }
 
-aside.fi-sidebar::before {
-    content: '' !important;
-    position: absolute !important;
-    inset: 0 !important;
-    pointer-events: none !important;
-    z-index: 0 !important;
-    background:
-        radial-gradient(circle at 110% -10%, rgba(255,255,255,.07) 0%, transparent 55%),
-        radial-gradient(circle at -20% 110%, rgba(255,255,255,.05) 0%, transparent 50%) !important;
+.fi-layout { overflow-x: clip !important; }
+.fi-main, .fi-page, .fi-page-content {
+  background: transparent !important;
+  color: var(--n-900) !important;
 }
 
-/* Sidebar header */
-.fi-sidebar-header {
-    background: rgba(0,0,0,.30) !important;
-    border-bottom: 1px solid rgba(255,255,255,.12) !important;
-    border-right: none !important;
-    box-shadow: none !important;
-    --tw-ring-color: transparent !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    position: relative !important;
-    z-index: 1 !important;
-}
-
-/* Toggle buttons */
-.fi-sidebar-header .fi-icon-btn,
-aside.fi-sidebar button.fi-icon-btn {
-    color: rgba(255,255,255,.85) !important;
-    background: rgba(255,255,255,.12) !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(255,255,255,.20) !important;
-    box-shadow: none !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    transition: background .15s !important;
-}
-.fi-sidebar-header .fi-icon-btn:hover,
-aside.fi-sidebar button.fi-icon-btn:hover {
-    background: rgba(255,255,255,.24) !important;
-}
-.fi-sidebar-header .fi-icon-btn svg,
-aside.fi-sidebar button svg { color: rgba(255,255,255,.85) !important; }
-
-/* Brand */
-.fi-brand-logo img {
-    height: 3rem !important;
-    width: auto !important;
-    object-fit: contain !important;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,.4)) !important;
+/* ============================================================
+   LAYOUT — sidebar sticky agar tidak overlap konten
+   ============================================================ */
+@media (min-width: 1024px) {
+  /* Sticky = ikut flex, bukan overlay */
+  aside.fi-sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    height: 100dvh !important;
     flex-shrink: 0 !important;
+    align-self: flex-start !important;
+    z-index: 20 !important;
+  }
+  /* Main content ambil sisa lebar */
+  .fi-main-ctn {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+}
+/* Mobile: tetap overlay */
+@media (max-width: 1023px) {
+  aside.fi-sidebar {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important;
+    height: 100dvh !important;
+    z-index: 40 !important;
+  }
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+aside.fi-sidebar {
+  background: var(--sb-bg) !important;
+  border-right: none !important;
+  box-shadow: 2px 0 20px rgba(0,0,0,.22) !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+/* Header sidebar */
+.fi-sidebar-header {
+  background: rgba(0,0,0,.28) !important;
+  border-bottom: 1px solid rgba(255,255,255,.09) !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  padding: 0 .875rem !important;
+  height: 3.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.fi-sidebar-header img {
+  width: 2.1rem !important;
+  height: 2.1rem !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,.6)) !important;
 }
 .fi-brand-name {
-    font-family: 'Playfair Display', serif !important;
-    font-weight: 900 !important;
-    font-size: 1.05rem !important;
-    color: #fff !important;
-    text-shadow: 0 2px 10px rgba(0,0,0,.5) !important;
-    white-space: nowrap !important;
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 800 !important;
+  font-size: .9rem !important;
+  color: #fff !important;
+  white-space: nowrap !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,.5) !important;
 }
 
-/* Nav */
-.fi-sidebar-nav {
-    background: transparent !important;
-    position: relative !important;
-    z-index: 1 !important;
-    overflow-x: hidden !important;
-}
+/* Sidebar nav */
+.fi-sidebar-nav { background: transparent !important; }
+
+/* Group label — gold accent */
 .fi-sidebar-group-label {
-    color: rgba(255,255,255,.40) !important;
-    font-size: .60rem !important;
-    font-weight: 700 !important;
-    letter-spacing: .18em !important;
-    text-transform: uppercase !important;
+  color: rgba(255, 200, 140, .65) !important;
+  font-size: .6rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .15em !important;
+  text-transform: uppercase !important;
 }
+
+/* Nav item */
 .fi-sidebar-item-button {
-    border-radius: .7rem !important;
-    color: rgba(255,255,255,.80) !important;
-    font-size: .845rem !important;
-    font-weight: 500 !important;
-    background: transparent !important;
-    white-space: nowrap !important;
-    transition: background .15s, color .13s !important;
-    position: relative !important;
-    z-index: 1 !important;
+  color: var(--sb-text) !important;
+  border-radius: .55rem !important;
+  font-weight: 500 !important;
+  font-size: .84rem !important;
+  background: transparent !important;
+  transition: background .14s, color .14s !important;
 }
 .fi-sidebar-item-button:hover {
-    background: rgba(255,255,255,.14) !important;
-    color: #fff !important;
+  background: var(--sb-hover) !important;
+  color: #fff !important;
 }
-.fi-sidebar-item.fi-active .fi-sidebar-item-button,
+/* Active item */
+.fi-sidebar-item-active .fi-sidebar-item-button,
 .fi-sidebar-item-button[aria-current="page"] {
-    background: rgba(255,255,255,.18) !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-    box-shadow: inset 3px 0 0 rgba(255,255,255,.85) !important;
+  background: var(--sb-active) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 3px 10px rgba(234,88,12,.3) !important;
 }
-.fi-sidebar-item-icon,
-.fi-sidebar-item-button svg { color: rgba(255,255,255,.65) !important; flex-shrink: 0 !important; }
-.fi-sidebar-item.fi-active .fi-sidebar-item-icon,
-.fi-sidebar-item.fi-active .fi-sidebar-item-button svg { color: #fff !important; }
-.fi-sidebar-item-label { color: rgba(255,255,255,.88) !important; white-space: nowrap !important; overflow: hidden !important; }
-.fi-sidebar-item.fi-active .fi-sidebar-item-label { color: #fff !important; }
-.fi-sidebar-group-collapse-button { color: rgba(255,255,255,.50) !important; }
-.fi-sidebar-group-collapse-button:hover { color: #fff !important; background: rgba(255,255,255,.10) !important; border-radius: 6px !important; }
-.fi-sidebar-group-collapse-button svg { color: rgba(255,255,255,.55) !important; }
+.fi-sidebar-item-icon { color: inherit !important; }
 
-/* ================================================================
-   LAYOUT FIX
-   
-   Filament .fi-layout = flex-row-reverse
-   Sidebar (di kanan DOM) muncul di kiri layar
-   
-   Masalah: aside.fi-sidebar punya class 'fixed' dari blade template
-   yang membuat sidebar overlay konten, bukan push konten.
-   
-   Fix: di desktop (lg+), override position dari fixed → sticky
-   sehingga flex bekerja normal dan konten tidak ketutupan.
-   Mobile tetap fixed (overlay behavior).
-   ================================================================ */
+/* Group collapse */
+.fi-sidebar-group-collapse-button { color: var(--sb-text-soft) !important; background: transparent !important; }
+.fi-sidebar-group-collapse-button:hover { color: #fff !important; background: var(--sb-hover) !important; border-radius: 6px !important; }
 
-/* DESKTOP: sidebar sticky = ikut flex layout, tidak overlay */
-@media (min-width: 1024px) {
-    aside.fi-sidebar {
-        position: sticky !important;
-        top: 0 !important;
-        height: 100dvh !important;
-        flex-shrink: 0 !important;
-        z-index: 10 !important;
-    }
-    /* fi-main-ctn ambil sisa lebar */
-    .fi-main-ctn {
-        flex: 1 1 0% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-    }
-}
+/* Sembunyikan tombol toggle bawaan Filament di sidebar */
+.fi-sidebar-header .fi-icon-btn { display: none !important; }
 
-/* MOBILE: sidebar tetap fixed (overlay) */
-@media (max-width: 1023px) {
-    aside.fi-sidebar {
-        position: fixed !important;
-        z-index: 40 !important;
-    }
-}
-
-/* ================================================================
-   MAIN CONTENT — hapus ring/border
-   ================================================================ */
-.fi-main-ctn {
-    background: var(--bg) !important;
-    border: none !important;
-    outline: none !important;
-    --tw-ring-color: transparent !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    --tw-ring-offset-shadow: 0 0 #0000 !important;
-    --tw-ring-width: 0px !important;
-    box-shadow: none !important;
-}
-.fi-main { background: transparent !important; color: var(--dark) !important; }
-.fi-page, .fi-page-content { color: var(--dark) !important; }
-
-/* ================================================================
-   SIDEBAR TOGGLE — 1 tombol di topbar, sembunyikan tombol bawaan Filament
-   ================================================================ */
-
-/* Sembunyikan tombol expand/collapse bawaan Filament di sidebar header */
-.fi-sidebar-header .fi-icon-btn {
-    display: none !important;
-}
-
-/* Tombol toggle tunggal di topbar */
+/* ============================================================
+   TOGGLE BUTTON (1 tombol di topbar)
+   ============================================================ */
 .fi-sidebar-toggle-btn {
-    color: var(--mid) !important;
-    background: transparent !important;
-    flex-shrink: 0 !important;
-    border: none !important;
-    cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.1rem !important;
+  height: 2.1rem !important;
+  border-radius: .45rem !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--n-700) !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  transition: background .14s, color .14s !important;
 }
-.fi-sidebar-toggle-btn:hover {
-    background: #FFF5F5 !important;
-    color: var(--c-500) !important;
-    border-radius: 8px !important;
-}
-.fi-sidebar-toggle-btn svg {
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-    display: block !important;
-}
+.fi-sidebar-toggle-btn:hover { background: var(--n-100) !important; color: var(--m-600) !important; }
+.fi-sidebar-toggle-btn svg { width: 1.15rem !important; height: 1.15rem !important; display: block !important; }
 
-/* ================================================================
-   LOGO di sidebar header — selalu proporsional, tidak gepeng
-   ================================================================ */
-.fi-sidebar-header img {
-    width: 2.5rem !important;
-    height: 2.5rem !important;
-    object-fit: contain !important;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)) !important;
-    flex-shrink: 0 !important;
-}
-
-/* ================================================================
+/* ============================================================
    TOPBAR
-   ================================================================ */
+   ============================================================ */
 .fi-topbar,
-header.fi-topbar {
-    background: var(--white) !important;
-    border-bottom: 1px solid var(--bdr) !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
-    box-shadow: 0 2px 10px rgba(185,28,28,.08) !important;
-    --tw-ring-color: transparent !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
+.fi-topbar nav {
+  background: var(--card) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,.03) !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
 }
-.fi-topbar nav { background: transparent !important; }
-.fi-topbar .fi-icon-btn { color: var(--mid) !important; }
-.fi-topbar .fi-icon-btn:hover { background: #FFF5F5 !important; color: var(--c-500) !important; }
-.fi-topbar-open-sidebar-btn,
-.fi-topbar-close-sidebar-btn { color: var(--dark) !important; border-radius: 8px !important; }
-.fi-topbar-open-sidebar-btn:hover,
-.fi-topbar-close-sidebar-btn:hover { background: #FFF5F5 !important; color: var(--c-500) !important; }
-.fi-user-menu .fi-avatar { border: 2px solid var(--org) !important; }
+.fi-topbar .fi-icon-btn { color: var(--n-700) !important; border-radius: .45rem !important; }
+.fi-topbar .fi-icon-btn:hover { background: var(--n-100) !important; color: var(--m-600) !important; }
 
-/* ================================================================
+/* ============================================================
    PAGE HEADER
-   ================================================================ */
+   ============================================================ */
 .fi-header-heading, h1.fi-header-heading {
-    font-family: 'Playfair Display', serif !important;
-    font-weight: 800 !important;
-    color: var(--c-600) !important;
-    font-size: 1.7rem !important;
-    letter-spacing: -.01em !important;
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 800 !important;
+  color: var(--m-700) !important;
+  font-size: 1.6rem !important;
+  letter-spacing: -.01em !important;
 }
-.fi-header-subheading { color: var(--org) !important; font-weight: 500 !important; font-size: .85rem !important; }
+.fi-header-subheading { color: var(--n-600) !important; font-size: .85rem !important; }
 
-/* ================================================================
-   BUTTONS
-   ================================================================ */
-.fi-btn { border-radius: .7rem !important; font-weight: 600 !important; font-size: .845rem !important; transition: all .18s !important; }
-.fi-btn-color-primary,
-button.fi-btn.fi-btn-color-primary,
-a.fi-btn.fi-btn-color-primary {
-    background: linear-gradient(135deg, #ff7a3d 0%, var(--org) 100%) !important;
-    color: #fff !important; border: none !important;
-    box-shadow: 0 4px 18px rgba(234,88,12,.30) !important; font-weight: 700 !important;
+/* ============================================================
+   STAT CARDS — override semua agar putih bersih
+   (chart warna difix langsung di blade)
+   ============================================================ */
+/* Pastikan wrapper utama putih */
+.fi-wi-stats-overview-stat,
+.fi-wi-stats-overview-stat-custom {
+  background: var(--card) !important;
+  color: var(--n-900) !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
 }
-.fi-btn-color-primary:hover {
-    background: linear-gradient(135deg, #ff5a1a 0%, #ea580c 100%) !important;
-    box-shadow: 0 8px 28px rgba(234,88,12,.38) !important;
-    transform: translateY(-2px) !important; color: #fff !important;
+/* Paksa semua child elemen bg transparan kecuali card itu sendiri */
+.fi-wi-stats-overview-stat > *,
+.fi-wi-stats-overview-stat-custom > * {
+  background: transparent !important;
 }
-.fi-btn-color-danger { background: linear-gradient(135deg, var(--c-700) 0%, var(--c-500) 100%) !important; color: #fff !important; border: none !important; }
-.fi-btn-color-success { background: linear-gradient(135deg, #065F46 0%, #059669 100%) !important; color: #fff !important; border: none !important; }
-.fi-btn-color-warning { background: linear-gradient(135deg, #B45309 0%, #D97706 100%) !important; color: #fff !important; border: none !important; }
-.fi-btn-color-gray { background: var(--white) !important; border: 1px solid var(--bdr) !important; color: var(--c-700) !important; }
-.fi-btn-color-gray:hover { background: #FFF5F5 !important; border-color: var(--org-l) !important; color: var(--c-500) !important; }
+/* Label */
+.fi-wi-stats-overview-stat-label {
+  color: var(--n-600) !important;
+  font-size: .72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .1em !important;
+}
+/* Value */
+.fi-wi-stats-overview-stat-value {
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 800 !important;
+  color: var(--m-700) !important;
+  font-size: 1.9rem !important;
+  letter-spacing: -.02em !important;
+  line-height: 1.1 !important;
+}
+/* Description */
+.fi-wi-stats-overview-stat-description,
+.fi-wi-stats-overview-stat-description span {
+  color: var(--n-600) !important;
+  font-size: .76rem !important;
+}
+/* Chart area — transparan, sangat samar */
+.fi-wi-stats-overview-stat-chart {
+  background: transparent !important;
+  opacity: .22 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+.fi-wi-stats-overview-stat-chart canvas,
+.fi-wi-stats-overview-stat-chart > * {
+  background: transparent !important;
+}
 
-/* ================================================================
-   TABLE
-   ================================================================ */
-.fi-ta-ctn {
-    background: var(--white) !important; border-radius: 1rem !important;
-    overflow: hidden !important; border: 1px solid var(--bdr) !important;
-    box-shadow: 0 2px 16px rgba(185,28,28,.08) !important;
-    --tw-ring-color: transparent !important; --tw-ring-shadow: 0 0 #0000 !important;
-}
-.fi-ta-header-ctn { background: var(--white) !important; }
-.fi-ta-toolbar { background: var(--white) !important; border-bottom: 1px solid var(--bdr-l) !important; }
-.fi-ta-search-field input, input[type="search"] {
-    background: #FFF8F8 !important; border: 1px solid var(--bdr) !important;
-    color: var(--dark) !important; border-radius: .65rem !important;
-}
-.fi-ta-search-field input:focus {
-    border-color: var(--org) !important;
-    box-shadow: 0 0 0 3px rgba(234,88,12,.10) !important; background: var(--white) !important;
-}
-.fi-ta-table thead tr { background: #FFF5F5 !important; }
-.fi-ta-table th, .fi-ta-header-cell {
-    background: #FFF5F5 !important; border-bottom: 2px solid var(--bdr) !important; padding: .75rem 1rem !important;
-}
-.fi-ta-header-cell-label {
-    color: var(--c-700) !important; font-weight: 700 !important;
-    font-size: .68rem !important; text-transform: uppercase !important; letter-spacing: .10em !important;
-}
-.fi-ta-table tbody { background: var(--white) !important; }
-.fi-ta-row { background: var(--white) !important; transition: background .12s !important; }
-.fi-ta-row:hover { background: #FFFBFB !important; }
-.fi-ta-cell { background: transparent !important; color: var(--dark) !important; }
-.fi-ta-cell * { color: var(--dark) !important; }
-.fi-ta-empty-state { background: var(--white) !important; padding: 3.5rem 1rem !important; }
-.fi-ta-empty-state-icon-ctn {
-    background: #FEF2F2 !important; border-radius: 50% !important;
-    width: 52px !important; height: 52px !important;
-    display: flex !important; align-items: center !important; justify-content: center !important; margin: 0 auto 1rem !important;
-}
-.fi-ta-empty-state-icon { color: var(--org-l) !important; }
-.fi-ta-empty-state-heading { color: var(--mid) !important; font-weight: 600 !important; }
-.fi-ta-footer { background: var(--white) !important; border-top: 1px solid var(--bdr-l) !important; }
-.fi-ta-footer * { color: var(--dark) !important; }
-
-/* ================================================================
-   SECTIONS
-   ================================================================ */
+/* ============================================================
+   SECTIONS / CARDS
+   ============================================================ */
 .fi-section {
-    background: var(--white) !important; border-radius: 1rem !important;
-    border: 1px solid var(--bdr) !important; box-shadow: 0 2px 14px rgba(185,28,28,.07) !important;
-    color: var(--dark) !important; overflow: hidden !important;
-    --tw-ring-color: transparent !important; --tw-ring-shadow: 0 0 #0000 !important;
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: .875rem !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.03), 0 4px 14px -4px rgba(0,0,0,.05) !important;
+  overflow: hidden !important;
+  color: var(--n-900) !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
 }
-.fi-section-content-ctn, .fi-section-content { background: var(--white) !important; color: var(--dark) !important; }
+.fi-section-content-ctn, .fi-section-content {
+  background: var(--card) !important;
+  color: var(--n-900) !important;
+}
 .fi-section-header {
-    background: linear-gradient(90deg, #FFF5F5 0%, var(--white) 60%) !important;
-    border-bottom: 1px solid var(--bdr) !important; padding: 1rem 1.25rem !important;
+  background: var(--n-50) !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 1rem 1.5rem !important;
 }
 .fi-section-header-heading {
-    font-family: 'Playfair Display', serif !important;
-    color: var(--c-700) !important; font-weight: 700 !important; font-size: 1rem !important;
+  font-family: 'Playfair Display', serif !important;
+  color: var(--m-700) !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
 }
-.fi-section-footer { background: #FFFAFA !important; border-top: 1px solid var(--bdr-l) !important; }
+.fi-section-footer { background: var(--n-50) !important; border-top: 1px solid var(--border) !important; }
 
-/* ================================================================
-   FORM
-   ================================================================ */
+/* ============================================================
+   WIDGETS
+   ============================================================ */
+.fi-widget, .fi-wi-account, .fi-wi-filament-info {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: .875rem !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.03), 0 4px 14px -4px rgba(0,0,0,.05) !important;
+  overflow: hidden !important;
+  color: var(--n-900) !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+.fi-wi-account *, .fi-wi-filament-info * { color: var(--n-900) !important; }
+.fi-wi-account-name { color: var(--m-700) !important; font-weight: 700 !important; }
+.fi-wi-account-email { color: var(--o-500) !important; font-size: .8rem !important; }
+.fi-wi-filament-info a { color: var(--o-500) !important; font-weight: 500 !important; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.fi-btn {
+  border-radius: .6rem !important;
+  font-weight: 600 !important;
+  font-size: .84rem !important;
+  transition: all .16s !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+.fi-btn-color-primary {
+  background: var(--cta) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 3px 10px rgba(234,88,12,.30) !important;
+}
+.fi-btn-color-primary:hover { transform: translateY(-1px) !important; box-shadow: 0 6px 18px rgba(234,88,12,.42) !important; color: #fff !important; }
+.fi-btn-color-danger  { background: linear-gradient(135deg, var(--m-700), var(--m-400)) !important; color: #fff !important; border: none !important; }
+.fi-btn-color-success { background: linear-gradient(135deg, #047857, #059669) !important; color: #fff !important; border: none !important; }
+.fi-btn-color-warning { background: linear-gradient(135deg, #B45309, #D97706) !important; color: #fff !important; border: none !important; }
+.fi-btn-color-gray { background: var(--card) !important; color: var(--n-700) !important; border: 1px solid var(--border2) !important; }
+.fi-btn-color-gray:hover { background: var(--n-100) !important; border-color: var(--m-600) !important; color: var(--m-600) !important; }
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.fi-ta-ctn {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: .875rem !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.03), 0 4px 14px -4px rgba(0,0,0,.05) !important;
+  overflow: hidden !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+.fi-ta-header-ctn, .fi-ta-toolbar { background: var(--card) !important; border-bottom: 1px solid var(--border) !important; }
+.fi-ta-table thead tr, .fi-ta-header-cell { background: var(--n-50) !important; }
+.fi-ta-header-cell { border-bottom: 1px solid var(--border2) !important; padding: .75rem 1rem !important; }
+.fi-ta-header-cell-label { color: var(--n-700) !important; font-weight: 700 !important; font-size: .68rem !important; text-transform: uppercase !important; letter-spacing: .09em !important; }
+.fi-ta-row { background: var(--card) !important; transition: background .1s !important; }
+.fi-ta-row:hover { background: var(--n-50) !important; }
+.fi-ta-cell { background: transparent !important; color: var(--n-900) !important; }
+.fi-ta-cell * { color: var(--n-900) !important; background: transparent !important; }
+.fi-ta-footer { background: var(--card) !important; border-top: 1px solid var(--border) !important; }
+.fi-ta-footer * { color: var(--n-900) !important; }
+.fi-ta-empty-state { background: var(--card) !important; padding: 3rem 1rem !important; }
+.fi-ta-empty-state-heading { color: var(--n-600) !important; font-weight: 600 !important; }
+
+/* Search */
+.fi-ta-search-field input, input[type="search"] {
+  background: var(--n-50) !important; border: 1px solid var(--border2) !important;
+  color: var(--n-900) !important; border-radius: .55rem !important;
+}
+.fi-ta-search-field input:focus { border-color: var(--o-500) !important; box-shadow: 0 0 0 3px rgba(234,88,12,.1) !important; background: var(--card) !important; }
+
+/* ============================================================
+   FORM INPUTS
+   ============================================================ */
+.fi-fo-field-wrp-label, label { color: var(--m-600) !important; font-weight: 600 !important; font-size: .82rem !important; }
 .fi-input, .fi-select-input, .fi-textarea,
 input[type="text"], input[type="email"], input[type="password"],
 input[type="number"], input[type="tel"], select, textarea {
-    background: var(--white) !important;
-    color: var(--dark) !important; font-size: .845rem !important;
+  background: var(--card) !important; border: 1px solid var(--border2) !important;
+  color: var(--n-900) !important; border-radius: .55rem !important;
 }
-.fi-input:focus, input:focus, select:focus, textarea:focus {
-    border-color: var(--org) !important;
-    box-shadow: 0 0 0 3px rgba(234,88,12,.10) !important; outline: none !important;
+input:focus, select:focus, textarea:focus {
+  border-color: var(--o-500) !important;
+  box-shadow: 0 0 0 3px rgba(234,88,12,.1) !important;
+  outline: none !important;
 }
-.fi-fo-field-wrp-label, label { color: var(--c-700) !important; font-weight: 600 !important; font-size: .82rem !important; }
-.fi-fo-field-wrp-hint { color: var(--mid) !important; font-size: .78rem !important; }
-input::placeholder, textarea::placeholder { color: var(--soft) !important; }
+input::placeholder, textarea::placeholder { color: var(--n-300) !important; }
 
-/* ================================================================
-   WIDGETS
-   ================================================================ */
-.fi-widget, .fi-wi-account, .fi-wi-filament-info {
-    background: var(--white) !important; border-radius: 1rem !important;
-    border: 1px solid var(--bdr) !important; box-shadow: 0 2px 14px rgba(185,28,28,.06) !important;
-    overflow: hidden !important; color: var(--dark) !important;
-    --tw-ring-color: transparent !important; --tw-ring-shadow: 0 0 #0000 !important;
-}
-.fi-wi-account *, .fi-wi-filament-info * { color: var(--dark) !important; }
-.fi-wi-account-name { color: var(--c-700) !important; font-weight: 700 !important; }
-.fi-wi-account-email { color: var(--org) !important; font-size: .8rem !important; }
-.fi-wi-filament-info a { color: var(--org) !important; font-weight: 500 !important; }
-.fi-wi-filament-info svg { color: var(--org) !important; }
-
-.fi-wi-stats-overview-stat {
-    background: var(--white) !important; border-radius: 1rem !important;
-    border: 1px solid var(--bdr) !important; box-shadow: 0 2px 12px rgba(185,28,28,.07) !important;
-    overflow: hidden !important; position: relative !important;
-    transition: transform .2s, box-shadow .2s !important;
-    --tw-ring-color: transparent !important; --tw-ring-shadow: 0 0 #0000 !important;
-}
-.fi-wi-stats-overview-stat::before {
-    content: ''; display: block; height: 4px;
-    background: linear-gradient(90deg, var(--c-500), var(--org));
-}
-.fi-wi-stats-overview-stat:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 26px rgba(185,28,28,.14) !important; }
-.fi-wi-stats-overview-stat-value { color: var(--c-500) !important; font-weight: 800 !important; font-size: 1.75rem !important; }
-.fi-wi-stats-overview-stat-label { color: var(--dark) !important; font-weight: 600 !important; font-size: .88rem !important; }
-.fi-wi-stats-overview-stat-description { color: var(--org) !important; font-size: .78rem !important; }
-
-/* ================================================================
+/* ============================================================
    BADGES
-   ================================================================ */
-.fi-badge { border-radius: 9999px !important; font-weight: 600 !important; font-size: .68rem !important; padding: .2rem .65rem !important; }
-.fi-badge-color-primary { background: rgba(220,38,38,.10) !important; color: var(--c-500) !important; }
-.fi-badge-color-success { background: rgba(5,150,105,.10) !important; color: #065F46 !important; }
-.fi-badge-color-warning { background: rgba(234,88,12,.10) !important; color: var(--org) !important; }
-.fi-badge-color-danger  { background: rgba(127,29,29,.10) !important; color: var(--c-700) !important; }
-.fi-badge-color-gray    { background: #F3F4F6 !important; color: #374151 !important; }
+   ============================================================ */
+.fi-badge { border-radius: 999px !important; font-weight: 600 !important; font-size: .68rem !important; padding: .2rem .65rem !important; }
+.fi-badge-color-primary { background: rgba(139,26,26,.1) !important; color: var(--m-600) !important; }
+.fi-badge-color-success { background: #ECFDF5 !important; color: #065F46 !important; }
+.fi-badge-color-warning { background: #FFFBEB !important; color: #92400E !important; }
+.fi-badge-color-danger  { background: #FEF2F2 !important; color: var(--m-600) !important; }
+.fi-badge-color-info    { background: #EFF6FF !important; color: #1E40AF !important; }
+.fi-badge-color-gray    { background: var(--n-100) !important; color: var(--n-700) !important; }
 
-/* ================================================================
+/* ============================================================
    PAGINATION
-   ================================================================ */
-.fi-pagination-item-btn { border-radius: .55rem !important; font-weight: 600 !important; font-size: .82rem !important; color: var(--c-700) !important; background: transparent !important; }
-.fi-pagination-item-btn:hover { background: #FFF5F5 !important; color: var(--c-500) !important; }
-.fi-pagination-item-btn[aria-current="page"] {
-    background: linear-gradient(135deg, var(--c-500) 0%, var(--org) 100%) !important;
-    color: #fff !important; box-shadow: 0 2px 8px rgba(220,38,38,.28) !important;
-}
+   ============================================================ */
+.fi-pagination-item-btn { border-radius: .45rem !important; font-weight: 600 !important; color: var(--n-700) !important; background: transparent !important; }
+.fi-pagination-item-btn:hover { background: var(--n-100) !important; color: var(--m-600) !important; }
+.fi-pagination-item-btn[aria-current="page"] { background: var(--cta) !important; color: #fff !important; border: none !important; }
 
-/* ================================================================
+/* ============================================================
    MODAL
-   ================================================================ */
-.fi-modal-content { background: var(--white) !important; border-radius: 1.25rem !important; border: 1px solid var(--bdr) !important; box-shadow: 0 20px 60px rgba(127,29,29,.16) !important; overflow: hidden !important; color: var(--dark) !important; }
-.fi-modal-header { background: linear-gradient(90deg, #FFF5F5 0%, var(--white) 60%) !important; border-bottom: 1px solid var(--bdr) !important; padding: 1.1rem 1.25rem !important; }
-.fi-modal-header-heading { font-family: 'Playfair Display', serif !important; color: var(--c-700) !important; font-weight: 800 !important; font-size: 1.15rem !important; }
-.fi-modal-footer { background: #FFFAFA !important; border-top: 1px solid var(--bdr-l) !important; }
+   ============================================================ */
+.fi-modal-content { background: var(--card) !important; border-radius: .875rem !important; border: 1px solid var(--border) !important; box-shadow: 0 20px 60px rgba(0,0,0,.12) !important; overflow: hidden !important; color: var(--n-900) !important; }
+.fi-modal-header { background: var(--n-50) !important; border-bottom: 1px solid var(--border) !important; padding: 1rem 1.5rem !important; }
+.fi-modal-header-heading { font-family: 'Playfair Display', serif !important; color: var(--m-700) !important; font-weight: 800 !important; font-size: 1.05rem !important; }
+.fi-modal-footer { background: var(--n-50) !important; border-top: 1px solid var(--border) !important; }
 
-/* ================================================================
+/* ============================================================
    DROPDOWN
-   ================================================================ */
-.fi-dropdown-panel { background: var(--white) !important; border: 1px solid var(--bdr) !important; border-radius: .9rem !important; box-shadow: 0 8px 30px rgba(127,29,29,.12) !important; overflow: hidden !important; }
-.fi-dropdown-item { color: var(--dark) !important; font-weight: 500 !important; font-size: .845rem !important; background: transparent !important; }
-.fi-dropdown-item:hover { background: #FFF5F5 !important; color: var(--c-500) !important; }
+   ============================================================ */
+.fi-dropdown-panel { background: var(--card) !important; border: 1px solid var(--border2) !important; border-radius: .75rem !important; box-shadow: 0 10px 28px rgba(0,0,0,.10) !important; overflow: hidden !important; }
+.fi-dropdown-item { color: var(--n-900) !important; font-weight: 500 !important; font-size: .85rem !important; background: transparent !important; }
+.fi-dropdown-item:hover { background: var(--n-100) !important; color: var(--m-600) !important; }
 
-/* ================================================================
+/* ============================================================
    TABS
-   ================================================================ */
-.fi-tabs-tab { font-weight: 600 !important; font-size: .845rem !important; color: var(--soft) !important; }
-.fi-tabs-tab:hover { color: var(--org) !important; }
-.fi-tabs-tab[aria-selected="true"] { color: var(--c-500) !important; border-bottom-color: var(--c-500) !important; }
+   ============================================================ */
+.fi-tabs-tab { font-weight: 600 !important; color: var(--n-600) !important; border-bottom: 2px solid transparent !important; }
+.fi-tabs-tab:hover { color: var(--m-600) !important; }
+.fi-tabs-tab[aria-selected="true"] { color: var(--m-600) !important; border-bottom-color: var(--o-500) !important; }
 
-/* ================================================================
+/* ============================================================
    NOTIFICATIONS
-   ================================================================ */
-.fi-notification { background: var(--white) !important; border-radius: .9rem !important; border-left: 4px solid var(--org) !important; box-shadow: 0 6px 24px rgba(127,29,29,.12) !important; color: var(--dark) !important; }
+   ============================================================ */
+.fi-notification { background: var(--card) !important; border-radius: .75rem !important; border: 1px solid var(--border) !important; border-left: 4px solid var(--o-500) !important; box-shadow: 0 8px 24px rgba(0,0,0,.08) !important; color: var(--n-900) !important; }
 .fi-notification-color-success { border-left-color: #059669 !important; }
-.fi-notification-color-danger  { border-left-color: var(--c-500) !important; }
-.fi-notification-title { color: var(--c-700) !important; font-weight: 700 !important; }
-.fi-notification-body { color: var(--mid) !important; font-size: .82rem !important; }
+.fi-notification-color-danger  { border-left-color: var(--m-400) !important; }
+.fi-notification-title { color: var(--m-700) !important; font-weight: 700 !important; }
+.fi-notification-body  { color: var(--n-600) !important; font-size: .82rem !important; }
 
-/* ================================================================
-   LOGIN PAGE
-   ================================================================ */
-.fi-simple-layout { background: linear-gradient(135deg, #FFF5F5 0%, var(--white) 50%, #FFF9F5 100%) !important; }
-.fi-simple-main {
-    background: var(--white) !important; border-radius: 1.5rem !important;
-    border: 1px solid var(--bdr) !important; box-shadow: 0 20px 60px rgba(127,29,29,.12) !important;
-    overflow: hidden !important; color: var(--dark) !important;
-}
-.fi-simple-main::before { content: ''; display: block; height: 5px; background: linear-gradient(90deg, var(--c-900), var(--c-600), var(--org)); }
+/* ============================================================
+   LOGIN FILAMENT
+   ============================================================ */
+.fi-simple-layout { background: linear-gradient(135deg, var(--n-100), var(--card), #FBE9E0) !important; }
+.fi-simple-main { background: var(--card) !important; border-radius: 1.1rem !important; border: 1px solid var(--border2) !important; box-shadow: 0 20px 60px rgba(0,0,0,.10) !important; overflow: hidden !important; color: var(--n-900) !important; }
+.fi-simple-main::before { content: ''; display: block; height: 4px; background: var(--accent); }
 
-/* ================================================================
+/* ============================================================
    SCROLLBAR
-   ================================================================ */
+   ============================================================ */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #FEF2F2; border-radius: 9999px; }
-::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--c-500), var(--org)); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: var(--c-600); }
+::-webkit-scrollbar-track { background: var(--n-100); border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--m-600), var(--o-500)); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--m-500); }
 
-/* ================================================================
+/* ============================================================
    MISC
-   ================================================================ */
-.fi-section, .fi-ta-ctn, .fi-widget, .fi-wi-stats-overview-stat {
-    --tw-ring-color: transparent !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    --tw-ring-offset-shadow: 0 0 #0000 !important;
+   ============================================================ */
+.fi-section, .fi-ta-ctn, .fi-widget {
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
 }
-.fi-ta-filters-indicator { background: rgba(234,88,12,.12) !important; color: var(--org) !important; border-radius: 9999px !important; font-size: .70rem !important; font-weight: 700 !important; }
-input[type="checkbox"]:checked { accent-color: var(--c-500) !important; }
+input[type="checkbox"]:checked, input[type="radio"]:checked { accent-color: var(--o-500) !important; }
 
-/* ================================================================
-   FORM, SECTION & WIZARD — perapihan final
-   (menggantikan tambalan lama: gray-fix + border-fix + padding-fix)
-   ================================================================ */
+/* ============================================================
+   FORM PAGE — fix background abu-abu di area form Create/Edit
+   Hanya override background container, TIDAK semua child elemen
+   ============================================================ */
 
-/* --- Kartu section & wizard: putih, sudut membulat --- */
-.fi-section,
-.fi-fo-wizard.fi-contained,
-.fi-section-content-ctn,
-.fi-section-content {
-    background-color: var(--white) !important;
-    border-radius: 1rem !important;
-    overflow: hidden !important;
-}
+/* Container form dan section: pastikan putih */
+.fi-fo-component-ctn { background-color: transparent !important; }
+.fi-fo-field-wrp     { background-color: transparent !important; }
+.fi-fo-grid          { background-color: transparent !important; }
+.fi-fo-fieldset      { background-color: transparent !important; }
+.fi-section-content  { background-color: var(--card) !important; }
+.fi-section-content-ctn { background-color: var(--card) !important; }
 
-/* --- Hilangkan kotak abu-abu: pembungkus di dalam konten dibuat transparan,
-       kecuali section, section-content-ctn, section-content, input, repeater, dan tabel --- */
-.fi-fo-field-wrp,
-.fi-fo-component-ctn,
-.fi-fo-actions,
-.fi-fo-wizard-step,
-.fi-section-content div:not([class*="fi-fo-repeater"]):not([class*="fi-ta-"]):not(.fi-input-wrp):not(.fi-section):not(.fi-section-content-ctn):not(.fi-section-content),
-.fi-fo-wizard-step div:not([class*="fi-fo-repeater"]):not([class*="fi-ta-"]):not(.fi-input-wrp),
-.fi-section-content fieldset,
-.fi-section-content dl,
-.fi-section-content dd {
-    background-color: transparent !important;
+/* ============================================================
+   LABEL FIX — root cause: dark:text-white membuat teks putih
+   di atas background putih sehingga tidak terlihat.
+   Label blade: <span class="text-gray-950 dark:text-white">
+   ============================================================ */
+.fi-fo-field-wrp-label span,
+.fi-fo-field-wrp-label span.text-gray-950,
+label.fi-fo-field-wrp-label span {
+  color: var(--m-600) !important;
 }
 
-/* --- Ruang isi (anti-mepet sudut), berlaku untuk section & step wizard --- */
-/* Wizard step = bingkai tipis di sekeliling kartu Section di dalamnya */
-.fi-fo-wizard-step { padding: 1.25rem !important; }
-/* Isi Section/Infolist = ruang lega (tempat field "Kategori Beban" dll berada) */
-.fi-section-content { padding: 2.25rem !important; }
-.fi-section-header  { padding: 1.5rem 2.25rem !important; }
-
-/* --- Jarak antar field lebih lega --- */
-.fi-fo-component-ctn,
-.fi-in-component-ctn { row-gap: 1.25rem !important; }
-
-/* --- Border field: SATU garis bersih di wrapper, sudut seragam --- */
-.fi-input-wrp {
-    background: #fff !important;
-    border: 1px solid var(--bdr) !important;
-    border-radius: .75rem !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,.04) !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    --tw-ring-offset-shadow: 0 0 #0000 !important;
-    --tw-ring-color: transparent !important;
-    overflow: hidden !important;
-    transition: border-color .15s, box-shadow .15s !important;
-}
-.fi-input-wrp:focus-within {
-    border-color: var(--org) !important;
-    box-shadow: 0 0 0 3px rgba(234,88,12,.12) !important;
+/* Juga override via dark: pseudo */
+.dark .fi-fo-field-wrp-label span {
+  color: var(--m-600) !important;
 }
 
-/* Input mentah di dalam wrapper: tanpa border/ring sendiri (anti garis dobel) */
-.fi-input-wrp .fi-input,
-.fi-input-wrp input,
-.fi-input-wrp select,
-.fi-input-wrp textarea {
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    background: transparent !important;
-    border-radius: 0 !important;
+/* Label wrapper sendiri */
+.fi-fo-field-wrp-label {
+  color: var(--m-600) !important;
+  font-weight: 600 !important;
+  font-size: .82rem !important;
 }
 
-/* Textarea / select yang berdiri sendiri (di luar wrapper): satu border seragam */
-textarea,
-.fi-fo-select-input {
-    border: 1px solid var(--bdr) !important;
-    border-radius: .75rem !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,.04) !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    background: #fff !important;
-}
-textarea:focus {
-    border-color: var(--org) !important;
-    box-shadow: 0 0 0 3px rgba(234,88,12,.12) !important;
-    outline: none !important;
+/* Required asterisk */
+.fi-fo-field-wrp-label sup {
+  color: #DC2626 !important;
 }
 
-/* --- Teks & label tetap terbaca --- */
-.fi-fo-field-wrp-label,
+/* Select native option — fix background hitam */
+select option {
+  background-color: #ffffff !important;
+  color: #1C1410 !important;
+}
+
+/* Repeater item */
+.fi-fo-repeater-item {
+  background-color: var(--n-50) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: .65rem !important;
+}
+
+/* ============================================================
+   DARK MODE FORCE OFF
+   Script di base.blade.php sudah hapus class 'dark' dari html.
+   CSS ini backup untuk override Tailwind dark: utilities
+   ============================================================ */
+.dark .fi-section,
+.dark .fi-section-content,
+.dark .fi-section-content-ctn,
+.dark .fi-fo-component-ctn,
+.dark .fi-fo-field-wrp,
+.dark .fi-form,
+.dark .fi-page,
+.dark .fi-main,
+.dark .fi-main-ctn {
+  background-color: var(--card) !important;
+  color: var(--n-900) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fi-section,
+  .fi-section-content-ctn,
+  .fi-section-content {
+    background-color: var(--card) !important;
+  }
+}
+
+/* ============================================================
+   GLOBAL DARK MODE TEXT FIX
+   Pastikan semua teks Filament terbaca di light mode.
+   dark:text-white sudah dihapus dari blade, ini sebagai backup.
+   ============================================================ */
+
+/* Semua teks di dalam area Filament */
+.fi-page *,
+.fi-section *,
+.fi-form *,
+.fi-in-text,
+.fi-in-text *,
+[class*="fi-in-"] *,
+[class*="fi-fo-"] * {
+  color: inherit;
+}
+
+/* TextEntry dan infolist entry value */
+.fi-in-text-item,
+.fi-in-text-item span,
+.fi-in-placeholder {
+  color: var(--n-900) !important;
+}
+
+/* Infolist label */
 .fi-in-entry-label,
-label { color: var(--c-700) !important; font-weight: 600 !important; }
-.fi-in-text, .fi-in-text-item { color: var(--dark) !important; }
-
-/* ================================================================
-   NUCLEAR OVERRIDE v2 — selector tanpa panel-id prefix
-   (panel kamu tidak punya attribute [data-filament-panel-id])
-   Pakai body+class biar specificity tinggi & menang dari forms.css
-   ================================================================ */
-
-/* Matikan dark mode total */
-html, html.dark, body, body.dark {
-    color-scheme: light !important;
-    background-color: var(--bg) !important;
+.fi-in-entry-label span {
+  color: var(--m-600) !important;
+  font-weight: 600 !important;
+  font-size: .82rem !important;
 }
 
-/* === SECTION WRAPPER → PUTIH === */
-body .fi-section,
-body section.fi-section,
-body .fi-section.fi-section,
-body .fi-section-content-ctn,
-body .fi-section-content-ctn.fi-section-content-ctn,
-body .fi-section-content,
-body .fi-section-content.fi-section-content,
-body .fi-fo-wizard,
-body .fi-fo-wizard.fi-contained,
-body .fi-fo-wizard-step,
-body .fi-form,
-body form.fi-form,
-body .fi-resource-form,
-body .fi-page-content {
-    background-color: #FFFFFF !important;
-    background-image: none !important;
+/* Section heading dalam infolist */
+.fi-section-header-heading,
+[class*="fi-section"] h3,
+[class*="fi-section"] h2 {
+  color: var(--m-700) !important;
 }
 
-/* === CONTAINER FIELD → TRANSPARAN === */
-body .fi-fo-component-ctn,
-body .fi-fo-component-ctn.fi-fo-component-ctn,
-body .fi-fo-component,
-body .fi-fo-field-wrp,
-body .fi-fo-field-wrp.fi-fo-field-wrp,
-body .fi-fo-field-wrp-input-pfx,
-body .fi-fo-field-wrp-input-sfx,
-body .fi-fo-fieldset,
-body .fi-fo-tabs,
-body .fi-fo-tabs-tab,
-body .fi-fo-grid,
-body .fi-fo-grid-col,
-body .fi-fo-actions,
-body .fi-section-content > div,
-body .fi-section-content > div > div {
-    background-color: transparent !important;
-    background-image: none !important;
-}
-
-/* === Override semua Tailwind bg-gray-* yang nempel dari forms.css === */
-body .fi-section .bg-gray-50,
-body .fi-section .bg-gray-100,
-body .fi-section .bg-gray-200,
-body .fi-section .bg-gray-300,
-body .fi-section .bg-gray-400,
-body .fi-section .bg-gray-500,
-body .fi-section .bg-gray-600,
-body .fi-section .bg-gray-700,
-body .fi-section .bg-gray-800,
-body .fi-section .bg-gray-900,
-body .fi-form .bg-gray-50,
-body .fi-form .bg-gray-100,
-body .fi-form .bg-gray-200,
-body .fi-form .bg-gray-300,
-body .fi-form .bg-gray-400,
-body .fi-form .bg-gray-500,
-body .fi-form .bg-gray-600,
-body .fi-form .bg-gray-700,
-body .fi-form .bg-gray-800,
-body .fi-form .bg-gray-900 {
-    background-color: transparent !important;
-}
-
-/* === Tabel, topbar, modal, dropdown, widget → tetap putih === */
-body .fi-ta-ctn,
-body .fi-ta-header-ctn,
-body .fi-ta-toolbar,
-body .fi-ta-table thead tr,
-body .fi-ta-table th,
-body .fi-ta-header-cell,
-body .fi-ta-row,
-body .fi-topbar,
-body header.fi-topbar,
-body .fi-modal-content,
-body .fi-dropdown-panel,
-body .fi-widget {
-    background-color: var(--white) !important;
-}
-
-/* === Input wrapper tetap putih dengan border === */
-body .fi-input-wrp,
-body .fi-input-wrp.fi-input-wrp,
-body .fi-fo-select-input,
-body textarea {
-    background-color: #FFFFFF !important;
-}
-
-/* === Label tetap merah maroon (jangan kepengaruh transparant) === */
-body label,
-body .fi-fo-field-wrp-label,
-body .fi-in-entry-label {
-    color: var(--c-700) !important;
-    font-weight: 600 !important;
-}
+/* Seluruh body teks di page harus gelap */
+.fi-page { color: var(--n-900) !important; }
+.fi-page p,
+.fi-page span,
+.fi-page div,
+.fi-page li { color: inherit !important; }

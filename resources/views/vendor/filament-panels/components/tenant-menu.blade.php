@@ -72,7 +72,7 @@
                     </span>
                 @endif
 
-                <span class="text-gray-950 dark:text-white">
+                <span class="text-gray-950 ">
                     {{ $currentTenantName }}
                 </span>
             </span>

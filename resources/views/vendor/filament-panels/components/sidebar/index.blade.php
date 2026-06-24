@@ -35,7 +35,7 @@
     @endif
     {{
         $attributes->class([
-            'fi-sidebar fixed inset-y-0 start-0 z-30 flex flex-col h-screen content-start bg-white transition-all dark:bg-gray-900 lg:z-0 lg:bg-transparent lg:shadow-none lg:ring-0 lg:transition-none dark:lg:bg-transparent',
+            'fi-sidebar fixed inset-y-0 start-0 z-30 flex flex-col h-screen content-start bg-white transition-all bg-white lg:z-0 lg:bg-transparent lg:shadow-none lg:ring-0 lg:transition-none dark:lg:bg-transparent',
             'lg:translate-x-0 rtl:lg:-translate-x-0' => ! (filament()->isSidebarCollapsibleOnDesktop() || filament()->isSidebarFullyCollapsibleOnDesktop() || filament()->hasTopNavigation()),
             'lg:-translate-x-full rtl:lg:translate-x-full' => filament()->hasTopNavigation(),
         ])
@@ -43,7 +43,7 @@
 >
     <div class="overflow-x-clip">
         <header
-            class="fi-sidebar-header flex h-16 items-center bg-white px-4 ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 lg:shadow-sm"
+            class="fi-sidebar-header flex h-16 items-center bg-white px-4 ring-1 ring-gray-950/5 bg-white dark:ring-white/10 lg:shadow-sm"
         >
             {{-- 1 blok logo: logo selalu tampil, teks nama hide saat collapsed --}}
             <div class="flex items-center gap-x-2 min-w-0 flex-1 overflow-hidden">

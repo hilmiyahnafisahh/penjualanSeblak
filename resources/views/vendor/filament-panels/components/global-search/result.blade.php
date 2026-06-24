@@ -17,7 +17,7 @@
             'p-4' => ! $actions,
         ])
     >
-        <h4 class="text-sm font-medium text-gray-950 dark:text-white">
+        <h4 class="text-sm font-medium text-gray-950 ">
             {{ $title }}
         </h4>
 
